@@ -1,0 +1,92 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+/* LIMS Design System — Helix Lab */
+:root {
+  --background: #ffffff;
+  --foreground: #0f172a;
+  --primary: #2563eb;
+  --primary-foreground: #ffffff;
+  --border: #e2e8f0;
+  --radius: 0.5rem;
+  /* خلي هاد المتغيرات حيت غانحتاجوهم فـ الـ CSS اليدوي */
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* --- Global Styles Added --- */
+
+/* تحسين شكل الـ Scrollbar باش يجي رقيق ومودرن */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* تنسيق الروابط */
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* تنسيق الأزرار الافتراضية */
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* تلوين الـ Selection فاش كنسطروا على شي نص */
+::selection {
+  background-color: var(--primary);
+  color: white;
+}
+
+/* إصلاح شكل الـ Toast (Sonner) بلا Tailwind */
+[data-sonner-toast] {
+  font-family: 'Inter', sans-serif !important;
+  border-radius: 12px !important;
+  border: 1px solid var(--border) !important;
+  background-color: white !important;
+  color: var(--foreground) !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Utility Classes بسيطة غتحتاجها بزاف */
+.text-primary { color: var(--primary); }
+.font-bold { font-weight: 700; }
+.text-center { text-align: center; }
+
+/* Status Badges (باش تستعملهم فـ الجداول من بعد) */
+.badge {
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.badge-success { background: #dcfce7; color: #166534; }
+.badge-pending { background: #fef9c3; color: #854d0e; }
+.badge-error { background: #fee2e2; color: #991b1b; }

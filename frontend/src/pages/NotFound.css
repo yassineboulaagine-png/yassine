@@ -1,0 +1,83 @@
+/* NotFound.css - Helix Lab Style */
+
+.error-page-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  width: 100%;
+  background-color: #f8fafc; /* رمادي فاتح بزاف باش تبان الصفحة نقية */
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+}
+
+.error-content {
+  text-align: center;
+  background-color: white;
+  padding: 60px 40px;
+  border-radius: 20px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05); /* ظل خفيف مودرن */
+  max-width: 500px;
+  width: 90%;
+  border: 1px solid #e2e8f0;
+}
+
+.error-code {
+  font-size: 100px;
+  font-weight: 900;
+  color: #2563eb; /* اللون الأزرق ديال اللوغو */
+  margin: 0;
+  line-height: 1;
+  letter-spacing: -4px;
+}
+
+.error-title {
+  font-size: 26px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 20px 0 10px 0;
+}
+
+.error-message {
+  color: #64748b;
+  font-size: 16px;
+  line-height: 1.6;
+  margin-bottom: 30px;
+}
+
+.error-message strong {
+  color: #2563eb;
+  word-break: break-all; /* باش إيلا كان الرابط طويل ما يخرجش على الإطار */
+}
+
+.btn-back-home {
+  display: inline-block;
+  background-color: #2563eb;
+  color: white;
+  padding: 14px 30px;
+  border-radius: 10px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 15px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
+}
+
+.btn-back-home:hover {
+  background-color: #1d4ed8;
+  transform: translateY(-2px); /* تحريكة خفيفة فاش كتحط السوري */
+  box-shadow: 0 6px 12px rgba(37, 99, 235, 0.3);
+}
+
+/* Responsive للأجهزة الصغيرة */
+@media (max-width: 480px) {
+  .error-content {
+    padding: 40px 20px;
+  }
+  .error-code {
+    font-size: 80px;
+  }
+  .error-title {
+    font-size: 22px;
+  }
+}

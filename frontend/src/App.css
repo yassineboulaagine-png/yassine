@@ -1,0 +1,40 @@
+/* App.css - Helix Lab Layout Fix */
+
+/* حيدنا الـ max-width و text-align باش الـ Dashboards 
+   ياخدو العرض ديال الشاشة كامل (Full Width) */
+#root {
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
+/* هاد الـ Animations والـ Logo خليهم غير إيلا كنتي 
+   باغي تستعملهم فـ شي صفحة تعريفية، وإلا تقدر تمسحهم */
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+
+.logo:hover {
+  filter: drop-shadow(0 0 2em #2563ebaa);
+}
+
+@keyframes logo-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .logo-react {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+/* أي حاجة كتحتاجها فـ الموقع كامل (Global Utility) */
+.container-fluid {
+  width: 100%;
+  padding: 0 20px;
+}
