@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Str; // ضرورية باش نولدو الكود العشوائي
 
 class Examen extends Model
 {
@@ -20,16 +21,19 @@ class Examen extends Model
 
     /**
      * Logic أوتوماتيكي للـ Reference والوقت
-     * هاد الكود كيخلي الـ Reference تتصاوب بوحدها فاش كيدير Admin "Enregistrer"
      */
     protected static function boot()
     {
         parent::boot();
         
         static::creating(function ($examen) {
-            // 1. تصاوب Reference أوتوماتيك (مثال: EX-2026-0001)
+            // 1. توليد Reference آمنة وغير قابلة للتوقع
+            // التنسيق: EX-2026-0001-A4B2 (الرقم الترتيبي + كود عشوائي من 4 حروف)
             $count = Examen::count() + 1;
-            $examen->reference = 'EX-' . date('Y') . '-' . str_pad($count, 4, '0', STR_PAD_LEFT);
+            $sequence = str_pad($count, 4, '0', STR_PAD_LEFT);
+            $randomSuffix = strtoupper(Str::random(4)); // كود عشوائي باش حد ما يتوقع الكود اللي قبل منه
+            
+            $examen->reference = 'EX-' . date('Y') . '-' . $sequence . '-' . $randomSuffix;
             
             // 2. دير تاريخ اليوم أوتوماتيكياً إلا مكنش داخل من الـ Front
             if (!$examen->date_examen) {
@@ -56,7 +60,6 @@ class Examen extends Model
 
     public function utilisateur()
     {
-        // كنربطوه بـ User Model وكنعطيوه الـ Foreign Key 'utilisateur_id'
         return $this->belongsTo(User::class, 'utilisateur_id');
     }
 
@@ -69,9 +72,9 @@ class Examen extends Model
     {
         return $this->hasOne(Facture::class);
     }
+
     public function resultats()
     {
-    // هاد العلاقة كتقول بلي الامتحان واحد يقدر يكون عندو بزاف ديال ملفات النتائج (PDFs)
-    return $this->hasMany(Resultat::class);
+        return $this->hasMany(Resultat::class);
     }
 }

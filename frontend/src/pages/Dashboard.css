@@ -217,7 +217,8 @@
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 15px;
+  margin-bottom: 15px;
 }
 
 .form-group label {

@@ -1,62 +1,100 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Syringe, Users, CalendarClock, LogOut, UserCircle, X, ClipboardCheck, Search, Trash2, Settings, Mail, ShieldCheck, KeyRound } from "lucide-react";
+import axios from "axios"; 
+import { 
+  Users, LogOut, UserCircle, X, ClipboardCheck, 
+  Trash2, ChevronDown, User, Settings 
+} from "lucide-react";
 import { toast } from "sonner";
 import "./Dashboard.css";
 
+const API_URL = "http://localhost:8000/api/patients";
+
 const DashboardPreleveur = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("patients"); // patients, profil, rdv, prelevements
-  const [showUserMenu, setShowUserMenu] = useState(false);
+  const [activeTab, setActiveTab] = useState("patients");
   const [showModal, setShowModal] = useState(false);
   const [generatedCode, setGeneratedCode] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editIndex, setEditIndex] = useState(null);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [patients, setPatients] = useState([]);
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  
+  const [newPatient, setNewPatient] = useState({ 
+    nom: "", 
+    prenom: "", 
+    cin: "", 
+    telephone: "",
+    sexe: "M", 
+    date_naissance: "" 
+  });
 
-  // الداتا ديال المستخدم (كتجي من localStorage)
   const userString = localStorage.getItem("user");
-  const user = userString ? JSON.parse(userString) : { 
-    name: "Yassine", 
-    prenom: "Boulaagine", 
-    email: "yassine@helixlab.ma", 
-    cin: "AB12345", 
-    role: "préleveur" 
-  };
+  const user = userString ? JSON.parse(userString) : { id: 1, name: "Yassine", role: "Prélèveur" };
 
-  const [patients, setPatients] = useState([
-    { nom: "Yassine", prenom: "Boulaagine", cin: "AB12345", telephone: "0611223344", reference: "HL-26-GT54R" }
-  ]);
+  useEffect(() => {
+    fetchPatients();
+  }, []);
 
-  const [newPatient, setNewPatient] = useState({ nom: "", prenom: "", cin: "", telephone: "" });
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    toast.success("Déconnexion réussie !");
-    navigate("/login");
-  };
-
-  const handleSavePatient = (e) => {
-    e.preventDefault();
-    if (isEditing) {
-      const updatedPatients = [...patients];
-      updatedPatients[editIndex] = { ...newPatient, reference: patients[editIndex].reference };
-      setPatients(updatedPatients);
-      toast.success("Patient modifié !");
-      closeAndReset();
-    } else {
-      const code = "HL-" + new Date().getFullYear().toString().slice(-2) + "-" + Math.random().toString(36).substr(2, 5).toUpperCase();
-      setPatients([{ ...newPatient, reference: code }, ...patients]);
-      setGeneratedCode(code);
-      toast.success("Patient enregistré !");
+  const fetchPatients = async () => {
+    try {
+      const response = await axios.get(API_URL);
+      setPatients(response.data);
+    } catch (error) {
+      console.error("API error:", error);
+      setPatients([]);
     }
   };
 
-  const handleDelete = (index) => {
+  const handleSavePatient = async (e) => {
+    e.preventDefault();
+    if (newPatient.telephone.length !== 10) {
+      toast.error("Le numéro de téléphone doit contenir 10 chiffres");
+      return;
+    }
+
+    const payload = { ...newPatient, utilisateur_id: user.id, medecin_id: 1 };
+
+    try {
+      if (isEditing) {
+        const patientId = patients[editIndex].id;
+        await axios.put(`${API_URL}/${patientId}`, payload);
+        toast.success("Patient modifié !");
+        await fetchPatients();
+        closeAndReset();
+      } else {
+        const response = await axios.post(API_URL, payload);
+        if (response.status === 201 || response.status === 200) {
+          if (response.data && response.data.reference) {
+            setGeneratedCode(response.data.reference);
+            toast.success("Patient et Examen enregistrés !");
+          } else {
+            toast.success("Patient enregistré !");
+            closeAndReset();
+          }
+          await fetchPatients();
+        }
+      }
+    } catch (error) {
+      if (error.response?.status === 201 || error.response?.status === 200) {
+        await fetchPatients();
+        closeAndReset();
+      } else {
+        toast.error("Erreur d'enregistrement");
+      }
+    }
+  };
+
+  const handleDelete = async (index) => {
     if (window.confirm("Supprimer ce patient ?")) {
-      setPatients(patients.filter((_, i) => i !== index));
-      toast.error("Patient supprimé !");
+      try {
+        const patientId = patients[index].id;
+        await axios.delete(`${API_URL}/${patientId}`);
+        toast.error("Patient supprimé !");
+        fetchPatients();
+      } catch (error) {
+        toast.error("Erreur de suppression");
+      }
     }
   };
 
@@ -71,26 +109,20 @@ const DashboardPreleveur = () => {
     setShowModal(false);
     setGeneratedCode(null);
     setIsEditing(false);
-    setNewPatient({ nom: "", prenom: "", cin: "", telephone: "" });
+    setNewPatient({ nom: "", prenom: "", cin: "", telephone: "", sexe: "M", date_naissance: "" });
+  };
+
+  const handleLogout = () => {
+    localStorage.clear();
+    navigate("/login");
   };
 
   return (
     <div className="hl-dashboard-container">
-      {/* Sidebar */}
       <aside className="hl-sidebar preleveur">
-        <div className="hl-sidebar-header">
-          <h1 className="hl-logo">Helix <span>Lab</span></h1>
-        </div>
+        <div className="hl-sidebar-header"><h1 className="hl-logo">Helix <span>Lab</span></h1></div>
         <nav className="hl-nav">
-          <button className={`hl-nav-btn ${activeTab === 'prelevements' ? 'active' : ''}`} onClick={() => setActiveTab('prelevements')}>
-            <Syringe size={20} /> Prélèvements
-          </button>
-          <button className={`hl-nav-btn ${activeTab === 'patients' ? 'active' : ''}`} onClick={() => setActiveTab('patients')}>
-            <Users size={20} /> Liste Patients
-          </button>
-          <button className={`hl-nav-btn ${activeTab === 'rdv' ? 'active' : ''}`} onClick={() => setActiveTab('rdv')}>
-            <CalendarClock size={20} /> Rendez-vous
-          </button>
+          <button className={`hl-nav-btn ${activeTab === 'patients' ? 'active' : ''}`} onClick={() => setActiveTab('patients')}><Users size={20} /> Liste Patients</button>
         </nav>
         <div className="hl-logout-section">
           <button onClick={handleLogout}><LogOut size={20} /> Déconnexion</button>
@@ -98,156 +130,140 @@ const DashboardPreleveur = () => {
       </aside>
 
       <main className="hl-main">
-        {/* Header */}
-        <header className="hl-header">
+        <header className="hl-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 20px' }}>
           <h2>Espace {user.role}</h2>
-          <div className="hl-user-info">
-            <div className="hl-user-text">
-              <p className="hl-user-name">{user.nom || user.name} {user.prenom}</p>
-              <p className="hl-user-role">{user.role}</p>
-            </div>
-            <div className="profile-trigger" onClick={() => setShowUserMenu(!showUserMenu)}>
-              <UserCircle size={32} color="#312e81" />
+          
+          <div className="hl-user-container" style={{ position: 'relative' }}>
+            <div 
+              className="hl-user-info" 
+              onClick={() => setShowUserMenu(!showUserMenu)}
+              style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px' }}
+            >
+              <div className="hl-user-text" style={{ textAlign: 'right' }}>
+                <p className="hl-user-name" style={{ fontWeight: 'bold', margin: 0 }}>{user.nom || user.name}</p>
+                <p className="hl-user-role" style={{ fontSize: '12px', color: '#64748b', margin: 0 }}>{user.role}</p>
+              </div>
+              <div style={{ position: 'relative' }}>
+                <UserCircle size={38} color="#312e81" />
+                <div style={{ position: 'absolute', bottom: -2, right: -2, background: 'white', borderRadius: '50%', border: '1px solid #e2e8f0' }}>
+                  <ChevronDown size={14} color="#64748b" />
+                </div>
+              </div>
             </div>
 
             {showUserMenu && (
-              <div className="user-dropdown-menu fade-in">
-                <div className="dropdown-item" onClick={() => { setActiveTab('profil'); setShowUserMenu(false); }}>
-                  <UserCircle size={16} /> <span>Mon Profil</span>
+              <div className="hl-dropdown-menu fade-in" style={{
+                position: 'absolute', top: '110%', right: 0, 
+                background: 'white', borderRadius: '10px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+                width: '200px', zIndex: 1000, border: '1px solid #f1f5f9'
+              }}>
+                <div style={{ padding: '15px', borderBottom: '1px solid #f1f5f9', background: '#f8fafc' }}>
+                  <p style={{ fontSize: '14px', fontWeight: '600', color: '#1e293b', margin: 0 }}>{user.email || "Compte"}</p>
                 </div>
-                <div className="dropdown-item" onClick={() => { setActiveTab('settings'); setShowUserMenu(false); }}>
-                  <Settings size={16} /> <span>Paramètres</span>
-                </div>
-                <hr />
-                <div className="dropdown-item logout-item" onClick={handleLogout}>
-                  <LogOut size={16} /> <span>Déconnexion</span>
-                </div>
+                {/* دابا هادو غادي يخدمو بالـ navigate */}
+                <button className="dropdown-item" style={dropdownItemStyle} onClick={() => navigate("/profil")}>
+                  <User size={16} /> Mon Profil
+                </button>
+                <button className="dropdown-item" style={dropdownItemStyle} onClick={() => navigate("/settings")}>
+                  <Settings size={16} /> Paramètres
+                </button>
+                <button className="dropdown-item" onClick={handleLogout} style={{ ...dropdownItemStyle, color: '#ef4444' }}>
+                  <LogOut size={16} /> Déconnexion
+                </button>
               </div>
             )}
           </div>
         </header>
 
         <div className="hl-content-body">
-          {/* View: Liste Patients */}
-          {activeTab === 'patients' && (
-            <div className="fade-in">
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
-                <h3>Gestion des Patients</h3>
-                <button className="btn-new-patient" onClick={() => setShowModal(true)}>
-                  <Users size={18} /> Nouveau Patient
-                </button>
-              </div>
-              <div className="search-wrapper">
-                <div className="search-input-container">
-                  <Search size={18} className="search-icon" />
-                  <input type="text" placeholder="Rechercher par CIN..." className="hl-search-input" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
-                </div>
-              </div>
-              <div className="hl-table-container">
-                <table className="hl-table">
-                  <thead>
-                    <tr><th>Nom & Prénom</th><th>CIN</th><th>Téléphone</th><th>Référence</th><th>Actions</th></tr>
-                  </thead>
-                  <tbody>
-                    {patients.filter(p => p.cin.toLowerCase().includes(searchTerm.toLowerCase())).map((p, index) => (
-                      <tr key={index}>
-                        <td className="font-bold">{p.nom} {p.prenom}</td>
-                        <td>{p.cin}</td>
-                        <td>{p.telephone}</td>
-                        <td style={{color: '#4f46e5', fontWeight: '700'}}>{p.reference}</td>
-                        <td>
-                          <div style={{ display: 'flex', gap: '8px' }}>
-                            <button className="btn-modifier" onClick={() => handleEditClick(index)}>Modifier</button>
-                            <button className="btn-delete" onClick={() => handleDelete(index)}>Supprimer</button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {/* View: Mon Profil (الجديدة) */}
-          {activeTab === 'profil' && (
-            <div className="fade-in">
-              <div style={{ marginBottom: '20px' }}>
-                <h3>Mon Profil</h3>
-              </div>
-              <div className="profile-card">
-                <div className="profile-header">
-                  <div className="profile-avatar-large">
-                    <UserCircle size={48} />
-                  </div>
-                  <div>
-                    <h4 style={{margin: 0, fontSize: '20px'}}>{user.nom || user.name} {user.prenom}</h4>
-                    <p style={{margin: 0, color: '#64748b'}}>{user.role} Helix Lab</p>
-                  </div>
-                </div>
-
-                <div className="info-grid">
-                  <div className="info-item">
-                    <label>Nom Complet</label>
-                    <p>{user.nom || user.name} {user.prenom}</p>
-                  </div>
-                  <div className="info-item">
-                    <label>CIN</label>
-                    <p>{user.cin}</p>
-                  </div>
-                  <div className="info-item">
-                    <label>Email Professionnel</label>
-                    <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
-                      <Mail size={14} color="#64748b" />
-                      <p>{user.email}</p>
-                    </div>
-                  </div>
-                  <div className="info-item">
-                    <label>Statut du compte</label>
-                    <div style={{display: 'flex', alignItems: 'center', gap: '5px', color: '#10b981'}}>
-                      <ShieldCheck size={14} />
-                      <p style={{color: '#10b981'}}>Actif</p>
-                    </div>
-                  </div>
-                </div>
-
-                <button className="btn-change-password" onClick={() => toast.info("Fonctionnalité bientôt disponible")}>
-                  <KeyRound size={18} /> Changer le mot de passe
-                </button>
-              </div>
-            </div>
-          )}
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '25px', alignItems: 'center' }}>
+            <h3 style={{ fontSize: '20px' }}>Gestion des Patients</h3>
+            <button className="btn-new-patient" onClick={() => setShowModal(true)}>
+              <Users size={18} /> Nouveau Patient
+            </button>
+          </div>
+          
+          <div className="hl-table-container">
+            <table className="hl-table">
+              <thead>
+                <tr>
+                  <th>Nom & Prénom</th>
+                  <th>Sexe</th>
+                  <th>CIN</th>
+                  <th>Téléphone</th>
+                  <th>Date Naissance</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {patients.map((p, index) => (
+                  <tr key={p.id || index}>
+                    <td className="font-bold">{p.nom} {p.prenom}</td>
+                    <td>{p.sexe === 'M' ? '👨 M' : '👩 F'}</td>
+                    <td>{p.cin}</td>
+                    <td>{p.telephone}</td>
+                    <td>{p.date_naissance}</td>
+                    <td>
+                      <button className="btn-modifier" onClick={() => handleEditClick(index)}>Modifier</button>
+                      <button className="btn-delete" onClick={() => handleDelete(index)} style={{marginLeft: '8px'}}>Supprimer</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </main>
 
-      {/* Modal - نفس الكود ديالك بلا تغيير */}
       {showModal && (
         <div className="modal-overlay">
           <div className="modal-content fade-in">
             <div className="modal-header">
               <h3>{isEditing ? "Modifier Patient" : "Inscription Patient"}</h3>
-              <button onClick={closeAndReset} className="close-x"><X size={20} /></button>
+              <button onClick={closeAndReset} className="close-x"><X size={22} /></button>
             </div>
-            <hr style={{ margin: '15px 0', opacity: 0.1 }} />
             {!generatedCode ? (
               <form onSubmit={handleSavePatient} className="modal-form">
-                <div className="form-group"><label>Nom</label><input type="text" value={newPatient.nom} required onChange={(e) => setNewPatient({...newPatient, nom: e.target.value})} /></div>
-                <div className="form-group"><label>Prénom</label><input type="text" value={newPatient.prenom} required onChange={(e) => setNewPatient({...newPatient, prenom: e.target.value})} /></div>
-                <div className="form-group"><label>CIN</label><input type="text" value={newPatient.cin} required onChange={(e) => setNewPatient({...newPatient, cin: e.target.value})} /></div>
-                <div className="form-group"><label>Téléphone</label><input type="tel" value={newPatient.telephone} maxLength={10} required onChange={(e) => {const v=e.target.value; if(/^\d*$/.test(v))setNewPatient({...newPatient, telephone:v})}} /></div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '15px' }}>
+                  <div className="form-group"><label>Nom</label><input type="text" value={newPatient.nom} required onChange={(e) => setNewPatient({...newPatient, nom: e.target.value})} /></div>
+                  <div className="form-group"><label>Prénom</label><input type="text" value={newPatient.prenom} required onChange={(e) => setNewPatient({...newPatient, prenom: e.target.value})} /></div>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '15px' }}>
+                  <div className="form-group">
+                    <label>Sexe</label>
+                    <select value={newPatient.sexe} onChange={(e) => setNewPatient({...newPatient, sexe: e.target.value})}>
+                      <option value="M">👨 Masculin (M)</option>
+                      <option value="F">👩 Féminin (F)</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>Date de Naissance</label>
+                    <input type="date" value={newPatient.date_naissance} required onChange={(e) => setNewPatient({...newPatient, date_naissance: e.target.value})} />
+                  </div>
+                </div>
+                <div className="form-group" style={{ marginBottom: '15px' }}><label>CIN</label><input type="text" value={newPatient.cin} required onChange={(e) => setNewPatient({...newPatient, cin: e.target.value})} /></div>
+                <div className="form-group" style={{ marginBottom: '20px' }}>
+                  <label>Téléphone</label>
+                  <input type="tel" value={newPatient.telephone} maxLength={10} required onChange={(e) => {
+                    const v = e.target.value;
+                    if (/^\d*$/.test(v)) setNewPatient({...newPatient, telephone: v});
+                  }} />
+                </div>
                 <div className="modal-footer">
                   <button type="button" className="btn-cancel" onClick={closeAndReset}>Annuler</button>
-                  <button type="submit" className="btn-save">{isEditing ? "Mettre à jour" : "Enregistrer"}</button>
+                  <button type="submit" className="btn-save">{isEditing ? "Modifier" : "Enregistrer"}</button>
                 </div>
               </form>
             ) : (
               <div className="code-display fade-in">
-                <div style={{textAlign: 'center', background: '#f8fafc', padding: '20px', borderRadius: '12px'}}>
-                  <ClipboardCheck size={40} color="#4f46e5" />
-                  <p>Patient enregistré !</p>
-                  <h1 style={{fontSize: '28px', color: '#312e81'}}>{generatedCode}</h1>
+                <div style={{ textAlign: 'center', background: '#f0f9ff', padding: '25px', borderRadius: '15px' }}>
+                  <ClipboardCheck size={35} color="#4f46e5" />
+                  <h4 style={{ color: '#0369a1' }}>Patient enregistré !</h4>
+                  <div style={{ background: 'white', padding: '15px', borderRadius: '10px', marginTop: '15px' }}>
+                    <h1 style={{ fontSize: '32px', color: '#312e81', letterSpacing: '2px' }}>{generatedCode}</h1>
+                  </div>
                 </div>
-                <button className="btn-save" style={{width: '100%', marginTop: '15px'}} onClick={closeAndReset}>Terminer</button>
+                <button className="btn-save" style={{ width: '100%', marginTop: '20px' }} onClick={closeAndReset}>Terminer</button>
               </div>
             )}
           </div>
@@ -255,6 +271,13 @@ const DashboardPreleveur = () => {
       )}
     </div>
   );
+};
+
+const dropdownItemStyle = {
+  display: 'flex', alignItems: 'center', gap: '12px', width: '100%',
+  padding: '12px 15px', border: 'none', background: 'none',
+  textAlign: 'left', fontSize: '14px', cursor: 'pointer', color: '#475569',
+  transition: 'background 0.2s'
 };
 
 export default DashboardPreleveur;

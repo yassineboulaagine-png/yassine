@@ -8,54 +8,40 @@ use App\Models\Examen;
 
 class ExamenController extends Controller
 {
-    public function index() {
-        // Kat-jbed l-examens m3a l-mrid dyalhom deqqa wehda (Eager Loading)
+    // جيب كاع الـ examens مع بيانات المريض
+    public function index()
+    {
         return Examen::with('patient')->latest()->get();
     }
 
-    public function store(Request $request) {
-        $data = $request->validate([
-            'patient_id' => 'required|exists:patients,id',
-            'type_analyse' => 'required|string',
-            'prix' => 'required|numeric',
-            'status' => 'required|in:en_cours,termine,annule'
-        ]);
-
-        // Logic d l-Reference EX-2026-001 ghadi n-zidouh f l-Model (Boot method) 
-        // Bach i-koun automatique dima.
-        $examen = Examen::create($data);
-        return response()->json($examen, 201);
-    }
-
-    public function updateResult(Request $request, $id) {
+    // بدل statut ديال examen
+    public function updateResult(Request $request, $id)
+    {
         $examen = Examen::findOrFail($id);
-        $data = $request->validate([
-            'resultat' => 'required|string',
-            'status' => 'required|in:termine'
+
+        $request->validate([
+            'statut' => 'required|in:en_attente,en_cours,termine,annule',
         ]);
 
-        $examen->update($data);
+        $examen->update(['statut' => $request->statut]);
         return response()->json($examen);
     }
 
-    // --- NEW: Had l-partie khassa b l-Patient Login ---
+    // Login ديال المريض بـ reference + telephone
     public function patientLogin(Request $request)
     {
-        // 1. Validation ديال المعطيات اللي صيفط React
         $request->validate([
             'reference' => 'required|string',
             'telephone' => 'required|string',
         ]);
 
-        // 2. كنقلبو ف جدول examens و كنربطوه مع جدول patients باش نتأكدو من التلفون
-        $examen = Examen::with(['patient', 'resultats']) // كنجيبو كاع المعلومات دقة وحدة
+        $examen = Examen::with(['patient', 'resultats'])
             ->where('reference', $request->reference)
             ->whereHas('patient', function ($query) use ($request) {
                 $query->where('telephone', $request->telephone);
             })
             ->first();
 
-        // 3. يلا مالقينا والو
         if (!$examen) {
             return response()->json([
                 'success' => false,
@@ -63,10 +49,9 @@ class ExamenController extends Controller
             ], 404);
         }
 
-        // 4. يلا كاين، كنرجعو success و الداتا ديال الامتحان
         return response()->json([
             'success' => true,
-            'examen' => $examen
+            'examen'  => $examen
         ], 200);
     }
 }

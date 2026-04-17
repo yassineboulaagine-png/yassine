@@ -41,4 +41,37 @@ class UserController extends Controller
         $user->delete();
         return response()->json(['message' => 'Utilisateur supprimé']);
     }
+
+    public function updateProfile(Request $request) {
+    $user = User::find($request->user_id);
+    if (!$user) {
+        return response()->json(['message' => 'User not found'], 404);
+    }
+
+    $user->update([
+        'nom_complet' => $request->nom_complet,
+        'email' => $request->email,
+    ]);
+
+    return response()->json(['message' => 'Success', 'user' => $user], 200);
+}
+
+    public function changePassword(Request $request) {
+    $user = User::find($request->user_id);
+    if (!$user) {
+        return response()->json(['message' => 'User not found'], 404);
+    }
+
+    // Smiya khass t-koun "oldPassword" b7al f React
+    if (!Hash::check($request->oldPassword, $user->password)) {
+        return response()->json(['message' => 'L\'ancien mot de passe est incorrect'], 400);
+    }
+
+    // Smiya khass t-koun "newPassword" b7al f React
+    $user->update([
+        'password' => Hash::make($request->newPassword),
+    ]);
+
+    return response()->json(['message' => 'Password changed successfully'], 200);
+}
 }

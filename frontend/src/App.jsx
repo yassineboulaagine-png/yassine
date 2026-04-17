@@ -11,6 +11,8 @@ import DashboardBiologiste from "./pages/DashboardBiologiste";
 import DashboardPreleveur from "./pages/DashboardPreleveur";
 import NotFound from "./pages/NotFound";
 import MesResultats from "./pages/MesResultats";
+import Profile from "./pages/Profile";
+import Settings from "./pages/Settings";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +33,11 @@ const App = () => (
           <Route path="/dashboard/admin" element={<DashboardAdmin />} />
           <Route path="/dashboard/biologiste" element={<DashboardBiologiste />} />
           <Route path="/dashboard/preleveur" element={<DashboardPreleveur />} />
+          {/* صفحة الملف الشخصي والإعدادات */}
+          <Route path="/profil" element={<Profile />} />
+          <Route path="/settings" element={<Settings />} />
+
+
           
           {/* صفحة نتائج المريض */}
           <Route path="/mes-resultats" element={<MesResultats />} />
