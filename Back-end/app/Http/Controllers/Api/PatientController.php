@@ -9,9 +9,18 @@ use App\Models\Examen;
 
 class PatientController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return Patient::latest()->get();
+        // Kan-akhdou chnou kteb l-user f l-barre de recherche
+        $search = $request->query('search');
+
+        return Patient::when($search, function($query) use ($search) {
+            return $query->where('cin', 'LIKE', "%{$search}%")
+                         ->orWhere('nom', 'LIKE', "%{$search}%")
+                         ->orWhere('prenom', 'LIKE', "%{$search}%");
+        })
+        ->latest()
+        ->get();
     }
 
     public function store(Request $request)
@@ -71,10 +80,8 @@ class PatientController extends Controller
         return response()->json(['message' => 'Patient supprimé']);
     }
 
-    // --- HAD LA FONCTION HIYA LI KHASSAK BACH T-7EL L-404 ---
     public function getUserStats($id)
     {
-        // Kan-7sbo ch7al men examen dar had l-utilisateur (prélèveur)
         $count = Examen::where('utilisateur_id', $id)->count();
         return response()->json(['count' => $count]);
     }
