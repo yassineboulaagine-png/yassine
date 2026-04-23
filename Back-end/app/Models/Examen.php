@@ -65,7 +65,7 @@ class Examen extends Model
 
     public function lignes()
     {
-        return $this->hasMany(LigneExamen::class);
+        return $this->hasMany(LigneExamen::class,'examen_id');
     }
 
     public function facture()

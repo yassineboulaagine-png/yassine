@@ -20,15 +20,14 @@ const DashboardPreleveur = () => {
   const [patients, setPatients] = useState([]);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedExamen, setSelectedExamen] = useState("");
+  const [analysesLyoum, setAnalysesLyoum] = useState([]);
+  const [analysesLoading, setAnalysesLoading] = useState(true);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   
   const [newPatient, setNewPatient] = useState({ 
     nom: "", prenom: "", cin: "", telephone: "", sexe: "M", date_naissance: "" 
   });
-
-  // Hada ghir data tajribiya (Static) bach t-ban lik l-table dial l-analyses lyoum
-  const [analysesLyoum] = useState([
-    { id: 1, patient: "Anas Mterem", examen: "NFS (Hémogramme)", statut: "En attente" }
-  ]);
 
   const userString = localStorage.getItem("user");
   const user = userString ? JSON.parse(userString) : { id: 1, name: "Ibrahim", role: "Prélèveur" };
@@ -43,6 +42,21 @@ const DashboardPreleveur = () => {
     }
   };
 
+  const fetchAnalysesLyoum = async () => {
+    try {
+      if (isInitialLoad) setAnalysesLoading(true);
+      const response = await axios.get("http://localhost:8000/api/examens-today");
+      setAnalysesLyoum(response.data);
+      if (isInitialLoad) {
+        setIsInitialLoad(false);
+        setAnalysesLoading(false);
+      }
+    } catch (error) {
+      console.error("Error fetching analyses:", error);
+      if (isInitialLoad) setAnalysesLoading(false);
+    }
+  };
+
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       fetchPatients(searchTerm);
@@ -50,9 +64,22 @@ const DashboardPreleveur = () => {
     return () => clearTimeout(delayDebounceFn);
   }, [searchTerm]);
 
+  useEffect(() => {
+    fetchAnalysesLyoum();
+    const interval = setInterval(() => {
+      fetchAnalysesLyoum();
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
+
   const handleSavePatient = async (e) => {
     e.preventDefault();
-    const payload = { ...newPatient, utilisateur_id: user.id, medecin_id: 1 };
+    const payload = { 
+      ...newPatient, 
+      utilisateur_id: user.id, 
+      medecin_id: 1,
+      nom_analyse: selectedExamen
+    };
     try {
       if (isEditing) {
         await axios.put(`${API_URL}/${patients[editIndex].id}`, payload);
@@ -61,12 +88,26 @@ const DashboardPreleveur = () => {
         const response = await axios.post(API_URL, payload);
         if (response.data?.reference) setGeneratedCode(response.data.reference);
         toast.success("Patient enregistré !");
+        fetchAnalysesLyoum();
       }
       fetchPatients(searchTerm);
-      if (!isEditing && !generatedCode) closeAndReset();
       if (isEditing) closeAndReset();
     } catch (error) {
       toast.error("Erreur d'enregistrement");
+    }
+  };
+
+  const handleStatusChange = async (id, newStatus) => {
+    try {
+      const endpoint = newStatus === 'valide' 
+        ? `http://localhost:8000/api/examens/${id}/valider`
+        : `http://localhost:8000/api/examens/${id}/annuler`;
+      
+      await axios.patch(endpoint);
+      toast.success(newStatus === 'valide' ? "Examen validé !" : "Examen annulé !");
+      fetchAnalysesLyoum();
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Erreur lors de la mise à jour");
     }
   };
 
@@ -74,6 +115,7 @@ const DashboardPreleveur = () => {
     setShowModal(false);
     setGeneratedCode(null);
     setIsEditing(false);
+    setSelectedExamen("");
     setNewPatient({ nom: "", prenom: "", cin: "", telephone: "", sexe: "M", date_naissance: "" });
   };
 
@@ -85,8 +127,6 @@ const DashboardPreleveur = () => {
           <button className={`hl-nav-btn ${activeTab === 'patients' ? 'active' : ''}`} onClick={() => setActiveTab('patients')}>
             <Users size={20} /> Liste Patients
           </button>
-          
-          {/* BOUTON JDID DYAL ANALYSES */}
           <button className={`hl-nav-btn ${activeTab === 'analyses' ? 'active' : ''}`} onClick={() => setActiveTab('analyses')}>
             <ClipboardCheck size={20} /> Analyses du jour
           </button>
@@ -117,8 +157,6 @@ const DashboardPreleveur = () => {
         </header>
 
         <div className="hl-content-body">
-          
-          {/* --- VIEW 1: PATIENTS --- */}
           {activeTab === "patients" && (
             <>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '25px', alignItems: 'center' }}>
@@ -169,51 +207,50 @@ const DashboardPreleveur = () => {
             </>
           )}
 
-          {/* --- VIEW 2: ANALYSES (L-JDID) --- */}
           {activeTab === "analyses" && (
             <div className="hl-table-container">
-              <table className="hl-table">
-                <thead>
-                  <tr>
-                    <th>Patient</th>
-                    <th>Examen</th>
-                    <th>Statut</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {analysesLyoum.map((ana) => (
-                    <tr key={ana.id}>
-                      <td className="font-bold">{ana.patient}</td>
-                      <td>{ana.examen}</td>
-                      <td>
-                        <span style={{ 
-                          padding: '4px 10px', 
-                          borderRadius: '20px', 
-                          fontSize: '12px', 
-                          fontWeight: '600',
-                          backgroundColor: '#fef3c7', 
-                          color: '#d97706' 
-                        }}>
-                          {ana.statut}
-                        </span>
-                      </td>
-                      <td>
-                        <button className="btn-save" onClick={() => toast.success("Prélèvement validé !")}>
-                          Valider
-                        </button>
-                      </td>
+              {analysesLoading ? (
+                <div style={{padding: '40px', textAlign: 'center', color: '#94a3b8'}}><p>Chargement...</p></div>
+              ) : analysesLyoum.length === 0 ? (
+                <div style={{padding: '40px', textAlign: 'center', color: '#94a3b8'}}><p>Aucune analyse.</p></div>
+              ) : (
+                <table className="hl-table">
+                  <thead>
+                    <tr>
+                      <th>Référence</th>
+                      <th>Patient</th>
+                      <th>Examen</th>
+                      <th>Statut</th>
+                      <th>Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {analysesLyoum.map((ana) => (
+                      <tr key={ana.id}>
+                        <td className="font-bold">{ana.reference}</td>
+                        <td>{ana.patient?.nom} {ana.patient?.prenom}</td>
+                        <td>
+                          {ana.lignes && ana.lignes.length > 0 
+                            ? ana.lignes.map((l, i) => <div key={i}>{l.analyse?.designation || "Examen"}</div>) 
+                            : "N/A"}
+                        </td>
+                        <td><span className={`status-badge ${ana.statut}`}>{ana.statut}</span></td>
+                        <td>
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            <button className="btn-valider" onClick={() => handleStatusChange(ana.id, 'valide')}>Valider</button>
+                            <button className="btn-annuler" onClick={() => window.confirm("Annuler?") && handleStatusChange(ana.id, 'annule')} style={{ marginLeft: '8px' }}>Annuler</button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
             </div>
           )}
-
         </div>
       </main>
 
-      {/* MODAL (B9a kima houwa) */}
       {showModal && (
         <div className="modal-overlay">
           <div className="modal-content">
@@ -221,7 +258,6 @@ const DashboardPreleveur = () => {
               <h3>{isEditing ? "Modifier Patient" : "Inscription Patient"}</h3>
               <button onClick={closeAndReset} className="close-x"><X size={22} /></button>
             </div>
-            
             {!generatedCode ? (
               <form onSubmit={handleSavePatient} className="modal-form">
                 <div className="modal-form-row">
@@ -232,14 +268,25 @@ const DashboardPreleveur = () => {
                   <div className="form-group">
                     <label>Sexe</label>
                     <select value={newPatient.sexe} onChange={(e) => setNewPatient({...newPatient, sexe: e.target.value})}>
-                      <option value="M">👨 Masculin (M)</option>
-                      <option value="F">👩 Féminin (F)</option>
+                      <option value="M">👨 Masculin</option>
+                      <option value="F">👩 Féminin</option>
                     </select>
                   </div>
                   <div className="form-group"><label>Date de Naissance</label><input type="date" value={newPatient.date_naissance} required onChange={(e) => setNewPatient({...newPatient, date_naissance: e.target.value})} /></div>
                 </div>
                 <div className="form-group"><label>CIN</label><input type="text" value={newPatient.cin} required onChange={(e) => setNewPatient({...newPatient, cin: e.target.value})} /></div>
                 <div className="form-group"><label>Téléphone</label><input type="tel" value={newPatient.telephone} maxLength={10} required onChange={(e) => setNewPatient({...newPatient, telephone: e.target.value})} /></div>
+                {!isEditing && (
+                  <div className="form-group">
+                    <label>Type d'Analyse</label>
+                    <select value={selectedExamen} onChange={(e) => setSelectedExamen(e.target.value)} required>
+                      <option value="">-- Choisir --</option>
+                      <option value="NFS (Hémogramme)">NFS (Hémogramme)</option>
+                      <option value="Glycémie à jeun">Glycémie à jeun</option>
+                      <option value="Bilan Lipidique">Bilan Lipidique</option>
+                    </select>
+                  </div>
+                )}
                 <div className="modal-footer">
                   <button type="button" className="btn-cancel" onClick={closeAndReset}>Annuler</button>
                   <button type="submit" className="btn-save">{isEditing ? "Modifier" : "Enregistrer"}</button>

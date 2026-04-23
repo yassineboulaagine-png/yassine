@@ -607,3 +607,60 @@
     border-color: #4f46e5;
     box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
 }
+/* Badge 3adi */
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-block;
+}
+
+/* Alwan 3la 7sab l-statut */
+.status-badge.valide {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.status-badge.en_cours {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.status-badge.annule {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+/* Bouton Valider (Khdar) */
+.btn-valider {
+  background-color: #22c55e !important; /* Khdar nassi */
+  color: white !important;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-valider:hover {
+  background-color: #16a34a !important;
+  transform: translateY(-2px);
+}
+
+/* Bouton Annuler (7mar) */
+.btn-annuler {
+  background-color: #ef4444 !important; /* 7mar nassi */
+  color: white !important;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-annuler:hover {
+  background-color: #dc2626 !important;
+  transform: translateY(-2px);
+}

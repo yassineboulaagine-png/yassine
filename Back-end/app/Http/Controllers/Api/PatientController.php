@@ -6,12 +6,14 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Patient;
 use App\Models\Examen;
+use App\Models\Analyse;
+use App\Models\LigneExamen;
+
 
 class PatientController extends Controller
 {
     public function index(Request $request)
     {
-        // Kan-akhdou chnou kteb l-user f l-barre de recherche
         $search = $request->query('search');
 
         return Patient::when($search, function($query) use ($search) {
@@ -25,6 +27,7 @@ class PatientController extends Controller
 
     public function store(Request $request)
     {
+        // 1. Validation dial l-data li jaya men React
         $request->validate([
             'nom'            => 'required|string',
             'prenom'         => 'required|string',
@@ -34,18 +37,32 @@ class PatientController extends Controller
             'date_naissance' => 'required|date',
             'utilisateur_id' => 'required|exists:utilisateurs,id',
             'medecin_id'     => 'required|exists:medecins,id',
+            'nom_analyse'    => 'required|string', // Smit l-analyse li khtar l-user
         ]);
 
+        // 2. Création dial l-Patient
         $patient = Patient::create($request->only([
             'nom', 'prenom', 'cin', 'telephone', 'sexe', 'date_naissance'
         ]));
 
+        // 3. Création dial l-Examen (biha kaye-t-generer l-Reference automatique f l-Model)
         $examen = Examen::create([
             'patient_id'     => $patient->id,
             'utilisateur_id' => $request->utilisateur_id,
             'medecin_id'     => $request->medecin_id,
             'statut'         => 'en_cours',
         ]);
+
+        // 4. L-7ELL: Enregistrement dial l-ligne d'examen
+        // Kan-9lbo 3la l-ID dial l-analyse f table 'analyses' b-smit l-khayar li t-khtar
+        $analyse = Analyse::where('designation', $request->nom_analyse)->first();
+
+        if ($analyse) {
+            LigneExamen::create([
+                'examen_id'  => $examen->id,
+                'analyse_id' => $analyse->id,
+            ]);
+        }
 
         return response()->json([
             'patient'   => $patient,
