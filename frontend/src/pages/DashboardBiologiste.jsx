@@ -1,17 +1,44 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Microscope, CheckCircle, ClipboardList, LogOut, UserCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import axios from "axios";
 import "./Dashboard.css";
 
 const DashboardBiologiste = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("analyses"); // المينو الافتراضي
+  const [activeTab, setActiveTab] = useState("analyses");
+  const [analysesLyoum, setAnalysesLyoum] = useState([]);
+  const [analysesLoading, setAnalysesLoading] = useState(true);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   // قراءة بيانات المستخدم
   const userString = localStorage.getItem("user");
   const user = userString ? JSON.parse(userString) : { name: "Biologiste", role: "biologiste" };
+
+  const fetchAnalysesLyoum = async (isInitial = false) => {
+    try {
+      if (isInitial) setAnalysesLoading(true);
+      const response = await axios.get("http://localhost:8000/api/examens-biologiste");
+      setAnalysesLyoum(response.data);
+      if (isInitial) {
+        setIsInitialLoad(false);
+        setAnalysesLoading(false);
+      }
+    } catch (error) {
+      console.error("Error fetching analyses:", error);
+      if (isInitial) setAnalysesLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAnalysesLyoum(true);
+    const interval = setInterval(() => {
+      fetchAnalysesLyoum(false);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -72,21 +99,37 @@ const DashboardBiologiste = () => {
         <div className="hl-content-body">
           {/* المحتوى يتغير حسب التاب */}
           {activeTab === 'analyses' && (
-            <div className="hl-welcome-card bio-border fade-in">
-              <h3 className="bio-text">Espace Laboratoire 🔬</h3>
-              <p>Vous avez <strong>5</strong> nouvelles analyses en attente de traitement aujourd'hui.</p>
-              
-              {/* قوالب إحصائيات خفيفة للبيولوجي */}
-              <div className="stats-grid">
-                <div className="stat-item bio-light">
-                  <p>À Analyser</p>
-                  <span>05</span>
-                </div>
-                <div className="stat-item bio-light">
-                  <p>En Attente Validation</p>
-                  <span>03</span>
-                </div>
-              </div>
+            <div className="hl-table-container">
+              {analysesLoading ? (
+                <div style={{padding: '40px', textAlign: 'center', color: '#94a3b8'}}><p>Chargement...</p></div>
+              ) : analysesLyoum.length === 0 ? (
+                <div style={{padding: '40px', textAlign: 'center', color: '#94a3b8'}}><p>Aucune analyse en attente.</p></div>
+              ) : (
+                <table className="hl-table">
+                  <thead>
+                    <tr>
+                      <th>Référence</th>
+                      <th>Patient</th>
+                      <th>Examen</th>
+                      <th>Statut</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {analysesLyoum.map((ana) => (
+                      <tr key={ana.id}>
+                        <td className="font-bold">{ana.reference}</td>
+                        <td>{ana.patient?.nom} {ana.patient?.prenom}</td>
+                        <td>
+                          {ana.lignes && ana.lignes.length > 0 
+                            ? ana.lignes.map((l, i) => <div key={i}>{l.analyse?.designation || "Examen"}</div>) 
+                            : "N/A"}
+                        </td>
+                        <td><span className={`status-badge ${ana.statut}`}>{ana.statut}</span></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
             </div>
           )}
 

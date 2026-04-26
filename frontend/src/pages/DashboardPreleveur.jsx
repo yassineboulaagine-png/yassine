@@ -42,18 +42,18 @@ const DashboardPreleveur = () => {
     }
   };
 
-  const fetchAnalysesLyoum = async () => {
+  const fetchAnalysesLyoum = async (isInitial = false) => {
     try {
-      if (isInitialLoad) setAnalysesLoading(true);
+      if (isInitial) setAnalysesLoading(true);
       const response = await axios.get("http://localhost:8000/api/examens-today");
       setAnalysesLyoum(response.data);
-      if (isInitialLoad) {
+      if (isInitial) {
         setIsInitialLoad(false);
         setAnalysesLoading(false);
       }
     } catch (error) {
       console.error("Error fetching analyses:", error);
-      if (isInitialLoad) setAnalysesLoading(false);
+      if (isInitial) setAnalysesLoading(false);
     }
   };
 
@@ -65,9 +65,9 @@ const DashboardPreleveur = () => {
   }, [searchTerm]);
 
   useEffect(() => {
-    fetchAnalysesLyoum();
+    fetchAnalysesLyoum(true);
     const interval = setInterval(() => {
-      fetchAnalysesLyoum();
+      fetchAnalysesLyoum(false);
     }, 4000);
     return () => clearInterval(interval);
   }, []);
