@@ -23,8 +23,12 @@ Route::get('/patients/count/{id}', [PatientController::class, 'getUserStats']);
 // Had l-routes khasshom ikouno hna bach React i-l9ahom
 Route::get('/examens-today', [ExamenController::class, 'getTodayExamens']); // <--- HADOU NAQSIN
 Route::get('/examens-biologiste', [ExamenController::class, 'getBiologisteExamens']); // <--- HADOU NAQSIN
+Route::get('/examens-validation', [ExamenController::class, 'getPendingValidation']);
+Route::get('/examens-historique', [ExamenController::class, 'getHistorique']);
 Route::patch('/examens/{id}/valider', [ExamenController::class, 'validerExamen']); // <--- HADOU NAQSIN
 Route::patch('/examens/{id}/annuler', [ExamenController::class, 'annulerExamen']); // <--- HADOU NAQSIN
+Route::post('/examens/{id}/resultats', [ExamenController::class, 'storeResults']);
+Route::patch('/examens/{id}/approve', [ExamenController::class, 'finalApprove']);
 
 // --- 5. Sanctum Protected ---
 Route::middleware('auth:sanctum')->group(function () {
