@@ -18,7 +18,7 @@ class ExamenController extends Controller
     {
         
         return Examen::with(['patient', 'lignes.analyse'])
-            
+            ->whereIn('statut', ['en_cours', 'rejete'])
             ->latest()
             ->get();
     }
@@ -129,7 +129,7 @@ class ExamenController extends Controller
         $examen = Examen::findOrFail($id);
 
         $request->validate([
-            'statut' => 'required|in:en_attente,en_cours,valide,termine,annule',
+            'statut' => 'required|in:en_cours,valide,termine,annule,rejete',
         ]);
 
         $examen->update(['statut' => $request->statut]);
@@ -162,4 +162,18 @@ class ExamenController extends Controller
             'examen'  => $examen
         ], 200);
     }
+
+    // app/Http/Controllers/ExamenController.php
+    public function reject($id) {
+    $examen = Examen::find($id);
+    
+    if (!$examen) {
+        return response()->json(['message' => 'Examen non trouvé'], 404);
+    }
+
+    // Beddel l-statut bach i-welli i-bane 3nd Anas f "Saisie"
+    $examen->update(['statut' => 'rejete']); 
+    
+    return response()->json(['message' => 'Examen renvoyé à la saisie']);
+}
 }

@@ -4,50 +4,158 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
-// استيراد الصفحات بـ JavaScript نقي (حيدنا .tsx)
+// Pages
 import Login from "./pages/Login";
 import DashboardAdmin from "./pages/DashboardAdmin";
 import DashboardBiologiste from "./pages/DashboardBiologiste";
 import DashboardPreleveur from "./pages/DashboardPreleveur";
 import NotFound from "./pages/NotFound";
 import MesResultats from "./pages/MesResultats";
-import Profile from "./pages/Profile";
-import Settings from "./pages/Settings";
+
+// Preleveur
+import ProfilePreleveur from "./pages/ProfilePreleveur";
+import SettingsPreleveur from "./pages/SettingsPreleveur";
+
+// Biologiste
+import ProfileBiologiste from "./pages/biologiste/ProfileBiologiste";
+import SettingsBiologiste from "./pages/biologiste/SettingsBiologiste";
+
+// Auth
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
 
 const queryClient = new QueryClient();
 
+/* =========================
+   ROLE GUARDS (Using useAuth Hook)
+========================= */
+const BiologisteRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+
+  if (loading) return <div style={{ padding: "20px", textAlign: "center" }}>Chargement...</div>;
+  if (!user || user.role !== "biologiste") {
+    return <Navigate to="/login" replace />;
+  }
+  return children;
+};
+
+const PreleveurRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+
+  if (loading) return <div style={{ padding: "20px", textAlign: "center" }}>Chargement...</div>;
+  if (!user || user.role !== "preleveur") {
+    return <Navigate to="/login" replace />;
+  }
+  return children;
+};
+
+const AdminRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+
+  if (loading) return <div style={{ padding: "20px", textAlign: "center" }}>Chargement...</div>;
+  if (!user || user.role !== "admin") {
+    return <Navigate to="/login" replace />;
+  }
+  return children;
+};
+
+/* =========================
+   APP ROUTES
+========================= */
+const AppRoutes = () => (
+  <Routes>
+    {/* ================= LOGIN ================= */}
+    <Route path="/" element={<Navigate to="/login" replace />} />
+    <Route path="/login" element={<Login />} />
+
+    {/* ================= ADMIN ================= */}
+    <Route
+      path="/dashboard/admin"
+      element={
+        <AdminRoute>
+          <DashboardAdmin />
+        </AdminRoute>
+      }
+    />
+
+    {/* ================= BIOLOGISTE ================= */}
+    <Route
+      path="/dashboard/biologiste"
+      element={
+        <BiologisteRoute>
+          <DashboardBiologiste />
+        </BiologisteRoute>
+      }
+    />
+
+    <Route
+      path="/profil-biologiste"
+      element={
+        <BiologisteRoute>
+          <ProfileBiologiste />
+        </BiologisteRoute>
+      }
+    />
+
+    <Route
+      path="/settings-biologiste"
+      element={
+        <BiologisteRoute>
+          <SettingsBiologiste />
+        </BiologisteRoute>
+      }
+    />
+
+    {/* ================= PRELEVEUR ================= */}
+    <Route
+      path="/dashboard/preleveur"
+      element={
+        <PreleveurRoute>
+          <DashboardPreleveur />
+        </PreleveurRoute>
+      }
+    />
+
+    <Route
+      path="/profil-preleveur"
+      element={
+        <PreleveurRoute>
+          <ProfilePreleveur />
+        </PreleveurRoute>
+      }
+    />
+
+    <Route
+      path="/settings-preleveur"
+      element={
+        <PreleveurRoute>
+          <SettingsPreleveur />
+        </PreleveurRoute>
+      }
+    />
+
+    {/* ================= OTHERS ================= */}
+    <Route path="/mes-resultats" element={<MesResultats />} />
+
+    {/* fallback */}
+    <Route path="*" element={<NotFound />} />
+  </Routes>
+);
+
+/* =========================
+   APP
+========================= */
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      {/* هاد التويشيات ديال Toaster خليهم باش يبانو الميساجات زوينين */}
-      <Toaster />
-      <Sonner />
-      
-      <BrowserRouter>
-        <Routes>
-          {/* التوجيه الأساسي لصفحة Login */}
-          <Route path="/" element={<Navigate to="/login" replace />} />
-          <Route path="/login" element={<Login />} />
-          
-          {/* صفحات لوحات التحكم (Dashboards) */}
-          <Route path="/dashboard/admin" element={<DashboardAdmin />} />
-          <Route path="/dashboard/biologiste" element={<DashboardBiologiste />} />
-          <Route path="/dashboard/preleveur" element={<DashboardPreleveur />} />
-          {/* صفحة الملف الشخصي والإعدادات */}
-          <Route path="/profil" element={<Profile />} />
-          <Route path="/settings" element={<Settings />} />
+    <AuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
 
-
-          
-          {/* صفحة نتائج المريض */}
-          <Route path="/mes-resultats" element={<MesResultats />} />
-          
-          {/* صفحة 404 إلا دخل لشي رابط ما كاينش */}
-          <Route path="*" element={<NotFound />} />
-          
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+        <BrowserRouter>
+          <AppRoutes />
+        </BrowserRouter>
+      </TooltipProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 

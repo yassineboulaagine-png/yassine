@@ -8,6 +8,10 @@ const MesResultats = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
 
+  const [selectedExamen, setSelectedExamen] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [resultats, setResultats] = useState({});
+
   // 1. Fetch l-analyses li 3ndhom statut 'valide'
   const fetchExamensBiologiste = async () => {
     try {
@@ -80,7 +84,7 @@ const MesResultats = () => {
                     ))}
                   </td>
                   <td>
-                    <span className="status-badge valide" style={{ backgroundColor: '#dcfce7', color: '#166534' }}>
+                    <span className="status-badge valide" style={{ backgroundColor: '#777877', color: '#166534' }}>
                       {ex.statut}
                     </span>
                   </td>

@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import axios from 'axios';
 
-const Settings = () => {
+const SettingsBiologiste = () => {
   const navigate = useNavigate();
   const userData = JSON.parse(localStorage.getItem("user") || "{}");
   
@@ -75,7 +75,7 @@ const Settings = () => {
 
       <div style={cardStyle}>
         <div style={{ textAlign: 'center', marginBottom: '25px' }}>
-          <div style={iconBox}><User size={32} color="#4f46e5" /></div>
+          <div style={iconBox}><User size={32} color="#10b981" /></div>
           <h2 style={titleStyle}>Mon Profil</h2>
         </div>
 
@@ -104,7 +104,7 @@ const Settings = () => {
         <div style={divider}></div>
 
         <div style={{ textAlign: 'center', marginBottom: '25px', marginTop: '20px' }}>
-          <div style={iconBox}><ShieldCheck size={32} color="#4f46e5" /></div>
+          <div style={iconBox}><ShieldCheck size={32} color="#10b981" /></div>
           <h2 style={titleStyle}>Sécurité</h2>
         </div>
 
@@ -145,15 +145,15 @@ const Settings = () => {
   );
 };
 
-// Styles (khallithom nishan b7al li kanti bghiti)
+// Styles (khallithom nishan b7al li kanti bghiti) - Using Emerald/Green theme
 const cardStyle = { background: 'white', padding: '30px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', border: '1px solid #f1f5f9' };
-const iconBox = { width: '50px', height: '50px', background: '#eef2ff', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto' };
+const iconBox = { width: '50px', height: '50px', background: '#d1fae5', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto' };
 const titleStyle = { margin: '10px 0', color: '#1e293b', fontSize: '20px' };
 const labelStyle = { fontSize: '14px', fontWeight: '500', color: '#64748b' };
 const inputGroup = { marginBottom: '15px' };
 const inputStyle = { width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', marginTop: '5px', outline: 'none', fontSize: '14px' };
-const saveBtnStyle = { width: '100%', padding: '12px', background: '#4f46e5', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', marginTop: '10px', fontSize: '14px' };
+const saveBtnStyle = { width: '100%', padding: '12px', background: '#10b981', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', marginTop: '10px', fontSize: '14px' };
 const backBtnStyle = { display: 'flex', alignItems: 'center', gap: '8px', border: 'none', background: 'none', color: '#64748b', cursor: 'pointer', marginBottom: '20px', fontWeight: '500' };
 const divider = { height: '1px', background: '#f1f5f9', margin: '20px 0' };
 
-export default Settings;
+export default SettingsBiologiste;

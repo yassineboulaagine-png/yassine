@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Mail, Lock, Users, ArrowLeft, Camera, Eye, EyeOff, Settings } from 'lucide-react';
+import { Mail, Lock, CheckCircle, AlertTriangle, ArrowLeft, Camera, Eye, EyeOff, Settings } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-const Profile = () => {
+const ProfileBiologiste = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   
@@ -11,26 +11,29 @@ const Profile = () => {
   const [user, setUser] = useState(JSON.parse(localStorage.getItem("user") || "{}"));
   const [previewImage, setPreviewImage] = useState(localStorage.getItem("user_avatar") || null);
   
-  const [stats, setStats] = useState(0);
+  const [stats, setStats] = useState({
+    total_validated: 0,
+    pathological_count: 0
+  });
   const [isHovered, setIsHovered] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
-    // Refresh user data melli n-welliou l-had l-page
-    const updatedUser = JSON.parse(localStorage.getItem("user") || "{}");
-    setUser(updatedUser);
+  const fetchBio = async () => {
+    const token = localStorage.getItem("token");
 
-    const fetchStats = async () => {
-      if (!updatedUser.id) return;
-      try {
-        const response = await axios.get(`http://localhost:8000/api/patients/count/${updatedUser.id}`);
-        setStats(response.data.count || 0);
-      } catch (error) {
-        console.error("Erreur stats:", error);
+    const res = await axios.get(
+      "http://localhost:8000/api/user/profile",
+      {
+        headers: { Authorization: `Bearer ${token}` }
       }
-    };
-    fetchStats();
-  }, []);
+    );
+
+    setUser(res.data);
+  };
+
+  fetchBio();
+}, []);
 
   // 2. Sauvegarde dial l-image f localStorage
   const handleImageChange = (e) => {
@@ -52,7 +55,7 @@ const Profile = () => {
         <button onClick={() => navigate(-1)} style={backBtnStyle}>
           <ArrowLeft size={18} /> Retour
         </button>
-        <button onClick={() => navigate('/settings')} style={iconSettingsStyle}>
+        <button onClick={() => navigate('/settings-biologiste')} style={iconSettingsStyle}>
           <Settings size={20} />
         </button>
       </div>
@@ -68,19 +71,19 @@ const Profile = () => {
               onMouseEnter={() => setIsHovered(true)}
               onMouseLeave={() => setIsHovered(false)}
             >
-              {previewImage ? <img src={previewImage} alt="Profile" style={imageStyle} /> : (user.nom_complet?.charAt(0) || "Y")}
+              {previewImage ? <img src={previewImage} alt="Profile" style={imageStyle} /> : (user.nom_complet?.charAt(0) || "B")}
               {isHovered && <div style={cameraOverlayStyle}><Camera size={24} color="white" /></div>}
             </div>
             <div style={onlineBadge}></div>
           </div>
           <h2 style={{ margin: '15px 0 5px 0', color: '#1e293b' }}>{user.nom_complet || "Mon Profil"}</h2>
-          <span style={roleBadge}>{user.role}</span>
+          <span style={roleBadge}>BIOLOGISTE</span>
         </div>
 
         {/* SECTION INFO: Email & Password */}
         <div style={infoGrid}>
           <div style={infoItem}>
-            <Mail size={20} color="#6366f1" />
+            <Mail size={20} color="#10b981" />
             <div style={{ marginLeft: '12px', flex: 1 }}>
               <label style={labelStyle}>Email Address</label>
               <p style={valueStyle}>{user.email}</p>
@@ -88,7 +91,7 @@ const Profile = () => {
           </div>
 
           <div style={infoItem}>
-            <Lock size={20} color="#6366f1" />
+            <Lock size={20} color="#10b981" />
             <div style={{ marginLeft: '12px', flex: 1 }}>
               <label style={labelStyle}>Mot de passe</label>
               {/* DYNAMIQUE: kaye-qra plain_password li ghadi n-sauvgaurdiw f Settings */}
@@ -104,7 +107,7 @@ const Profile = () => {
 
         {/* BOUTON SETTINGS: Best Practice */}
         <button 
-          onClick={() => navigate('/settings')} 
+          onClick={() => navigate('/settings-biologiste')} 
           style={editProfileBtn}
           onMouseOver={(e) => e.currentTarget.style.background = '#f1f5f9'}
           onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
@@ -112,14 +115,22 @@ const Profile = () => {
           <Settings size={16} /> Modifier le profil
         </button>
 
-        {/* SECTION STATS: Patients Count */}
-        <div onClick={() => navigate('/dashboard/preleveur')} style={statsBox}>
-          <div style={{ background: '#4f46e5', padding: '12px', borderRadius: '12px' }}>
-            <Users size={24} color="white" />
+        {/* SECTION STATS: Analyses Validées & Alertes Pathologiques */}
+        <div style={statsGrid}>
+          <div style={statCard}>
+            <div style={{ background: '#10b981', padding: '12px', borderRadius: '12px', marginBottom: '12px' }}>
+              <CheckCircle size={24} color="white" />
+            </div>
+            <h3 style={{ margin: '0 0 5px 0', fontSize: '18px', color: '#1e293b' }}>{stats.total_validated || 0}</h3>
+            <p style={{ margin: 0, color: '#64748b', fontSize: '13px' }}>Analyses Validées</p>
           </div>
-          <div style={{ marginLeft: '15px' }}>
-            <h3 style={{ margin: 0, fontSize: '24px', color: '#1e293b' }}>{stats} Patients</h3>
-            <p style={{ margin: 0, color: '#64748b', fontSize: '14px' }}>Inscriptions réalisées par vous</p>
+
+          <div style={statCard}>
+            <div style={{ background: '#d97706', padding: '12px', borderRadius: '12px', marginBottom: '12px' }}>
+              <AlertTriangle size={24} color="white" />
+            </div>
+            <h3 style={{ margin: '0 0 5px 0', fontSize: '18px', color: '#1e293b' }}>{stats.pathological_count || 0}</h3>
+            <p style={{ margin: 0, color: '#64748b', fontSize: '13px' }}>Alertes Pathologiques</p>
           </div>
         </div>
       </div>
@@ -132,19 +143,20 @@ const topNavStyle = { display: 'flex', justifyContent: 'space-between', alignIte
 const cardStyle = { background: 'white', padding: '35px', borderRadius: '25px', boxShadow: '0 10px 40px rgba(0,0,0,0.06)', border: '1px solid #f1f5f9' };
 const headerStyle = { textAlign: 'center', marginBottom: '35px' };
 const avatarWrapper = { position: 'relative', display: 'inline-block', marginBottom: '10px' };
-const avatarStyle = { width: '100px', height: '100px', background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)', color: 'white', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '40px', fontWeight: 'bold', position: 'relative', cursor: 'pointer', border: '4px solid white', overflow: 'hidden' };
+const avatarStyle = { width: '100px', height: '100px', background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', color: 'white', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '40px', fontWeight: 'bold', position: 'relative', cursor: 'pointer', border: '4px solid white', overflow: 'hidden' };
 const imageStyle = { width: '100%', height: '100%', objectFit: 'cover' };
 const cameraOverlayStyle = { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' };
 const onlineBadge = { width: '22px', height: '22px', background: '#22c55e', border: '3px solid white', borderRadius: '50%', position: 'absolute', bottom: '5px', right: '5px', zIndex: 10 };
-const roleBadge = { background: '#eef2ff', color: '#4f46e5', padding: '5px 15px', borderRadius: '20px', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase' };
+const roleBadge = { background: '#d1fae5', color: '#059669', padding: '5px 15px', borderRadius: '20px', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase' };
 const infoGrid = { display: 'grid', gap: '15px', marginBottom: '20px' };
 const infoItem = { display: 'flex', alignItems: 'center', padding: '15px 20px', background: '#f8fafc', borderRadius: '15px', border: '1px solid #f1f5f9' };
 const labelStyle = { fontSize: '12px', color: '#64748b', display: 'block' };
 const valueStyle = { margin: 0, fontWeight: '600', color: '#1e293b' };
-const statsBox = { display: 'flex', alignItems: 'center', padding: '25px', background: '#eef2ff', borderRadius: '20px', border: '1px solid #e0e7ff', cursor: 'pointer', transition: 'all 0.3s' };
+const statsGrid = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginTop: '25px' };
+const statCard = { padding: '20px', background: '#d1fae5', borderRadius: '15px', border: '1px solid #a7f3d0', textAlign: 'center' };
 const backBtnStyle = { display: 'flex', alignItems: 'center', gap: '8px', border: 'none', background: 'none', color: '#64748b', cursor: 'pointer', fontWeight: '600' };
 const iconSettingsStyle = { border: 'none', background: 'none', color: '#64748b', cursor: 'pointer' };
 const editProfileBtn = { width: '100%', padding: '12px', marginBottom: '25px', borderRadius: '12px', border: '1px solid #e2e8f0', background: 'transparent', color: '#475569', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: '0.2s' };
 const eyeButtonStyle = { border: 'none', background: 'none', cursor: 'pointer', color: '#64748b' };
 
-export default Profile;
+export default ProfileBiologiste;

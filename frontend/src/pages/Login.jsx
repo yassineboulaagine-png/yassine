@@ -1,40 +1,53 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { Mail, Lock, Phone, Hash } from "lucide-react";
 import { toast } from "sonner";
 import axios from "axios"; 
 import "./Login.css"; 
-import { apiLogin } from "@/lib/api";
+import { apiLogin } from "../lib/api";
+import { useAuth } from "../contexts/AuthContext";
 
 const Login = () => {
-  const navigate = useNavigate();
+  const { user } = useAuth();
   const [isStaff, setIsStaff] = useState(true); 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  
   const [reference, setReference] = useState("");
   const [telephone, setTelephone] = useState("");
-  
   const [loading, setLoading] = useState(false);
 
-  // حيدنا (e: React.FormEvent) حيت حنا دابا فـ JS
+  // Check if user is already logged in
+  useEffect(() => {
+    if (user) {
+      console.log("✅ User already logged in as:", user.role);
+    }
+  }, [user]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (loading) return;
     setLoading(true);
 
     if (isStaff) {
       try {
-        const { token, user } = await apiLogin(email, password);
-        localStorage.setItem("token", token);
-        localStorage.setItem("user", JSON.stringify(user));
-        
-        // التوجيه على حساب الـ Role ديال Laravel
-        if(user.role === 'admin') navigate("/dashboard/admin");
-        else if(user.role === 'biologiste') navigate("/dashboard/biologiste");
-        else navigate("/dashboard/preleveur");
+        const data = await apiLogin(email, password);
+        console.log("✅ LOGIN SUCCESS:", data);
+
+        // Save directly to localStorage
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
+
+        // Force a clean page reload
+        const role = data.user.role;
+        if (role === "admin") {
+          window.location.href = "/dashboard/admin";
+        } else if (role === "biologiste") {
+          window.location.href = "/dashboard/biologiste";
+        } else if (role === "preleveur") {
+          window.location.href = "/dashboard/preleveur";
+        }
       } catch (err) {
+        console.error("❌ LOGIN ERROR:", err);
         toast.error("Email ou Mot de passe incorrect");
-      } finally {
         setLoading(false);
       }
     } else {
@@ -47,15 +60,19 @@ const Login = () => {
         if (response.data.success) {
           localStorage.setItem("currentExamen", JSON.stringify(response.data.examen));
           toast.success("Accès réussi");
-          navigate("/mes-resultats");
+          window.location.href = "/mes-resultats";
         }
       } catch (err) {
+        console.error("❌ PATIENT LOGIN ERROR:", err);
         toast.error("Référence ou Numéro de téléphone incorrect");
-      } finally {
         setLoading(false);
       }
     }
   };
+     
+    
+  
+
 
   return (
     <div className="helix-login-page">

@@ -1,33 +1,42 @@
 const API_BASE = "http://127.0.0.1:8000/api";
 
-export async function apiLogin(email: string, password: string) {
+// LOGIN
+export async function apiLogin(email, password) {
   const res = await fetch(`${API_BASE}/login`, {
     method: "POST",
-    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
     body: JSON.stringify({ email, password }),
   });
 
+  const data = await res.json();
+
   if (!res.ok) {
-    const data = await res.json().catch(() => ({}));
     throw new Error(data.message || "Email ou mot de passe incorrect");
   }
 
-  return res.json() as Promise<{ token: string; user: { role: string; [key: string]: unknown } }>;
+  return data; // { user, token, role }
 }
 
-export function getAuthHeader(): Record<string, string> {
+// AUTH HEADER
+export function getAuthHeader() {
   const token = localStorage.getItem("token");
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-export function apiFetch(url: string, options: RequestInit = {}) {
-  return fetch(`${API_BASE}${url}`, {
+// GENERIC FETCH
+export async function apiFetch(url, options = {}) {
+  const res = await fetch(`${API_BASE}${url}`, {
     ...options,
     headers: {
       "Content-Type": "application/json",
       Accept: "application/json",
       ...getAuthHeader(),
-      ...options.headers,
+      ...(options.headers || {}),
     },
   });
+
+  return res.json();
 }

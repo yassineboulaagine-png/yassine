@@ -80,6 +80,7 @@ const DashboardPreleveur = () => {
       medecin_id: 1,
       nom_analyse: selectedExamen
     };
+    console.log("📤 Sending payload:", payload);
     try {
       if (isEditing) {
         await axios.put(`${API_URL}/${patients[editIndex].id}`, payload);
@@ -93,7 +94,9 @@ const DashboardPreleveur = () => {
       fetchPatients(searchTerm);
       if (isEditing) closeAndReset();
     } catch (error) {
-      toast.error("Erreur d'enregistrement");
+      console.error("❌ Error details:", error.response?.data || error.message);
+      const errorMsg = error.response?.data?.message || error.response?.data?.errors || "Erreur d'enregistrement";
+      toast.error(typeof errorMsg === 'string' ? errorMsg : JSON.stringify(errorMsg));
     }
   };
 
@@ -147,8 +150,8 @@ const DashboardPreleveur = () => {
             <UserCircle size={38} color="#312e81" />
             {showUserMenu && (
               <div className="user-dropdown-menu">
-                <button className="dropdown-item" onClick={() => navigate("/profil")}><User size={16} /> Mon Profil</button>
-                <button className="dropdown-item" onClick={() => navigate("/settings")}><Settings size={16} /> Paramètres</button>
+                <button className="dropdown-item" onClick={() => navigate("/profil-preleveur")}><User size={16} /> Mon Profil</button>
+                <button className="dropdown-item" onClick={() => navigate("/settings-preleveur")}><Settings size={16} /> Paramètres</button>
                 <hr />
                 <button className="dropdown-item logout-item" onClick={() => { localStorage.clear(); navigate("/login"); }}><LogOut size={16} /> Déconnexion</button>
               </div>

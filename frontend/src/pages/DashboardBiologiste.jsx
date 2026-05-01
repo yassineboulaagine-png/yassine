@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Microscope, CheckCircle, ClipboardList, LogOut, UserCircle, X, AlertCircle } from "lucide-react";
+import { Microscope, CheckCircle, ClipboardList, LogOut, UserCircle, X, AlertCircle ,Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import axios from "axios";
 import "./Dashboard.css";
+
 
 const DashboardBiologiste = () => {
   const navigate = useNavigate();
@@ -18,6 +19,30 @@ const DashboardBiologiste = () => {
   const [showSaisieModal, setShowSaisieModal] = useState(false);
   const [selectedExamen, setSelectedExamen] = useState(null);
   const [results, setResults] = useState({});
+  const [biologiste, setBiologiste] = useState(null);
+
+  useEffect(() => {
+  const fetchBiologiste = async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      const response = await axios.get(
+        "http://localhost:8000/api/me",
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      setBiologiste(response.data);
+    } catch (error) {
+      console.error("Error fetching biologiste:", error);
+    }
+  };
+
+  fetchBiologiste();
+}, []);
 
   // قراءة بيانات المستخدم
   const userString = localStorage.getItem("user");
@@ -159,7 +184,7 @@ const DashboardBiologiste = () => {
         resultats: resultatsArray
       });
       console.log("Success response:", response.data);
-      toast.success("Résultats saisis! En attente de validation.");
+      toast.success("Résultats saisis! en_cours de validation.");
       closeSaisieModal();
       fetchAnalysesLyoum(false);
       fetchValidation();
@@ -179,6 +204,24 @@ const DashboardBiologiste = () => {
       toast.error(error.response?.data?.message || "Erreur lors de l'approbation");
     }
   };
+
+  const handleReject = async (id) => {
+  if (window.confirm("Voulez-vous renvoyer cet examen à la saisie pour modification ?")) {
+    try {
+      // Kat-sift l-statut 'En attente' bach i-welli i-bane f "Mes Analyses"
+      await axios.put(`http://localhost:8000/api/examens/${id}/reject`, {
+        statut: 'rejete' 
+      });
+      
+      // Update local state bach i-t-7eyed mn l-Validation
+      setExamenValidation(examenValidation.filter(ana => ana.id !== id));
+      toast.info("Examen renvoyé pour modification");
+    } catch (error) {
+      console.error("Erreur lors du rejet:", error);
+      toast.error("Erreur lors de la modification");
+    }
+  }
+};
 
   return (
     <div className="hl-dashboard-container">
@@ -222,10 +265,27 @@ const DashboardBiologiste = () => {
           <h2>Espace Biologiste</h2>
           <div className="hl-user-info">
             <div className="hl-user-text">
-              <p className="hl-user-name">{user.name || user.prenom}</p>
-              <p className="hl-user-role">{user.role}</p>
+             <p className="hl-user-name">
+  {biologiste ? biologiste.name : ""}
+</p>
+
+<p className="hl-user-role">
+  {biologiste ? biologiste.role : ""}
+</p>
             </div>
-            <UserCircle size={32} color="#14532d" />
+            <UserCircle 
+  size={32} 
+  color="#14532d"
+  style={{ cursor: "pointer" }}
+  onClick={() => navigate("/profil-biologiste")}
+/>
+
+<Settings 
+  size={28} 
+  color="#14532d"
+  style={{ cursor: "pointer", marginLeft: "10px" }}
+  onClick={() => navigate("/settings-biologiste")}
+/>
           </div>
         </header>
 
@@ -302,6 +362,20 @@ const DashboardBiologiste = () => {
                         </td>
                         <td>
                           <button className="btn-valider" onClick={() => handleFinalApprove(ana.id)}>Approuver</button>
+                          <button 
+    onClick={() => handleReject(ana.id)} 
+    style={{ 
+      backgroundColor: '#efb044', 
+      color: 'white', 
+      border: 'none', 
+      padding: '8px 15px', 
+      borderRadius: '6px', 
+      cursor: 'pointer',
+      fontWeight: '600'
+    }}
+  >
+    Modifier
+  </button>
                         </td>
                       </tr>
                     ))}
@@ -352,86 +426,110 @@ const DashboardBiologiste = () => {
         </div>
       </main>
 
-      {/* Saisie Modal */}
-      {showSaisieModal && selectedExamen && (
-        <div className="modal-overlay">
-          <div className="modal-content" style={{ maxWidth: '600px' }}>
-            <div className="modal-header">
-              <h3>Saisie des Résultats</h3>
-              <button onClick={closeSaisieModal} className="close-x"><X size={22} /></button>
-            </div>
+      {/* Saisie Modal Dynamique */}
+{showSaisieModal && selectedExamen && (
+  <div className="modal-overlay">
+    <div className="modal-content" style={{ maxWidth: '600px', borderRadius: '15px' }}>
+      <div className="modal-header">
+        <h3 style={{ fontWeight: '700' }}>Saisie des Résultats</h3>
+        <button onClick={closeSaisieModal} className="close-x"><X size={22} /></button>
+      </div>
 
-            <div style={{ padding: '20px' }}>
-              {/* Patient Info */}
-              <div style={{ backgroundColor: '#f0fdf4', padding: '15px', borderRadius: '8px', marginBottom: '20px', borderLeft: '4px solid #22c55e' }}>
-                <p><strong>{selectedExamen.patient?.nom} {selectedExamen.patient?.prenom}</strong></p>
-                <p style={{fontSize: '0.9em', color: '#666'}}>
-                  Âge: {calculateAge(selectedExamen.patient?.date_naissance)} ans | Sexe: {selectedExamen.patient?.sexe === 'M' ? '👨' : '👩'}
-                </p>
-              </div>
+      <div style={{ padding: '20px' }}>
+        {/* Patient Header */}
+        <div style={{ backgroundColor: '#f0fdf4', padding: '15px', borderRadius: '10px', marginBottom: '20px', borderLeft: '5px solid #22c55e' }}>
+          <p style={{ margin: 0 }}><strong>{selectedExamen.patient?.nom} {selectedExamen.patient?.prenom}</strong></p>
+          <p style={{ fontSize: '0.85em', color: '#64748b', margin: '5px 0 0 0' }}>
+            Âge: {calculateAge(selectedExamen.patient?.date_naissance)} ans | Sexe: {selectedExamen.patient?.sexe === 'M' ? '👨' : '👩'}
+          </p>
+        </div>
 
-              {/* Results Input */}
-              {selectedExamen.lignes?.map((ligne) => {
-                const analysisName = ligne.analyse?.designation || "Analyse";
-                const value = results[ligne.id]?.valeur || '';
-                const isAbnormal = isAbnormalValue(analysisName, value);
+        {/* List des Analyses Dynamique */}
+        <div style={{ maxHeight: '450px', overflowY: 'auto', paddingRight: '10px' }}>
+          {selectedExamen.lignes?.map((ligne) => {
+            const ana = ligne.analyse; // Data mn image_3e90db.png
+            const currentVal = results[ligne.id]?.valeur || '';
+            
+            // Logic dyal l-Alerte Pathologique
+            const valNum = parseFloat(currentVal);
+            const isPatho = valNum && (valNum < ana.norme_min || valNum > ana.norme_max);
 
-                return (
-                  <div key={ligne.id} style={{ marginBottom: '20px', paddingBottom: '20px', borderBottom: '1px solid #e2e8f0' }}>
-                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', fontSize: '0.95em' }}>
-                      {analysisName}
-                    </label>
-                    
-                    <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
-                      <input
-                        type="text"
-                        placeholder="Valeur"
-                        value={value}
-                        onChange={(e) => setResults({
-                          ...results,
-                          [ligne.id]: { ...results[ligne.id], valeur: e.target.value }
-                        })}
-                        style={{
-                          flex: 1,
-                          padding: '10px',
-                          border: isAbnormal ? '2px solid #ef4444' : '1px solid #cbd5e1',
-                          borderRadius: '6px',
-                          fontSize: '0.95em'
-                        }}
-                      />
-                      {isAbnormal && (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#ef4444', fontSize: '0.85em' }}>
-                          <AlertCircle size={16} />
-                          <span>Pathologique</span>
-                        </div>
-                      )}
-                    </div>
-
-                    <textarea
-                      placeholder="Commentaire (optionnel)"
-                      value={results[ligne.id]?.commentaire || ''}
+            return (
+              <div key={ligne.id} style={{ marginBottom: '25px', paddingBottom: '15px', borderBottom: '1px solid #f1f5f9' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', alignItems: 'center' }}>
+                  <label style={{ fontWeight: '600', color: '#1e1b4b' }}>{ana.designation}</label>
+                  <span style={{ fontSize: '11px', backgroundColor: '#f8fafc', padding: '4px 8px', borderRadius: '4px', color: '#64748b', border: '1px solid #e2e8f0' }}>
+                    Norme: {ana.norme_min} - {ana.norme_max} {ana.unite_mesure}
+                  </span>
+                </div>
+                
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                  <div style={{ flex: 1, position: 'relative' }}>
+                    <input
+                      type="number"
+                      step="0.01"
+                      placeholder={`Valeur (${ana.unite_mesure})`}
+                      value={currentVal}
                       onChange={(e) => setResults({
                         ...results,
-                        [ligne.id]: { ...results[ligne.id], commentaire: e.target.value }
+                        [ligne.id]: { ...results[ligne.id], valeur: e.target.value }
                       })}
                       style={{
                         width: '100%',
-                        marginTop: '8px',
-                        padding: '8px',
-                        border: '1px solid #cbd5e1',
-                        borderRadius: '6px',
-                        fontSize: '0.9em',
-                        minHeight: '60px',
-                        fontFamily: 'inherit'
+                        padding: '12px',
+                        paddingRight: '45px',
+                        borderRadius: '8px',
+                        border: '2px solid',
+                        borderColor: isPatho ? '#ef4444' : '#e2e8f0',
+                        backgroundColor: isPatho ? '#fef2f2' : 'white',
+                        transition: 'all 0.2s'
                       }}
                     />
+                    <span style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', fontSize: '0.85em', fontWeight: '500' }}>
+                      {ana.unite_mesure}
+                    </span>
                   </div>
-                );
-              })}
 
-              <div className="modal-footer" style={{ marginTop: '20px' }}>
-                <button type="button" className="btn-cancel" onClick={closeSaisieModal}>Annuler</button>
-                <button type="button" className="btn-save" onClick={handleSaveResults}>Enregistrer</button>
+                  {isPatho && (
+                    <div style={{ color: '#ef4444', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: '700', fontSize: '0.75em', whiteSpace: 'nowrap' }}>
+                      <AlertCircle size={16} /> <span>PATHOLOGIQUE</span>
+                    </div>
+                  )}
+                </div>
+
+                <textarea
+                  placeholder="Commentaire médical..."
+                  value={results[ligne.id]?.commentaire || ''}
+                  onChange={(e) => setResults({
+                    ...results,
+                    [ligne.id]: { ...results[ligne.id], commentaire: e.target.value }
+                  })}
+                  style={{
+                    width: '100%',
+                    marginTop: '10px',
+                    padding: '10px',
+                    borderRadius: '8px',
+                    border: '1px solid #e2e8f0',
+                    fontSize: '0.9em',
+                    minHeight: '50px',
+                    resize: 'none'
+                  }}
+                />
+              </div>
+            );
+          })}
+        </div>
+
+       <div className="modal-footer" style={{ marginTop: '20px', display: 'flex', gap: '10px' }}>
+                <button type="button" className="btn-cancel" onClick={closeSaisieModal} style={{ flex: 1 }}>Annuler</button>
+                <button 
+                  type="button" 
+                  className="btn-save" 
+                  onClick={handleSaveResults} 
+                  style={{ flex: 1, backgroundColor: '#4f46e5' }}
+                >
+                  Enregistrer
+                </button>
               </div>
             </div>
           </div>
