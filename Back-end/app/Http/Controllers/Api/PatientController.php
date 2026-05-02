@@ -55,12 +55,17 @@ class PatientController extends Controller
 
         // 4. L-7ELL: Enregistrement dial l-ligne d'examen
         // Kan-9lbo 3la l-ID dial l-analyse f table 'analyses' b-smit l-khayar li t-khtar
-        $analyse = Analyse::where('designation', $request->nom_analyse)->first();
+        // Uses LIKE to handle partial matches between frontend nom_analyse and database designation
+        $analyse = Analyse::where('designation', 'LIKE', '%' . $request->nom_analyse . '%')
+                          ->orWhere('designation', 'LIKE', '%' . trim(preg_replace('/\(.*\)/', '', $request->nom_analyse)) . '%')
+                          ->first();
 
         if ($analyse) {
             LigneExamen::create([
-                'examen_id'  => $examen->id,
-                'analyse_id' => $analyse->id,
+                'examen_id'       => $examen->id,
+                'analyse_id'      => $analyse->id,
+                'valeur_resultat' => null,
+                'commentaire'     => null,
             ]);
         }
 
