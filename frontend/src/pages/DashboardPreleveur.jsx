@@ -16,6 +16,7 @@ const DashboardPreleveur = () => {
   const [showModal, setShowModal] = useState(false);
   const [generatedCode, setGeneratedCode] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [isNewExam, setIsNewExam] = useState(false);
   const [editIndex, setEditIndex] = useState(null);
   const [patients, setPatients] = useState([]);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -24,6 +25,7 @@ const DashboardPreleveur = () => {
   const [analysesLyoum, setAnalysesLyoum] = useState([]);
   const [analysesLoading, setAnalysesLoading] = useState(true);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [currentPatientId, setCurrentPatientId] = useState(null);
   
   const [newPatient, setNewPatient] = useState({ 
     nom: "", prenom: "", cin: "", telephone: "", sexe: "M", date_naissance: "" 
@@ -80,19 +82,25 @@ const DashboardPreleveur = () => {
       medecin_id: 1,
       nom_analyse: selectedExamen
     };
+    
+    // If creating a new exam for an existing patient, include patient_id
+    if (isNewExam && currentPatientId) {
+      payload.patient_id = currentPatientId;
+    }
+    
     console.log("📤 Sending payload:", payload);
     try {
-      if (isEditing) {
+      if (isEditing && !isNewExam) {
         await axios.put(`${API_URL}/${patients[editIndex].id}`, payload);
         toast.success("Patient modifié !");
       } else {
         const response = await axios.post(API_URL, payload);
         if (response.data?.reference) setGeneratedCode(response.data.reference);
-        toast.success("Patient enregistré !");
+        toast.success(isNewExam ? "Nouvel examen enregistré !" : "Patient enregistré !");
         fetchAnalysesLyoum();
       }
       fetchPatients(searchTerm);
-      if (isEditing) closeAndReset();
+      if (isEditing && !isNewExam) closeAndReset();
     } catch (error) {
       console.error("❌ Error details:", error.response?.data || error.message);
       const errorMsg = error.response?.data?.message || error.response?.data?.errors || "Erreur d'enregistrement";
@@ -118,8 +126,26 @@ const DashboardPreleveur = () => {
     setShowModal(false);
     setGeneratedCode(null);
     setIsEditing(false);
+    setIsNewExam(false);
+    setCurrentPatientId(null);
     setSelectedExamen("");
     setNewPatient({ nom: "", prenom: "", cin: "", telephone: "", sexe: "M", date_naissance: "" });
+  };
+
+  const openNewExamModal = (patient) => {
+    // Pre-fill patient info for new exam
+    setNewPatient({
+      nom: patient.nom,
+      prenom: patient.prenom,
+      cin: patient.cin,
+      telephone: patient.telephone,
+      sexe: patient.sexe,
+      date_naissance: patient.date_naissance
+    });
+    setCurrentPatientId(patient.id);
+    setIsNewExam(true);
+    setSelectedExamen(""); // Clear analysis selection
+    setShowModal(true);
   };
 
   return (
@@ -200,6 +226,7 @@ const DashboardPreleveur = () => {
                         <td>{p.date_naissance}</td>
                         <td>
                           <button className="btn-modifier" onClick={() => { setNewPatient(p); setEditIndex(index); setIsEditing(true); setShowModal(true); }}>Modifier</button>
+                          <button className="btn-valider" style={{ marginLeft: '8px' }} onClick={() => openNewExamModal(p)}>Nouvel Examen</button>
                           <button className="btn-delete" style={{ marginLeft: '8px' }} onClick={async () => { if(window.confirm("Supprimer?")) { await axios.delete(`${API_URL}/${p.id}`); fetchPatients(searchTerm); } }}>Supprimer</button>
                         </td>
                       </tr>
@@ -258,28 +285,28 @@ const DashboardPreleveur = () => {
         <div className="modal-overlay">
           <div className="modal-content">
             <div className="modal-header">
-              <h3>{isEditing ? "Modifier Patient" : "Inscription Patient"}</h3>
+              <h3>{isNewExam ? "Nouvel Examen" : isEditing ? "Modifier Patient" : "Inscription Patient"}</h3>
               <button onClick={closeAndReset} className="close-x"><X size={22} /></button>
             </div>
             {!generatedCode ? (
               <form onSubmit={handleSavePatient} className="modal-form">
                 <div className="modal-form-row">
-                  <div className="form-group"><label>Nom</label><input type="text" value={newPatient.nom} required onChange={(e) => setNewPatient({...newPatient, nom: e.target.value})} /></div>
-                  <div className="form-group"><label>Prénom</label><input type="text" value={newPatient.prenom} required onChange={(e) => setNewPatient({...newPatient, prenom: e.target.value})} /></div>
+                  <div className="form-group"><label>Nom</label><input type="text" value={newPatient.nom} required readOnly={isNewExam} onChange={(e) => setNewPatient({...newPatient, nom: e.target.value})} /></div>
+                  <div className="form-group"><label>Prénom</label><input type="text" value={newPatient.prenom} required readOnly={isNewExam} onChange={(e) => setNewPatient({...newPatient, prenom: e.target.value})} /></div>
                 </div>
                 <div className="modal-form-row">
                   <div className="form-group">
                     <label>Sexe</label>
-                    <select value={newPatient.sexe} onChange={(e) => setNewPatient({...newPatient, sexe: e.target.value})}>
+                    <select value={newPatient.sexe} disabled={isNewExam} onChange={(e) => setNewPatient({...newPatient, sexe: e.target.value})}>
                       <option value="M">👨 Masculin</option>
                       <option value="F">👩 Féminin</option>
                     </select>
                   </div>
-                  <div className="form-group"><label>Date de Naissance</label><input type="date" value={newPatient.date_naissance} required onChange={(e) => setNewPatient({...newPatient, date_naissance: e.target.value})} /></div>
+                  <div className="form-group"><label>Date de Naissance</label><input type="date" value={newPatient.date_naissance} required readOnly={isNewExam} onChange={(e) => setNewPatient({...newPatient, date_naissance: e.target.value})} /></div>
                 </div>
-                <div className="form-group"><label>CIN</label><input type="text" value={newPatient.cin} required onChange={(e) => setNewPatient({...newPatient, cin: e.target.value})} /></div>
-                <div className="form-group"><label>Téléphone</label><input type="tel" value={newPatient.telephone} maxLength={10} required onChange={(e) => setNewPatient({...newPatient, telephone: e.target.value})} /></div>
-                {!isEditing && (
+                <div className="form-group"><label>CIN</label><input type="text" value={newPatient.cin} required readOnly={isNewExam} onChange={(e) => setNewPatient({...newPatient, cin: e.target.value})} /></div>
+                <div className="form-group"><label>Téléphone</label><input type="tel" value={newPatient.telephone} maxLength={10} required readOnly={isNewExam} onChange={(e) => setNewPatient({...newPatient, telephone: e.target.value})} /></div>
+                {(isNewExam || !isEditing) && (
                   <div className="form-group">
                     <label>Type d'Analyse</label>
                     <select value={selectedExamen} onChange={(e) => setSelectedExamen(e.target.value)} required>
@@ -292,13 +319,13 @@ const DashboardPreleveur = () => {
                 )}
                 <div className="modal-footer">
                   <button type="button" className="btn-cancel" onClick={closeAndReset}>Annuler</button>
-                  <button type="submit" className="btn-save">{isEditing ? "Modifier" : "Enregistrer"}</button>
+                  <button type="submit" className="btn-save">{isNewExam ? "Créer Examen" : isEditing ? "Modifier" : "Enregistrer"}</button>
                 </div>
               </form>
             ) : (
               <div style={{ textAlign: 'center', padding: '20px' }}>
                 <ClipboardCheck size={40} color="#4f46e5" />
-                <h4>Code d'examen:</h4>
+                <h4>{isNewExam ? "Examen créé avec succès !" : "Code d'examen:"}</h4>
                 <h1 style={{ fontSize: '30px', color: '#312e81' }}>{generatedCode}</h1>
                 <button className="btn-save" style={{ width: '100%', marginTop: '20px' }} onClick={closeAndReset}>Terminer</button>
               </div>

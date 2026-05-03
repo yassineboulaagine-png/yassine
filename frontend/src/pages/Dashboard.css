@@ -242,6 +242,30 @@
   box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
 }
 
+.form-group input:read-only {
+  background-color: #f1f5f9;
+  color: #64748b;
+  cursor: not-allowed;
+  border-color: #cbd5e1;
+}
+
+.form-group input:read-only:focus {
+  border-color: #cbd5e1;
+  box-shadow: none;
+}
+
+.form-group select:disabled {
+  background-color: #f1f5f9;
+  color: #64748b;
+  cursor: not-allowed;
+  border-color: #cbd5e1;
+}
+
+.form-group select:disabled:focus {
+  border-color: #cbd5e1;
+  box-shadow: none;
+}
+
 /* --- Buttons Design (تنسيق البوطونات) --- */
 .modal-footer {
   display: flex;

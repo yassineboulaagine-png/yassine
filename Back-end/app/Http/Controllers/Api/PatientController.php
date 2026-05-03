@@ -27,27 +27,43 @@ class PatientController extends Controller
 
     public function store(Request $request)
     {
-        // 1. Validation dial l-data li jaya men React
-        $request->validate([
-            'nom'            => 'required|string',
-            'prenom'         => 'required|string',
-            'cin'            => 'required|string|unique:patients,cin',
-            'telephone'      => 'required|string|size:10',
-            'sexe'           => 'required|in:M,F',
-            'date_naissance' => 'required|date',
-            'utilisateur_id' => 'required|exists:utilisateurs,id',
-            'medecin_id'     => 'required|exists:medecins,id',
-            'nom_analyse'    => 'required|string', // Smit l-analyse li khtar l-user
-        ]);
+        // Check if this is a new exam for an existing patient or a new patient registration
+        $isNewExam = $request->has('patient_id') && $request->patient_id;
 
-        // 2. Création dial l-Patient
-        $patient = Patient::create($request->only([
-            'nom', 'prenom', 'cin', 'telephone', 'sexe', 'date_naissance'
-        ]));
+        // 1. Validation dial l-data li jaya men React
+        if ($isNewExam) {
+            // For new exam on existing patient, only validate patient_id and analysis
+            $request->validate([
+                'patient_id'     => 'required|exists:patients,id',
+                'utilisateur_id' => 'required|exists:utilisateurs,id',
+                'medecin_id'     => 'required|exists:medecins,id',
+                'nom_analyse'    => 'required|string',
+            ]);
+            $patient_id = $request->patient_id;
+        } else {
+            // For new patient, validate all patient info
+            $request->validate([
+                'nom'            => 'required|string',
+                'prenom'         => 'required|string',
+                'cin'            => 'required|string|unique:patients,cin',
+                'telephone'      => 'required|string|size:10',
+                'sexe'           => 'required|in:M,F',
+                'date_naissance' => 'required|date',
+                'utilisateur_id' => 'required|exists:utilisateurs,id',
+                'medecin_id'     => 'required|exists:medecins,id',
+                'nom_analyse'    => 'required|string',
+            ]);
+
+            // 2. Création dial l-Patient (only if not existing)
+            $patient = Patient::create($request->only([
+                'nom', 'prenom', 'cin', 'telephone', 'sexe', 'date_naissance'
+            ]));
+            $patient_id = $patient->id;
+        }
 
         // 3. Création dial l-Examen (biha kaye-t-generer l-Reference automatique f l-Model)
         $examen = Examen::create([
-            'patient_id'     => $patient->id,
+            'patient_id'     => $patient_id,
             'utilisateur_id' => $request->utilisateur_id,
             'medecin_id'     => $request->medecin_id,
             'statut'         => 'en_cours',
@@ -56,7 +72,6 @@ class PatientController extends Controller
         // 4. L-7ELL: Enregistrement dial l-ligne d'examen
         // Kan-9lbo 3la l-ID dial l-analyse f table 'analyses' b-smit l-khayar li t-khtar
         // Uses LIKE to handle partial matches between frontend nom_analyse and database designation
-        // 4. L-7ELL: Enregistrement dial l-ligne d'examen
         $nom_saisi = $request->nom_analyse; 
 
         // كنقلبو على التحليلة اللي السمية ديالها كاينا وسط النص اللي جا من React
@@ -74,8 +89,8 @@ class PatientController extends Controller
         }
 
         return response()->json([
-            'patient'   => $patient,
-            'reference' => $examen->reference,
+            'patient_id' => $patient_id,
+            'reference'  => $examen->reference,
         ], 201);
     }
 
