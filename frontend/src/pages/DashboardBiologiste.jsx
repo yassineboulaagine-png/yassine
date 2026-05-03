@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Microscope, CheckCircle, ClipboardList, LogOut, UserCircle, X, AlertCircle ,Settings } from "lucide-react";
+import { Microscope, CheckCircle, ClipboardList, LogOut, UserCircle, X, AlertCircle, Settings, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import axios from "axios";
+import ResultDetailsModal from "@/components/ResultDetailsModal";
 import "./Dashboard.css";
 
 
@@ -20,6 +21,8 @@ const DashboardBiologiste = () => {
   const [selectedExamen, setSelectedExamen] = useState(null);
   const [results, setResults] = useState({});
   const [biologiste, setBiologiste] = useState(null);
+  const [showGraphModal, setShowGraphModal] = useState(false);
+  const [selectedGraphExamen, setSelectedGraphExamen] = useState(null);
 
   useEffect(() => {
   const fetchBiologiste = async () => {
@@ -223,6 +226,16 @@ const DashboardBiologiste = () => {
   }
 };
 
+  const openGraphModal = (ana) => {
+    setSelectedGraphExamen(ana);
+    setShowGraphModal(true);
+  };
+
+  const closeGraphModal = () => {
+    setShowGraphModal(false);
+    setSelectedGraphExamen(null);
+  };
+
   return (
     <div className="hl-dashboard-container">
       {/* Sidebar - اللون الأخضر كيكون بـ كلاس biologiste */}
@@ -363,6 +376,26 @@ const DashboardBiologiste = () => {
                         <td>
                           <button className="btn-valider" onClick={() => handleFinalApprove(ana.id)}>Approuver</button>
                           <button 
+                            className="eye-icon-btn"
+                            onClick={() => openGraphModal(ana)}
+                            title="Voir le graphique"
+                            style={{ 
+                              backgroundColor: '#3b82f6', 
+                              color: 'white', 
+                              border: 'none', 
+                              padding: '8px 12px', 
+                              borderRadius: '6px', 
+                              cursor: 'pointer',
+                              fontWeight: '600',
+                              marginLeft: '8px',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px'
+                            }}
+                          >
+                            <Eye size={16} /> Voir
+                          </button>
+                          <button 
     onClick={() => handleReject(ana.id)} 
     style={{ 
       backgroundColor: '#efb044', 
@@ -371,7 +404,8 @@ const DashboardBiologiste = () => {
       padding: '8px 15px', 
       borderRadius: '6px', 
       cursor: 'pointer',
-      fontWeight: '600'
+      fontWeight: '600',
+      marginLeft: '8px'
     }}
   >
     Modifier
@@ -398,6 +432,7 @@ const DashboardBiologiste = () => {
                       <th>Examen</th>
                       <th>Résultats</th>
                       <th>Statut</th>
+                      <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -416,6 +451,27 @@ const DashboardBiologiste = () => {
                             : "N/A"}
                         </td>
                         <td><span className={`status-badge ${ana.statut}`}>{ana.statut}</span></td>
+                        <td>
+                          <button 
+                            className="eye-icon-btn"
+                            onClick={() => openGraphModal(ana)}
+                            title="Voir le graphique"
+                            style={{ 
+                              backgroundColor: '#3b82f6', 
+                              color: 'white', 
+                              border: 'none', 
+                              padding: '8px 12px', 
+                              borderRadius: '6px', 
+                              cursor: 'pointer',
+                              fontWeight: '600',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px'
+                            }}
+                          >
+                            <Eye size={16} /> Voir
+                          </button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -535,6 +591,13 @@ const DashboardBiologiste = () => {
           </div>
         </div>
       )}
+
+      {/* Result Details Modal with Gauge */}
+      <ResultDetailsModal 
+        isOpen={showGraphModal} 
+        onClose={closeGraphModal} 
+        ana={selectedGraphExamen} 
+      />
     </div>
   );
 };
