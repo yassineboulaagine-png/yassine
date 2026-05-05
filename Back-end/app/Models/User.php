@@ -30,6 +30,7 @@ class User extends Authenticatable
         'password',
         'role', // admin, biologiste, preleveur
         'laboratoire_id',
+        'avatar',
     ];
 
     /**

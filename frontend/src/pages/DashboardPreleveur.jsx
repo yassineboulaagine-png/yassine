@@ -36,7 +36,10 @@ const DashboardPreleveur = () => {
 
   const fetchPatients = async (query = "") => {
     try {
-      const response = await axios.get(`${API_URL}?search=${query}`);
+      const token = localStorage.getItem("token");
+      const response = await axios.get(`${API_URL}?search=${query}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setPatients(response.data);
     } catch (error) {
       console.error("API error:", error);
@@ -90,14 +93,23 @@ const DashboardPreleveur = () => {
     
     console.log("📤 Sending payload:", payload);
     try {
+      const token = localStorage.getItem("token");
       if (isEditing && !isNewExam) {
-        await axios.put(`${API_URL}/${patients[editIndex].id}`, payload);
+        await axios.put(`${API_URL}/${patients[editIndex].id}`, payload, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
         toast.success("Patient modifié !");
       } else {
-        const response = await axios.post(API_URL, payload);
+        const response = await axios.post(API_URL, payload, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
         if (response.data?.reference) setGeneratedCode(response.data.reference);
         toast.success(isNewExam ? "Nouvel examen enregistré !" : "Patient enregistré !");
         fetchAnalysesLyoum();
+        // Refresh patient count in profile when new patient is added
+        if (!isNewExam && !isEditing) {
+          notifyPatientCountUpdate();
+        }
       }
       fetchPatients(searchTerm);
       if (isEditing && !isNewExam) closeAndReset();
@@ -106,6 +118,11 @@ const DashboardPreleveur = () => {
       const errorMsg = error.response?.data?.message || error.response?.data?.errors || "Erreur d'enregistrement";
       toast.error(typeof errorMsg === 'string' ? errorMsg : JSON.stringify(errorMsg));
     }
+  };
+
+  const notifyPatientCountUpdate = () => {
+    // Dispatch a custom event to notify ProfilePreleveur to refresh patient count
+    window.dispatchEvent(new Event('patientCountUpdated'));
   };
 
   const handleStatusChange = async (id, newStatus) => {
@@ -227,7 +244,7 @@ const DashboardPreleveur = () => {
                         <td>
                           <button className="btn-modifier" onClick={() => { setNewPatient(p); setEditIndex(index); setIsEditing(true); setShowModal(true); }}>Modifier</button>
                           <button className="btn-valider" style={{ marginLeft: '8px' }} onClick={() => openNewExamModal(p)}>Nouvel Examen</button>
-                          <button className="btn-delete" style={{ marginLeft: '8px' }} onClick={async () => { if(window.confirm("Supprimer?")) { await axios.delete(`${API_URL}/${p.id}`); fetchPatients(searchTerm); } }}>Supprimer</button>
+                          <button className="btn-delete" style={{ marginLeft: '8px' }} onClick={async () => { if(window.confirm("Supprimer?")) { const token = localStorage.getItem("token"); await axios.delete(`${API_URL}/${p.id}`, { headers: { Authorization: `Bearer ${token}` } }); toast.success("Patient supprimé !"); fetchPatients(searchTerm); notifyPatientCountUpdate(); } }}>Supprimer</button>
                         </td>
                       </tr>
                     ))}

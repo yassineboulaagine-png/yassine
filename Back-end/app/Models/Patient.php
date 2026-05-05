@@ -15,7 +15,8 @@ class Patient extends Model
         'date_naissance', 
         'sexe', 
         'telephone',
-        'cin'
+        'cin',
+        'user_id'
     ];
 
     /**
@@ -24,5 +25,13 @@ class Patient extends Model
     public function examens()
     {
         return $this->hasMany(Examen::class);
+    }
+
+    /**
+     * Relation: Patient appartient à un utilisateur (Préleveur)
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

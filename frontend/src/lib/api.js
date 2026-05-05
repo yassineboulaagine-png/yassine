@@ -1,23 +1,32 @@
-const API_BASE = "http://127.0.0.1:8000/api";
+const API_BASE = "http://localhost:8000/api";
 
 // LOGIN
 export async function apiLogin(email, password) {
-  const res = await fetch(`${API_BASE}/login`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    },
-    body: JSON.stringify({ email, password }),
-  });
+  try {
+    const res = await fetch(`${API_BASE}/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
+    });
 
-  const data = await res.json();
+    // 1. كنقرأو الـ JSON مرة وحدة فقط
+    const data = await res.json();
 
-  if (!res.ok) {
-    throw new Error(data.message || "Email ou mot de passe incorrect");
+    // 2. كنتشكيو واش الـ Response فيه مشكل
+    if (!res.ok) {
+      // كترميو Error فيه الميساج اللي جاي من Laravel
+      throw new Error(data.message || "Email ou mot de passe incorrect");
+    }
+
+    return data; 
+  } catch (error) {
+    // هاد السطر مهم باش الـ Error يطلع ليك فـ الـ Console فاش يوقع
+    console.error("Fetch Error:", error);
+    throw error; // كنعاودو نلوحوه باش يوصل للـ catch اللي فـ Login.jsx
   }
-
-  return data; // { user, token, role }
 }
 
 // AUTH HEADER

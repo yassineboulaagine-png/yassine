@@ -16,9 +16,11 @@ Route::put('/user/update-profile', [UserController::class, 'updateProfile']);
 Route::post('/user/change-password', [UserController::class, 'changePassword']);
 
 // --- 3. Patients ---
-Route::apiResource('patients', PatientController::class);
-Route::get('/patients/count/{id}', [PatientController::class, 'getUserStats']);
-
+Route::middleware('auth:sanctum')->group(function (){
+    Route::get('/patients/count/{id}', [PatientController::class, 'getUserStats']);
+    Route::get('/patients/user-patient-count/{id}', [PatientController::class, 'getUserPatientCount']);
+    Route::apiResource('patients', PatientController::class);
+});
 // --- 4. Examens (Logic dial Dashboard) ---
 // Public workflow routes (frontend expects these without auth)
 Route::get('/examens-today', [ExamenController::class, 'getTodayExamens']);
@@ -39,6 +41,7 @@ Route::middleware('auth:sanctum')->get('/user/profile', function (Request $reque
     return response()->json($request->user());
 });
 
+
 // --- 6. Sanctum Protected ---
 Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('users', UserController::class);
@@ -47,8 +50,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/examens/{id}/resultat', [ExamenController::class, 'updateResult']);
     Route::post('/logout', [AuthController::class, 'logout']);
     
+    // Profile endpoints
+    Route::post('/profile/update-avatar', [AuthController::class, 'updateProfile']);
+    Route::get('/profile/get', [AuthController::class, 'getProfile']);
+    
     Route::get('/me', function (Request $request) {
-    return $request->user();
-});
+        return $request->user();
+    });
     
 });

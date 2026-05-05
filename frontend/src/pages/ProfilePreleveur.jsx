@@ -2,47 +2,141 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Mail, Lock, Users, ArrowLeft, Camera, Eye, EyeOff, Settings } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { toast } from 'sonner';
 
 const Profile = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   
-  // 1. Kan-recuperiw l-data mn localStorage (user o l-avatar)
-  const [user, setUser] = useState(JSON.parse(localStorage.getItem("user") || "{}"));
-  const [previewImage, setPreviewImage] = useState(localStorage.getItem("user_avatar") || null);
+  // State initialization - user data and avatar
+  const [user, setUser] = useState({});
+  const [avatarUrl, setAvatarUrl] = useState(null);
+  const [previewImage, setPreviewImage] = useState(null);
+  const [isLoadingAvatar, setIsLoadingAvatar] = useState(false);
   
   const [stats, setStats] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  // Fetch user profile data from backend on mount
   useEffect(() => {
-  const fetchPreleveur = async () => {
-    const token = localStorage.getItem("token");
+    const fetchUserProfile = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        
+        // Fetch user data including avatar URL
+        const response = await axios.get(
+          "http://localhost:8000/api/user/profile",
+          {
+            headers: { Authorization: `Bearer ${token}` }
+          }
+        );
 
-    const res = await axios.get(
-      "http://localhost:8000/api/user/profile",
-      {
-        headers: { Authorization: `Bearer ${token}` }
+        setUser(response.data);
+        
+        // Set avatar URL from backend if exists
+        if (response.data.avatar) {
+          setAvatarUrl(`http://localhost:8000/avatars/${response.data.avatar}`);
+        }
+
+        // Fetch patient count for this user
+        try {
+          const patientCountResponse = await axios.get(
+            `http://localhost:8000/api/patients/user-patient-count/${response.data.id}`,
+            {
+              headers: { Authorization: `Bearer ${token}` }
+            }
+          );
+          setStats(patientCountResponse.data.patient_count);
+        } catch (error) {
+          console.error("Error fetching patient count:", error);
+          setStats(0);
+        }
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
+        toast.error("Erreur lors du chargement du profil");
       }
-    );
+    };
 
-    setUser(res.data);
-  };
+    fetchUserProfile();
 
-  fetchPreleveur();
-}, []);
+    // Listen for patient count updates from DashboardPreleveur
+    const handlePatientCountUpdate = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const userResponse = await axios.get(
+          "http://localhost:8000/api/user/profile",
+          {
+            headers: { Authorization: `Bearer ${token}` }
+          }
+        );
+        
+        const patientCountResponse = await axios.get(
+          `http://localhost:8000/api/patients/user-patient-count/${userResponse.data.id}`,
+          {
+            headers: { Authorization: `Bearer ${token}` }
+          }
+        );
+        setStats(patientCountResponse.data.patient_count);
+      } catch (error) {
+        console.error("Error refreshing patient count:", error);
+      }
+    };
 
-  // 2. Sauvegarde dial l-image f localStorage
-  const handleImageChange = (e) => {
+    window.addEventListener('patientCountUpdated', handlePatientCountUpdate);
+    return () => window.removeEventListener('patientCountUpdated', handlePatientCountUpdate);
+  }, []);
+
+  // Handle image change and upload to backend
+  const handleImageChange = async (e) => {
     const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64String = reader.result;
-        setPreviewImage(base64String);
-        localStorage.setItem("user_avatar", base64String); // Persistence
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    // Show preview immediately
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPreviewImage(reader.result);
+    };
+    reader.readAsDataURL(file);
+
+    // Upload to backend using FormData
+    try {
+      setIsLoadingAvatar(true);
+      const token = localStorage.getItem("token");
+      
+      // Create FormData for multipart/form-data request
+      const formData = new FormData();
+      formData.append('avatar', file);
+      formData.append('nom_complet', user.nom_complet);
+      formData.append('email', user.email);
+
+      // Send to backend with proper headers
+      const response = await axios.post(
+        "http://localhost:8000/api/profile/update-avatar",
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data'
+          }
+        }
+      );
+
+      // Update user data and avatar URL from backend response
+      setUser(response.data.user);
+      setAvatarUrl(response.data.avatar_url);
+      
+      // Update localStorage for fallback
+      localStorage.setItem("user", JSON.stringify(response.data.user));
+      
+      toast.success("Avatar mis à jour avec succès!");
+      setPreviewImage(null); // Clear preview after successful upload
+    } catch (error) {
+      console.error("Error uploading avatar:", error);
+      toast.error(error.response?.data?.message || "Erreur lors de la mise à jour de l'avatar");
+      setPreviewImage(null);
+    } finally {
+      setIsLoadingAvatar(false);
     }
   };
 
@@ -61,15 +155,23 @@ const Profile = () => {
         {/* SECTION HEADER: Avatar & Role */}
         <div style={headerStyle}>
           <div style={avatarWrapper}>
-            <input type="file" ref={fileInputRef} onChange={handleImageChange} style={{ display: 'none' }} accept="image/*" />
+            <input type="file" ref={fileInputRef} onChange={handleImageChange} style={{ display: 'none' }} accept="image/*" disabled={isLoadingAvatar} />
             <div 
               style={avatarStyle} 
-              onClick={() => fileInputRef.current.click()}
+              onClick={() => !isLoadingAvatar && fileInputRef.current.click()}
               onMouseEnter={() => setIsHovered(true)}
               onMouseLeave={() => setIsHovered(false)}
+              title={isLoadingAvatar ? "Upload en cours..." : "Cliquez pour changer"}
             >
-              {previewImage ? <img src={previewImage} alt="Profile" style={imageStyle} /> : (user.nom_complet?.charAt(0) || "Y")}
-              {isHovered && <div style={cameraOverlayStyle}><Camera size={24} color="white" /></div>}
+              {previewImage ? (
+                <img src={previewImage} alt="Profile Preview" style={imageStyle} />
+              ) : avatarUrl ? (
+                <img src={avatarUrl} alt="Profile" style={imageStyle} />
+              ) : (
+                user.nom_complet?.charAt(0) || "Y"
+              )}
+              {isHovered && !isLoadingAvatar && <div style={cameraOverlayStyle}><Camera size={24} color="white" /></div>}
+              {isLoadingAvatar && <div style={cameraOverlayStyle}><span style={{ color: 'white', fontSize: '12px' }}>Upload...</span></div>}
             </div>
             <div style={onlineBadge}></div>
           </div>

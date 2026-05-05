@@ -55,9 +55,16 @@ class PatientController extends Controller
             ]);
 
             // 2. Création dial l-Patient (only if not existing)
-            $patient = Patient::create($request->only([
-                'nom', 'prenom', 'cin', 'telephone', 'sexe', 'date_naissance'
-            ]));
+            $patient = Patient::create([
+                'nom' => $request->nom,
+                'prenom' => $request->prenom,
+                'cin' => $request->cin,
+                'telephone' => $request->telephone,
+                'sexe' => $request->sexe,
+                'date_naissance' => $request->date_naissance,
+                'user_id' => $request->utilisateur_id
+            ]);
+            
             $patient_id = $patient->id;
         }
 
@@ -125,5 +132,14 @@ class PatientController extends Controller
     {
         $count = Examen::where('utilisateur_id', $id)->count();
         return response()->json(['count' => $count]);
+    }
+
+    /**
+     * Get patient count for a specific user (Préleveur)
+     */
+    public function getUserPatientCount($id)
+    {
+        $count = Patient::where('user_id', $id)->count();
+        return response()->json(['patient_count' => $count]);
     }
 }
