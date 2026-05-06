@@ -11,6 +11,7 @@ import DashboardBiologiste from "./pages/DashboardBiologiste";
 import DashboardPreleveur from "./pages/DashboardPreleveur";
 import NotFound from "./pages/NotFound";
 import MesResultats from "./pages/MesResultats";
+import PatientResults from "./pages/PatientResults";
 
 // Preleveur
 import ProfilePreleveur from "./pages/ProfilePreleveur";
@@ -138,6 +139,8 @@ const AppRoutes = () => (
 
     {/* fallback */}
     <Route path="*" element={<NotFound />} />
+
+    <Route path="/patient/results" element={<PatientResults />} />
   </Routes>
 );
 

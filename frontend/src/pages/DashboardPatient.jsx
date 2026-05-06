@@ -6,25 +6,44 @@ import "./Login.css";
 const DashboardPatient = () => {
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
+  // زيد هادي حدا الـ code
+  const [phone, setPhone] = useState("");
 
   // حيدنا التايب سكريبت من الـ Event (e)
-  const handleSearch = (e) => {
-    e.preventDefault();
-    
-    if (!code) {
-      toast.error("Veuillez saisir votre code d'analyse");
-      return;
+  const handleSearch = async (e) => {
+  e.preventDefault();
+  
+  if (!code || !phone) { // تأكد بلي زدتي State ديال phone
+    toast.error("Veuillez remplir tous les champs");
+    return;
+  }
+  
+  setLoading(true);
+  
+  try {
+    // 1. عيط للـ Backend
+    const response = await axios.post("http://localhost:8000/api/patient/check-access", {
+      reference: code,
+      telephone: phone
+    });
+
+    if (response.data.success) {
+      toast.success("Accès autorisé !");
+      
+      // 2. خزن الـ ID فـ localStorage باش نجبدو النتائج فـ الصفحة الجاية
+      localStorage.setItem("patient_exam_id", response.data.exam_id);
+      
+      // 3. ديه لصفحة النتائج
+      navigate("/patient/results"); 
     }
-    
-    setLoading(true);
-    
-    // هنا مستقبلاً غانعيطو لـ Axios باش نتأكدو من الكود فـ Laravel
-    setTimeout(() => {
-      setLoading(false);
-      toast.info("Recherche de vos résultats...");
-      // مثلاً: navigate(`/mes-resultats?code=${code}`)
-    }, 1500);
-  };
+  } catch (error) {
+    // إيلا المعلومات غلط
+    const msg = error.response?.data?.message || "Informations incorrectes";
+    toast.error(msg);
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-[#f8fafc]">
@@ -43,7 +62,7 @@ const DashboardPatient = () => {
             <input
               type="text"
               className="code-input"
-              placeholder="Ex: HL-2026-A1"
+              
               value={code}
               // كنحولو الحروف لـ Capital أوتوماتيكياً
               onChange={(e) => setCode(e.target.value.toUpperCase())}

@@ -50,6 +50,44 @@ const ProfileBiologiste = () => {
     fetchUserProfile();
   }, []);
 
+  // Fetch biologist statistics (authenticated endpoint)
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        
+        if (!token) {
+          console.error("No authentication token found");
+          return;
+        }
+
+        // Use the authenticated endpoint - no need to pass userId
+        const response = await axios.get(
+          "http://localhost:8000/api/biologiste/stats",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          }
+        );
+
+        setStats({
+          total_validated: response.data.total_validated || 0,
+          pathological_count: response.data.pathological_count || 0
+        });
+      } catch (error) {
+        console.error("Error fetching stats:", error);
+        // Don't show error toast for stats, just log it
+      }
+    };
+
+    fetchStats();
+    
+    // Refresh stats every 10 seconds to keep them up-to-date
+    const interval = setInterval(fetchStats, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
   // Handle image change and upload to backend
   const handleImageChange = async (e) => {
     const file = e.target.files[0];

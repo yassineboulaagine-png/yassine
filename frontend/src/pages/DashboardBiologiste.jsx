@@ -183,9 +183,15 @@ const DashboardBiologiste = () => {
     console.log("Sending resultats:", resultatsArray);
 
     try {
-      const response = await axios.post(`http://localhost:8000/api/examens/${selectedExamen.id}/resultats`, {
-        resultats: resultatsArray
-      });
+      const response = await axios.post(
+        `http://localhost:8000/api/examens/${selectedExamen.id}/resultats`,
+        { resultats: resultatsArray },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`
+          }
+        }
+      );
       console.log("Success response:", response.data);
       toast.success("Résultats saisis! en_cours de validation.");
       closeSaisieModal();
@@ -199,7 +205,15 @@ const DashboardBiologiste = () => {
 
   const handleFinalApprove = async (id) => {
     try {
-      await axios.patch(`http://localhost:8000/api/examens/${id}/approve`);
+      await axios.patch(
+        `http://localhost:8000/api/examens/${id}/approve`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`
+          }
+        }
+      );
       toast.success("Examen approuvé!");
       fetchValidation();
       fetchHistorique();
@@ -212,9 +226,15 @@ const DashboardBiologiste = () => {
   if (window.confirm("Voulez-vous renvoyer cet examen à la saisie pour modification ?")) {
     try {
       // Kat-sift l-statut 'En attente' bach i-welli i-bane f "Mes Analyses"
-      await axios.put(`http://localhost:8000/api/examens/${id}/reject`, {
-        statut: 'rejete' 
-      });
+      await axios.put(
+        `http://localhost:8000/api/examens/${id}/reject`,
+        { statut: 'rejete' },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`
+          }
+        }
+      );
       
       // Update local state bach i-t-7eyed mn l-Validation
       setExamenValidation(examenValidation.filter(ana => ana.id !== id));

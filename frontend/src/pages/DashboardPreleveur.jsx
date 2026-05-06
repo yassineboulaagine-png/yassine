@@ -131,7 +131,15 @@ const DashboardPreleveur = () => {
         ? `http://localhost:8000/api/examens/${id}/valider`
         : `http://localhost:8000/api/examens/${id}/annuler`;
       
-      await axios.patch(endpoint);
+      await axios.patch(
+        endpoint,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`
+          }
+        }
+      );
       toast.success(newStatus === 'valide' ? "Examen validé !" : "Examen annulé !");
       fetchAnalysesLyoum();
     } catch (error) {

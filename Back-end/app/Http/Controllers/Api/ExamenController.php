@@ -38,13 +38,19 @@ class ExamenController extends Controller
     public function validerExamen($id)
     {
         $examen = Examen::findOrFail($id);
-        $examen->update(['statut' => 'valide']);
+        
+        // Set the biologist ID to the authenticated user (who is validating)
+        $examen->update([
+            'statut' => 'valide',
+            'biologiste_id' => auth()->id()
+        ]);
         
         return response()->json([
             'success' => true,
             'message' => 'Prélèvement validé !'
         ]);
     }
+
 
     public function annulerExamen($id)
     {
@@ -116,7 +122,10 @@ class ExamenController extends Controller
     public function finalApprove($id)
     {
         $examen = Examen::findOrFail($id);
-        $examen->update(['statut' => 'termine']);
+        $examen->update([
+            'statut' => 'termine',
+            'biologiste_id' => auth()->id()  // Track which biologist validated
+        ]);
 
         return response()->json([
             'success' => true,
@@ -138,12 +147,13 @@ class ExamenController extends Controller
 
     public function patientLogin(Request $request)
     {
+        // dd($request->all());
         $request->validate([
             'reference' => 'required|string',
             'telephone' => 'required|string',
         ]);
 
-        $examen = Examen::with(['patient', 'resultats', 'lignes.analyse'])
+        $examen = Examen::with(['patient', 'lignes.analyse'])
             ->where('reference', $request->reference)
             ->whereHas('patient', function ($query) use ($request) {
                 $query->where('telephone', $request->telephone);

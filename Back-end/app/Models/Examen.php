@@ -16,7 +16,8 @@ class Examen extends Model
         'medecin_id',
         'reference',
         'patient_id',
-        'utilisateur_id'
+        'utilisateur_id',
+        'biologiste_id'
     ];
 
     /**
@@ -75,6 +76,12 @@ class Examen extends Model
 
     public function resultats()
     {
-        return $this->hasMany(Resultat::class);
+        return $this->hasManyThrough(Resultat::class, LigneExamen::class, 'examen_id', 'ligne_examen_id');
     }
+
+    public function type_analyse()
+{
+    // هادي كتربط كل examen بنوع التحليلة ديالو
+    return $this->belongsTo(TypeAnalyse::class, 'type_analyse_id'); 
+}
 }
