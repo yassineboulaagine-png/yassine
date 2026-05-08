@@ -33,6 +33,7 @@ Route::get('/examens-historique', [ExamenController::class, 'getHistorique']);
 
 // Protected write routes (require authentication)
 Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/examens/my-results', [ExamenController::class, 'getMyResults']);
     Route::patch('/examens/{id}/valider', [ExamenController::class, 'validerExamen']);
     Route::patch('/examens/{id}/annuler', [ExamenController::class, 'annulerExamen']);
     Route::post('/examens/{id}/resultats', [ExamenController::class, 'storeResults']);

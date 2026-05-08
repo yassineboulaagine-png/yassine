@@ -46,8 +46,10 @@ class PatientAuthController extends Controller
         }
 
         // 4. Réponse JSON pour le frontend React[cite: 1]
+        $token = $examen->patient->createToken('patient-token')->plainTextToken;
         return response()->json([
             'success' => true,
+            'token'   => $token,
             'data' => [
                 'exam_id' => $examen->id,
                 'statut' => $examen->statut, // en_cours, termine, rejete[cite: 1]
@@ -55,6 +57,7 @@ class PatientAuthController extends Controller
                 'type_analyse' => $examen->type_analyse->libelle ?? 'Analyse Médicale',
                 'created_at' => $examen->created_at->format('d/m/Y'),
             ],
+            'examen' => $examen,
             'message' => 'Accès autorisé avec succès.'
         ]);
     }

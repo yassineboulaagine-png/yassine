@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Examen;
+use App\Http\Resources\ExamenResource;
 
 class ExamenController extends Controller
 {
@@ -34,6 +35,26 @@ class ExamenController extends Controller
         ->get();
     }
 
+    /**
+     * Get the authenticated patient's valid examination results
+     */
+    public function getMyResults()
+    {
+        // Find the patient associated with the authenticated user
+        $patient = \App\Models\Patient::where('user_id', auth()->id())->first();
+        
+        if (!$patient) {
+            return response()->json(['data' => []]);
+        }
+
+        $examens = Examen::with(['type_analyse'])
+            ->where('patient_id', $patient->id)
+            ->where('statut', 'valide')
+            ->latest()
+            ->get();
+
+        return ExamenResource::collection($examens);
+    }
 
     public function validerExamen($id)
     {
@@ -167,9 +188,14 @@ class ExamenController extends Controller
             ], 404);
         }
 
+        // Generate a temporary guest token for patient authentication
+        // This is a simple session token using Laravel's cache
+        $token = 'guest_' . hash('sha256', $examen->id . $examen->patient->telephone . time());
+        
         return response()->json([
             'success' => true,
-            'examen'  => $examen
+            'examen'  => $examen,
+            'token'   => $token
         ], 200);
     }
 

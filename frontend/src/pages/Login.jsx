@@ -23,52 +23,73 @@ const Login = () => {
   }, [user]);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (loading) return;
-    setLoading(true);
+  e.preventDefault();
+  if (loading) return;
+  setLoading(true);
 
-    if (isStaff) {
-      try {
-        const data = await apiLogin(email, password);
-        console.log("✅ LOGIN SUCCESS:", data);
+  if (isStaff) {
+    // حالة دخول Staff (Admin, Biologiste, etc.)
+    try {
+      const data = await apiLogin(email, password);
+      console.log("✅ STAFF LOGIN SUCCESS:", data);
+      console.log("📝 Token to store:", data.token);
+      console.log("📝 User to store:", data.user);
 
-        // Save directly to localStorage
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("user", JSON.stringify(data.user));
-
-        // Force a clean page reload
-        const role = data.user.role;
-        if (role === "admin") {
-          window.location.href = "/dashboard/admin";
-        } else if (role === "biologiste") {
-          window.location.href = "/dashboard/biologiste";
-        } else if (role === "preleveur") {
-          window.location.href = "/dashboard/preleveur";
-        }
-      } catch (err) {
-        console.error("❌ LOGIN ERROR:", err);
-        toast.error("Email ou Mot de passe incorrect");
-        setLoading(false);
+      if (!data.token) {
+        console.error("❌ ERROR: Token is missing or undefined!");
+        throw new Error("Token not received from server");
       }
-    } else {
-      try {
-        const response = await axios.post("http://localhost:8000/api/patient/auth", {
-          reference: reference,
-          telephone: telephone
-        });
 
-        if (response.data.success) {
-          localStorage.setItem("currentExamen", JSON.stringify(response.data.examen));
-          toast.success("Accès réussi");
-          window.location.href = "/mes-resultats";
-        }
-      } catch (err) {
-        console.error("❌ PATIENT LOGIN ERROR:", err);
-        toast.error("Référence ou Numéro de téléphone incorrect");
-        setLoading(false);
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      console.log("✅ Token stored:", localStorage.getItem("token"));
+
+      const role = data.user.role.toLowerCase();
+      if (role === "admin") {
+        window.location.href = "/dashboard/admin";
+      } else if (role === "biologiste") {
+        window.location.href = "/dashboard/biologiste";
+      } else if (role === "preleveur") {
+        window.location.href = "/dashboard/preleveur";
+      } else {
+        window.location.href = "/dashboard";
       }
+    } catch (err) {
+      console.error("❌ STAFF LOGIN ERROR:", err);
+      toast.error("Email ou Mot de passe incorrect");
+      setLoading(false);
     }
-  };
+  } else {
+  // حالة دخول المريض (الـ else اللي فيها api/patient/auth)
+  try {
+    const response = await axios.post("http://localhost:8000/api/patient/auth", {
+      reference: reference,
+      telephone: telephone
+    });
+
+    if (response.data.success) {
+      // 1. أهم سطر: شد الـ Token اللي صيفطنا من Laravel وحطو فـ localStorage
+      // نتا فـ Laravel صيفطتيه بسميت 'token'
+      localStorage.setItem("token", response.data.token);
+
+      // 2. سجل معلومات المريض (باش الـ Dashboard يعرفو بلي راه Patient)
+      localStorage.setItem("user", JSON.stringify({ role: 'patient' }));
+
+      // 3. سجل معلومات الامتحان (باش يطلعو لينا فـ Mes Résultats)
+      // استعملنا response.data.examen حيت زدناها فـ Laravel
+      localStorage.setItem("currentExamen", JSON.stringify(response.data.examen));
+
+      toast.success("Accès réussi");
+
+      // 4. توجيه المريض لصفحة النتائج
+      window.location.href = "/mes-resultats"; 
+    }
+  } catch (err) {
+    console.error("❌ PATIENT LOGIN ERROR:", err);
+    toast.error("Référence ou Numéro de téléphone incorrect");
+    setLoading(false);
+  }
+};};
      
     
   

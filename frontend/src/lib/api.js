@@ -15,6 +15,11 @@ export async function apiLogin(email, password) {
     // 1. كنقرأو الـ JSON مرة وحدة فقط
     const data = await res.json();
 
+    console.log("🔍 RAW RESPONSE FROM /login:", data);
+    console.log("🔍 Response status:", res.ok);
+    console.log("🔍 Token value:", data?.token);
+    console.log("🔍 User value:", data?.user);
+
     // 2. كنتشكيو واش الـ Response فيه مشكل
     if (!res.ok) {
       // كترميو Error فيه الميساج اللي جاي من Laravel
