@@ -24,7 +24,7 @@ class Analyse extends Model
     /**
      * Relation: Analyse kat-ntami l-Type wahed (Biochimie, etc.)
      */
-    public function type()
+    public function typeAnalyse()
     {
         return $this->belongsTo(TypeAnalyse::class, 'type_analyse_id');
     }

@@ -69,15 +69,7 @@ class PatientController extends Controller
             $patient_id = $patient->id;
         }
 
-        // 3. Création dial l-Examen (biha kaye-t-generer l-Reference automatique f l-Model)
-        $examen = Examen::create([
-            'patient_id'     => $patient_id,
-            'utilisateur_id' => $request->utilisateur_id,
-            'medecin_id'     => $request->medecin_id,
-            'statut'         => 'en_cours',
-        ]);
-
-        // 4. L-7ELL: Enregistrement dial l-ligne d'examen
+        // 4. L-7ELL: Trouver l'analyse d'abord pour récupérer le type_analyse_id
         // Kan-9lbo 3la l-ID dial l-analyse f table 'analyses' b-smit l-khayar li t-khtar
         // Uses LIKE to handle partial matches between frontend nom_analyse and database designation
         $nom_saisi = $request->nom_analyse; 
@@ -86,6 +78,15 @@ class PatientController extends Controller
         $analyse = \App\Models\Analyse::all()->filter(function($item) use ($nom_saisi) {
             return str_contains(strtolower($nom_saisi), strtolower($item->designation));
         })->first();
+
+        // 3. Création dial l-Examen avec type_analyse_id (biha kaye-t-generer l-Reference automatique f l-Model)
+        $examen = Examen::create([
+            'patient_id'     => $patient_id,
+            'utilisateur_id' => $request->utilisateur_id,
+            'medecin_id'     => $request->medecin_id,
+            'statut'         => 'en_cours',
+            'type_analyse_id' => $analyse ? $analyse->type_analyse_id : null,
+        ]);
 
         if ($analyse) {
             LigneExamen::create([

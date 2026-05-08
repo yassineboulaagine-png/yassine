@@ -34,7 +34,7 @@ class PatientAuthController extends Controller
             ->whereHas('patient', function($query) use ($request) {
                 $query->where('telephone', $request->telephone);
             })
-            ->with(['patient', 'type_analyse']) // Chargement des relations[cite: 1]
+            ->with(['patient', 'type_analyse', 'lignes.analyse.typeAnalyse']) // Chargement des relations[cite: 1]
             ->first();
 
         // 3. Gestion d'erreur si l'examen n'est pas trouvé
@@ -68,7 +68,8 @@ class PatientAuthController extends Controller
     public function getResults($id)
     {
         // Récupération de l'examen avec ses lignes de résultats réelles[cite: 1]
-        $examen = Examen::with(['ligneExamens.analyse', 'patient', 'type_analyse'])
+        // Charger type_analyse via les lignes AND via l'examen direct
+        $examen = Examen::with(['lignes.analyse.typeAnalyse', 'patient', 'type_analyse'])
                         ->findOrFail($id);
 
         return response()->json([

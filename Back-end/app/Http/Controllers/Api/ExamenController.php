@@ -11,14 +11,14 @@ class ExamenController extends Controller
 {
     public function index()
     {
-        return Examen::with(['patient', 'lignes.analyse'])->latest()->get();
+        return Examen::with(['patient', 'lignes.analyse.typeAnalyse', 'type_analyse'])->latest()->get();
     }
 
     // FIX: Rejj3na l-data dial lyoum b tariqa sahla bla Carbon today
     public function getTodayExamens()
     {
         
-        return Examen::with(['patient', 'lignes.analyse'])
+        return Examen::with(['patient', 'lignes.analyse.typeAnalyse'])
             ->whereIn('statut', ['en_cours', 'rejete'])
             ->latest()
             ->get();
@@ -29,7 +29,7 @@ class ExamenController extends Controller
     public function getBiologisteExamens()
     {
     // Kan-jibo ghir les examens li m-validyin (statut = valide)
-    return Examen::with(['patient', 'lignes.analyse'])
+    return Examen::with(['patient', 'lignes.analyse.typeAnalyse'])
         ->where('statut', 'valide')
         ->latest()
         ->get();
@@ -47,11 +47,13 @@ class ExamenController extends Controller
             return response()->json(['data' => []]);
         }
 
-        $examens = Examen::with(['type_analyse'])
+        $examens = Examen::with(['patient', 'lignes.analyse.typeAnalyse'])
             ->where('patient_id', $patient->id)
             ->where('statut', 'valide')
             ->latest()
             ->get();
+
+
 
         return ExamenResource::collection($examens);
     }
@@ -86,7 +88,7 @@ class ExamenController extends Controller
 
     public function getPendingValidation()
     {
-        return Examen::with(['patient', 'lignes.analyse'])
+        return Examen::with(['patient', 'lignes.analyse.typeAnalyse'])
             ->where('statut', 'en_validation')
             ->latest()
             ->get();
@@ -94,7 +96,7 @@ class ExamenController extends Controller
 
     public function getHistorique()
     {
-        return Examen::with(['patient', 'lignes.analyse'])
+        return Examen::with(['patient', 'lignes.analyse.typeAnalyse'])
             ->where('statut', 'termine')
             ->latest()
             ->get();
@@ -174,7 +176,7 @@ class ExamenController extends Controller
             'telephone' => 'required|string',
         ]);
 
-        $examen = Examen::with(['patient', 'lignes.analyse'])
+        $examen = Examen::with(['patient', 'lignes.analyse.typeAnalyse'])
             ->where('reference', $request->reference)
             ->whereHas('patient', function ($query) use ($request) {
                 $query->where('telephone', $request->telephone);
@@ -212,4 +214,45 @@ class ExamenController extends Controller
     
     return response()->json(['message' => 'Examen renvoyé à la saisie']);
 }
+
+    /**
+     * Generate PDF Report for Examination Results
+     * Fetches examen with all relationships and renders professional PDF
+     */
+    public function generatePDF($id)
+    {
+        try {
+            // Fetch examen with all required relationships
+            $examen = Examen::with(['lignes.analyse', 'patient', 'type_analyse'])
+                ->findOrFail($id);
+
+            // Extract data for the Blade view
+            $patient = $examen->patient;
+            $lignes = $examen->lignes;
+
+            // Generate PDF using DomPDF
+            $pdf = \PDF::loadView('resultats', [
+                'examen' => $examen,
+                'patient' => $patient,
+                'lignes' => $lignes
+            ]);
+
+            // Configure PDF options
+            $pdf->setPaper('A4', 'portrait');
+            $pdf->setOption('isHtml5ParserEnabled', true);
+            $pdf->setOption('isRemoteEnabled', true);
+
+            // Generate filename with reference
+            $filename = 'Rapport_' . $examen->reference . '_' . now()->format('d-m-Y') . '.pdf';
+
+            // Return PDF as download
+            return $pdf->download($filename);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la génération du PDF: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
 }

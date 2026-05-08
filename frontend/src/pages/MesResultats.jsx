@@ -5,7 +5,7 @@ import { toast } from "sonner";
 
 const MesResultats = () => {
   const [patient, setPatient] = useState(null);
-  const [examens, setExamens] = useState([]);
+  const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [generatingPDF, setGeneratingPDF] = useState(false);
@@ -41,179 +41,85 @@ const MesResultats = () => {
 
     console.log("✅ Token found, fetching data...");
     setToken(validToken);
-    fetchPatientInfo(validToken);
-    fetchMyResults(validToken);
+    
+    
   }, []);
 
-  const fetchPatientInfo = async (authToken) => {
+ 
+    useEffect(() => {
+  const loadAllData = async () => {
     try {
-     const exam = JSON.parse(localStorage.getItem('currentExamen'));
-axios.get(`http://localhost:8000/api/examens/results/${exam.id}`)
+      const examStr = localStorage.getItem('currentExamen');
+      if (!examStr) return;
+      
+      const exam = JSON.parse(examStr);
+      console.log("🔄 Fetching data for exam ID:", exam.id);
 
-      if (response.data) {
-        setPatient(response.data);
-        console.log("Patient info loaded:", response.data);
+      // عيط لـ API وحدة كتعطي كولشي
+      const res = await axios.get(`http://localhost:8000/api/examens/results/${exam.id}`);
+      
+      if (res.data.success) {
+        // كنعمرو المريض والجدول فدقة وحدة
+        setPatient(res.data.examen.patient); 
+        setResults([res.data.examen]); 
+        setLoading(false);
+        console.log("✅ Data loaded successfully!");
+        console.log("FULL EXAMEN:", res.data.examen);
+      console.log("TYPE ANALYSE:", res.data.examen.type_analyse);
       }
     } catch (err) {
-      console.error("Error fetching patient info:", err);
+      console.error("❌ Error loading data:", err);
     }
   };
 
-  const fetchMyResults = async (authToken) => {
-    try {
-      setLoading(true);
-      setError(null);
+  loadAllData();
+}, []); // تأكد بلي القوس خاوي هنا
 
-      const response = await axios.get(
-        "http://localhost:8000/api/examens/my-results",
-        {
-          headers: {
-            Authorization: `Bearer ${authToken}`,
-            Accept: "application/json",
-          },
-        }
-      );
+  
 
-      const data = response.data.data || response.data;
-      setExamens(Array.isArray(data) ? data : []);
-      console.log("Exams loaded:", data);
-      setLoading(false);
-    } catch (err) {
-      console.error("Error fetching results:", err);
-      setError("Impossible de charger vos résultats d'analyses.");
-      setLoading(false);
-      toast.error("Erreur lors du chargement des résultats");
-    }
-  };
+     
 
   const generatePDF = async (examen) => {
     try {
       setGeneratingPDF(true);
+      console.log("📄 Generating PDF for exam ID:", examen.id);
+      console.log("📄 Examen data:", examen);
 
-      // Dynamically import jsPDF and autoTable to prevent loading errors
-      const { default: jsPDF } = await import("jspdf");
-      const { default: autoTable } = await import("jspdf-autotable");
-
-      const doc = new jsPDF({
-        orientation: "portrait",
-        unit: "mm",
-        format: "a4",
-      });
-
-      // Colors and fonts
-      const primaryColor = [51, 65, 85]; // slate-700
-      const lightGray = [241, 245, 249]; // slate-100
-      const darkGray = [30, 41, 59]; // slate-900
-
-      // Set initial position
-      let yPosition = 15;
-
-      // Header Section - Laboratory Name
-      doc.setFontSize(24);
-      doc.setTextColor(...primaryColor);
-      doc.setFont(undefined, "bold");
-      doc.text("Laboratoire d'Analyses Médicales", 105, yPosition, {
-        align: "center",
-      });
-
-      yPosition += 8;
-      doc.setFontSize(10);
-      doc.setFont(undefined, "normal");
-      doc.setTextColor(100, 100, 100);
-      doc.text("Rapport de Résultats d'Analyses", 105, yPosition, {
-        align: "center",
-      });
-
-      // Divider Line
-      yPosition += 8;
-      doc.setDrawColor(...primaryColor);
-      doc.line(15, yPosition, 195, yPosition);
-
-      // Patient Information Section
-      yPosition += 10;
-      doc.setFontSize(12);
-      doc.setTextColor(...darkGray);
-      doc.setFont(undefined, "bold");
-      doc.text("Informations du Patient", 15, yPosition);
-
-      yPosition += 8;
-      doc.setFontSize(10);
-      doc.setFont(undefined, "normal");
-      doc.setTextColor(80, 80, 80);
-
-      const patientInfo = [
-        [`Nom: `, `${patient?.nom_complet || "N/A"}`],
-        [`Email: `, `${patient?.email || "N/A"}`],
-        [`Date du Rapport: `, `${new Date().toLocaleDateString("fr-FR")}`],
-        [`Référence d'Examen: `, `${examen.reference}`],
-      ];
-
-      patientInfo.forEach((info) => {
-        doc.text(info[0], 15, yPosition);
-        doc.setFont(undefined, "normal");
-        doc.text(info[1], 55, yPosition);
-        yPosition += 6;
-      });
-
-      // Results Table Section
-      yPosition += 5;
-      doc.setFontSize(12);
-      doc.setTextColor(...darkGray);
-      doc.setFont(undefined, "bold");
-      doc.text("Résultats d'Analyses", 15, yPosition);
-
-      yPosition += 8;
-
-      // Create table with examination data
-      autoTable(doc, {
-        head: [
-          [
-            {
-              content: "Type d'Analyse",
-              styles: { fontStyle: "bold", fillColor: primaryColor, textColor: [255, 255, 255] },
-            },
-            {
-              content: "Statut",
-              styles: { fontStyle: "bold", fillColor: primaryColor, textColor: [255, 255, 255] },
-            },
-            {
-              content: "Date",
-              styles: { fontStyle: "bold", fillColor: primaryColor, textColor: [255, 255, 255] },
-            },
-          ],
-        ],
-        body: [[examen.analyse_type || "N/A", examen.statut || "N/A", examen.date || "N/A"]],
-        startY: yPosition,
-        margin: 15,
-        styles: {
-          fontSize: 10,
-          cellPadding: 8,
-          border: 1,
-          borderColor: [200, 200, 200],
-          textColor: [30, 41, 59],
-        },
-        alternateRowStyles: {
-          fillColor: lightGray,
-        },
-      });
-
-      // Footer
-      const pageCount = doc.getNumberOfPages();
-      doc.setFontSize(9);
-      doc.setTextColor(150, 150, 150);
-      doc.text(
-        `Page 1 de ${pageCount} - Généré le ${new Date().toLocaleString("fr-FR")}`,
-        105,
-        doc.internal.pageSize.getHeight() - 10,
-        { align: "center" }
+      // Call backend PDF generation endpoint
+      const response = await axios.get(
+        `http://localhost:8000/api/examens/${examen.id}/pdf`,
+        {
+          responseType: 'blob', // Important: handle response as binary
+          headers: {
+            'Accept': 'application/pdf'
+          }
+        }
       );
 
-      // Save PDF
-      doc.save(`Resultats_${examen.reference}_${new Date().getTime()}.pdf`);
-      toast.success("PDF téléchargé avec succès!");
+      // Create blob URL and trigger download
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Rapport_${examen.reference}_${new Date().toISOString().split('T')[0]}.pdf`;
+      
+      // Append to body, click, and clean up
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      console.log("✅ PDF downloaded successfully!");
+      toast.success("Rapport PDF téléchargé avec succès!");
     } catch (error) {
-      console.error("Error generating PDF:", error);
-      toast.error("Erreur lors de la génération du PDF");
+      console.error("❌ Error generating PDF:", error);
+      
+      // Check if error response has specific message
+      if (error.response?.data?.message) {
+        toast.error(`Erreur: ${error.response.data.message}`);
+      } else {
+        toast.error("Erreur lors de la génération du rapport PDF");
+      }
     } finally {
       setGeneratingPDF(false);
     }
@@ -444,6 +350,8 @@ axios.get(`http://localhost:8000/api/examens/results/${exam.id}`)
     );
   }
 
+ <div>console.log(res.data.examen);</div>
+
   // Not Logged In State
   if (!token || error) {
     return (
@@ -490,15 +398,11 @@ axios.get(`http://localhost:8000/api/examens/results/${exam.id}`)
                 <User size={28} color="#4f46e5" />
               </div>
               <div style={styles.patientInfo}>
-                <div style={styles.patientName}>{patient?.nom_complet || "Patient"}</div>
+                <div style={styles.patientName}>{(`${patient?.nom || ""} ${patient?.prenom || ""}`.trim() || "Patient")}</div>
                 <div style={styles.infoGrid}>
                   <div style={styles.infoItem}>
-                    <div style={styles.infoLabel}>Email</div>
-                    <div style={styles.infoValue}>{patient?.email || "N/A"}</div>
-                  </div>
-                  <div style={styles.infoItem}>
-                    <div style={styles.infoLabel}>Rôle</div>
-                    <div style={styles.infoValue}>{patient?.role || "Patient"}</div>
+                    <div style={styles.infoLabel}>Nom Complet</div>
+                    <div style={styles.infoValue}>{(`${patient?.nom || ""} ${patient?.prenom || ""}`.trim() || "-")}</div>
                   </div>
                   <div style={styles.infoItem}>
                     <div style={styles.infoLabel}>Date d'accès</div>
@@ -511,7 +415,7 @@ axios.get(`http://localhost:8000/api/examens/results/${exam.id}`)
         )}
 
         {/* Empty State */}
-        {examens.length === 0 ? (
+        {results.length === 0 ? (
           <div style={styles.card}>
             <div style={styles.emptyState}>
               <div style={styles.emptyIcon}>
@@ -525,6 +429,10 @@ axios.get(`http://localhost:8000/api/examens/results/${exam.id}`)
           /* Results Table */
           <>
             <div style={styles.card}>
+              <div style={{ marginBottom: "16px" }}>
+                <h2 style={{ fontSize: "16px", fontWeight: "600", color: "#111827", marginBottom: "4px" }}>Vos Résultats d'Analyses</h2>
+                <p style={{ fontSize: "13px", color: "#6b7280" }}>Patient: <strong>{`${patient?.nom || ""} ${patient?.prenom || ""}`.trim() || "-"}</strong></p>
+              </div>
               <div style={{ overflowX: "auto" }}>
                 <table style={styles.table}>
                   <thead style={styles.thead}>
@@ -537,20 +445,20 @@ axios.get(`http://localhost:8000/api/examens/results/${exam.id}`)
                     </tr>
                   </thead>
                   <tbody>
-                    {examens.map((examen, index) => (
+                    {results.map((examen, index) => (
                       <tr key={index} style={styles.tr}>
                         <td style={styles.td}>
-                          <span style={styles.reference}>{examen.reference}</span>
+                          <span style={styles.reference}>{examen?.reference || "-"}</span>
                         </td>
-                        <td style={styles.td}>{examen.analyse_type || "N/A"}</td>
+                        <td style={styles.td}>{examen?.type_analyse?.libelle || examen?.lignes?.[0]?.analyse?.typeAnalyse?.libelle || "-"}</td>
                         <td style={styles.td}>
                           <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                             <Calendar size={14} color="#9ca3af" />
-                            {examen.date}
+                            {examen?.date_examen ? new Date(examen.date_examen).toLocaleDateString("fr-FR") : "-"}
                           </div>
                         </td>
                         <td style={styles.td}>
-                          <span style={styles.statusBadge}>{examen.statut}</span>
+                          <span style={styles.statusBadge}>{examen?.statut ? examen.statut.replace('_', ' ') : "-"}</span>
                         </td>
                         <td style={{ ...styles.td, textAlign: "right" }}>
                           <button
@@ -566,6 +474,7 @@ axios.get(`http://localhost:8000/api/examens/results/${exam.id}`)
                             onMouseLeave={(e) => {
                               if (!generatingPDF) e.target.style.background = "#4f46e5";
                             }}
+                            title="Télécharger le rapport PDF"
                           >
                             {generatingPDF ? (
                               <>
@@ -589,7 +498,7 @@ axios.get(`http://localhost:8000/api/examens/results/${exam.id}`)
 
             {/* Tip Box */}
             <div style={styles.tipBox}>
-              💡 <strong>Astuce:</strong> Cliquez sur le bouton "PDF" pour télécharger un rapport professionnel de vos analyses.
+              💡 <strong>Astuce:</strong> Cliquez sur le bouton "PDF" pour télécharger un rapport professionnel de vos analyses avec tous les détails.
             </div>
           </>
         )}

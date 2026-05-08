@@ -30,6 +30,7 @@ Route::get('/examens-today', [ExamenController::class, 'getTodayExamens']);
 Route::get('/examens-biologiste', [ExamenController::class, 'getBiologisteExamens']);
 Route::get('/examens-validation', [ExamenController::class, 'getPendingValidation']);
 Route::get('/examens-historique', [ExamenController::class, 'getHistorique']);
+Route::get('/examens/{id}/pdf', [ExamenController::class, 'generatePDF']); // PDF generation endpoint
 
 // Protected write routes (require authentication)
 Route::middleware('auth:sanctum')->group(function () {
@@ -53,6 +54,8 @@ Route::middleware('auth:sanctum')->get('/user/profile', function (Request $reque
 
 Route::post('/patient/check-access', [PatientAuthController::class, 'checkAccess']);
 Route::get('/patient/results/{id}', [PatientAuthController::class, 'getResults']);
+// تأكد بلي الرابط هو هادا
+Route::get('/examens/results/{id}', [App\Http\Controllers\Api\PatientAuthController::class, 'getResults']);
 
 // --- 6. Sanctum Protected ---
 Route::middleware('auth:sanctum')->group(function () {
