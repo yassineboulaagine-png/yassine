@@ -227,7 +227,7 @@ class ExamenController extends Controller
                 ->findOrFail($id);
 
             // Extract data for the Blade view
-            $patient = $examen->patient;
+            $patient = $examen->patient; 
             $lignes = $examen->lignes;
 
             // Generate PDF using DomPDF
@@ -255,4 +255,7 @@ class ExamenController extends Controller
         }
     }
 
+
+
+    
 }

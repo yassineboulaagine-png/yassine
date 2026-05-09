@@ -4,6 +4,7 @@ import { LayoutDashboard, Users, TestTube2, LogOut, UserCircle } from "lucide-re
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import PatientsManagement from "./PatientsManagement";
+import AnalysesManagement from "./AnalysesManagement";
 import "./Dashboard.css";
 
 const DashboardAdmin = () => {
@@ -101,6 +102,10 @@ const DashboardAdmin = () => {
 
           {activeTab === 'patients' && (
             <PatientsManagement />
+          )}
+
+          {activeTab === 'analyses' && (
+            <AnalysesManagement />
           )}
         </div>
       </main>

@@ -17,7 +17,8 @@ class Examen extends Model
         'reference',
         'patient_id',
         'utilisateur_id',
-        'biologiste_id'
+        'biologiste_id',
+        'type_analyse'
     ];
 
     /**
