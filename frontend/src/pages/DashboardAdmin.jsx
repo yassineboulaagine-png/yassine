@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { LayoutDashboard, Users, TestTube2, LogOut, UserCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import PatientsManagement from "./PatientsManagement";
 import "./Dashboard.css";
 
 const DashboardAdmin = () => {
@@ -99,11 +100,7 @@ const DashboardAdmin = () => {
           )}
 
           {activeTab === 'patients' && (
-            <div className="fade-in">
-              <h3>Gestion des Patients</h3>
-              <p>Ici vous pouvez ajouter ou modifier les patients.</p>
-              {/* غانصاوبو الجدول هنا من بعد */}
-            </div>
+            <PatientsManagement />
           )}
         </div>
       </main>

@@ -7,6 +7,8 @@ use App\Http\Controllers\Api\PatientController;
 use App\Http\Controllers\Api\ExamenController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\BiologisteController;
+use App\Http\Controllers\Api\MedecinController;
+use App\Http\Controllers\Api\AnalyseController;
 
 use App\Http\Controllers\Api\PatientAuthController;
 // --- 1. Public Routes ---
@@ -47,6 +49,22 @@ Route::get('/biologiste/profile-stats/{userId}', [BiologisteController::class, '
 
 // Authenticated route for current user's stats
 Route::middleware('auth:sanctum')->get('/biologiste/stats', [BiologisteController::class, 'getStats']);
+
+// --- 5a. Medecins and Analyses (Read-only for most users) ---
+Route::get('/medecins', [MedecinController::class, 'index']);
+Route::get('/medecins/{id}', [MedecinController::class, 'show']);
+Route::get('/analyses', [AnalyseController::class, 'index']);
+Route::get('/analyses/{id}', [AnalyseController::class, 'show']);
+
+// Protected write routes for medecins and analyses
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/medecins', [MedecinController::class, 'store']);
+    Route::put('/medecins/{id}', [MedecinController::class, 'update']);
+    Route::delete('/medecins/{id}', [MedecinController::class, 'destroy']);
+    Route::post('/analyses', [AnalyseController::class, 'store']);
+    Route::put('/analyses/{id}', [AnalyseController::class, 'update']);
+    Route::delete('/analyses/{id}', [AnalyseController::class, 'destroy']);
+});
 
 Route::middleware('auth:sanctum')->get('/user/profile', function (Request $request) {
     return response()->json($request->user());
