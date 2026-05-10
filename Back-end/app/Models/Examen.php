@@ -18,7 +18,8 @@ class Examen extends Model
         'patient_id',
         'utilisateur_id',
         'biologiste_id',
-        'type_analyse'
+        'type_analyse',
+        'valeur'
     ];
 
     /**

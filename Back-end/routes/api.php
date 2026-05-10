@@ -25,6 +25,7 @@ Route::middleware('auth:sanctum')->group(function (){
     Route::get('/patients/user-patient-count/{id}', [PatientController::class, 'getUserPatientCount']);
     Route::get('/patients/biologiste-stats/{biologistId}', [PatientController::class, 'getBiologistStats']);
     Route::apiResource('patients', PatientController::class);
+    Route::put('/examens/{id}', [ExamenController::class, 'update']);
 });
 // --- 4. Examens (Logic dial Dashboard) ---
 // Public read routes
@@ -74,6 +75,7 @@ Route::post('/patient/check-access', [PatientAuthController::class, 'checkAccess
 Route::get('/patient/results/{id}', [PatientAuthController::class, 'getResults']);
 // تأكد بلي الرابط هو هادا
 Route::get('/examens/results/{id}', [App\Http\Controllers\Api\PatientAuthController::class, 'getResults']);
+Route::get('/stats/monthly-analyses', [ExamenController::class, 'getMonthlyStats']);
 
 // --- 6. Sanctum Protected ---
 Route::middleware('auth:sanctum')->group(function () {

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Search, FileText, Trash2, X } from "lucide-react";
+import { Plus, Search, FileText, Trash2, X, Edit3 } from "lucide-react";
 import axios from "axios";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,10 @@ const AnalysesManagement = () => {
   const [openModal, setOpenModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [downloadingPdf, setDownloadingPdf] = useState(null);
+
+  const [isResultModalOpen, setIsResultModalOpen] = useState(false);
+  const [selectedExamen, setSelectedExamen] = useState(null);
+  const [resultValue, setResultValue] = useState(""); 
 
   const [formData, setFormData] = useState({
     patient_id: "",
@@ -66,6 +70,23 @@ const AnalysesManagement = () => {
       setLoading(false);
     }
   };
+
+  const handleSaveResult = async () => {
+  try {
+    await axios.patch(
+      `${API_BASE_URL}/examens/${selectedExamen.id}/resultat`,
+      { statut: 'termine' },
+      getAxiosConfig()  // ✅ زدنا token
+    );
+    setIsResultModalOpen(false);
+    setResultValue("");
+    fetchExamens();
+    toast.success("Résultat enregistré !");
+  } catch (error) {
+    console.error("Error saving result:", error);
+    toast.error("Erreur lors de l'enregistrement");
+  }
+};
 
   const fetchPatients = async () => {
     try {
@@ -196,8 +217,13 @@ const AnalysesManagement = () => {
     return statusMap[status] || status;
   };
 
+  
   return (
-    <div className="analyses-management">
+    
+    
+    <div className="analyses-management" >
+     
+
       {/* Header Section */}
       <div className="analyses-header">
         <div className="analyses-header-top">
@@ -252,6 +278,8 @@ const AnalysesManagement = () => {
               </tr>
             </thead>
             <tbody>
+
+                
               {filteredExamens.map((examen) => (
                 <tr key={examen.id}>
                   <td className="reference-cell">
@@ -270,6 +298,19 @@ const AnalysesManagement = () => {
                   <td>{formatDate(examen.created_at)}</td>
                   <td>
                     <div className="actions-cell">
+                      {examen.statut === "en_cours" && (
+                        <button
+                          className="action-btn edit-btn"
+                          onClick={() => {
+                            setSelectedExamen(examen);
+                            setResultValue(examen.valeur || "");
+                            setIsResultModalOpen(true);
+                          }}
+                          title="Saisie des Résultats"
+                        >
+                          <Edit3 size={18} />
+                        </button>
+                      )}
                       <button
                         className="action-btn pdf-btn"
                         onClick={() => handleGeneratePDF(examen.id)}
@@ -342,11 +383,55 @@ const AnalysesManagement = () => {
                 >
                   {isSubmitting ? "Création en cours..." : "Créer l'Analyse"}
                 </Button>
+
+                
               </div>
             </form>
           </div>
         </div>
       )}
+
+     {isResultModalOpen && (
+  <div style={{
+    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    zIndex: 9999
+  }}>
+    <div style={{
+      backgroundColor: 'white', padding: '24px',
+      borderRadius: '12px', width: '400px', boxShadow: '0 10px 40px rgba(0,0,0,0.2)'
+    }}>
+      <h2 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '16px' }}>
+        Saisir le résultat
+      </h2>
+      <p style={{ color: '#666', marginBottom: '16px', fontSize: '14px' }}>
+        Patient: <strong>{selectedExamen?.patient?.prenom} {selectedExamen?.patient?.nom}</strong>
+      </p>
+      <input
+        type="text"
+        value={resultValue}
+        onChange={(e) => setResultValue(e.target.value)}
+        placeholder="Ex: 1.20 g/l"
+        style={{ width: '100%', border: '1px solid #ddd', padding: '8px', borderRadius: '6px', marginBottom: '16px' }}
+      />
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+        <button 
+          onClick={() => setIsResultModalOpen(false)}
+          style={{ padding: '8px 16px', color: '#666' }}
+        >
+          Annuler
+        </button>
+        <button 
+          onClick={handleSaveResult}
+          style={{ padding: '8px 16px', backgroundColor: '#2563eb', color: 'white', borderRadius: '6px' }}
+        >
+          Valider
+        </button>
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 };

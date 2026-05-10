@@ -6,6 +6,10 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Examen;
 use App\Http\Resources\ExamenResource;
+use PDF;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\ResultatExamenMail;
 
 class ExamenController extends Controller
 {
@@ -150,10 +154,15 @@ class ExamenController extends Controller
             'biologiste_id' => auth()->id()  // Track which biologist validated
         ]);
 
+        if ($examen->patient && $examen->patient->email) {
+        Mail::to($examen->patient->email)->send(new ResultatExamenMail($examen));
+    }
+
         return response()->json([
             'success' => true,
             'message' => 'Examen validé et terminé!'
         ]);
+       
     }
 
     public function updateResult(Request $request, $id)
@@ -161,7 +170,7 @@ class ExamenController extends Controller
         $examen = Examen::findOrFail($id);
 
         $request->validate([
-            'statut' => 'required|in:en_cours,valide,termine,annule,rejete',
+            'statut' => 'required|in:en_cours,valide,termine,annule,rejete,en_validation',
         ]);
 
         $examen->update(['statut' => $request->statut]);
@@ -231,7 +240,7 @@ class ExamenController extends Controller
             $lignes = $examen->lignes;
 
             // Generate PDF using DomPDF
-            $pdf = \PDF::loadView('resultats', [
+            $pdf = PDF::loadView('resultats', [
                 'examen' => $examen,
                 'patient' => $patient,
                 'lignes' => $lignes
@@ -255,7 +264,69 @@ class ExamenController extends Controller
         }
     }
 
+        public function store(Request $request)
+{
+    try {
 
+        $request->validate([
+            'patient_id' => 'required|exists:patients,id',
+        ]);
 
-    
+        $examen = Examen::create([
+            'patient_id' => $request->patient_id,
+            'medecin_id' => 1,
+            'utilisateur_id' => auth()->id(),
+            'statut' => 'en_cours',
+            'reference' => 'EX-' . strtoupper(uniqid()),
+            'date_examen' => now(),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Analyse créée avec succès',
+            'data' => $examen
+        ], 201);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Erreur lors de la création de l\'examen: ' . $e->getMessage()
+        ], 500);
+        //
+
+       
+    }
 }
+
+public function update(Request $request, $id)
+{
+    // 1. كنقلبو على التحليلة بـ ID
+    $examen = Examen::findOrFail($id);
+
+    // 2. كنفيليتريو الداتا (Validation)
+    $request->validate([
+        'valeur' => 'required', // النتيجة ضرورية باش تولي الحالة Terminée
+    ]);
+
+    // 3. كنحدثو البيانات
+    $examen->update([
+        'valeur' => $request->valeur,
+        'statut' => 'Terminée', // هنا فين كيتغير اللون للأخضر في الجدول
+    ]);
+
+    // 4. كنرجعو جواب لـ React بلي كولشي داز مزيان
+    return response()->json([
+        'message' => 'Résultat enregistré avec succès',
+        'examen' => $examen
+    ]);
+}
+
+public function getMonthlyStats()
+{
+    // هاد السطر كايعيط لـ الـ Procedure Stockée اللي كريينا الفوق
+    $results = DB::select('CALL GetMonthlyAnalyses()');
+    
+    return response()->json($results);
+}
+
+}    
