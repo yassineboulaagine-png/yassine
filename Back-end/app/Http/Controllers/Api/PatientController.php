@@ -26,32 +26,60 @@ class PatientController extends Controller
         ->get();
     }
 
-    public function store(Request $request)
+   public function store(Request $request)
     {
-        // Validate basic patient info
         $request->validate([
-            'nom'            => 'required|string',
-            'prenom'         => 'required|string',
-            'cin'            => 'required|string|unique:patients,cin',
-            'telephone'      => 'required|string|size:10',
-            'sexe'           => 'required|in:M,F',
-            'date_naissance' => 'required|date',
+            'nom'               => 'required|string',
+            'prenom'            => 'required|string',
+            'cin'               => 'required|string|unique:patients,cin',
+            'telephone'         => 'required|string|size:10',
+            'sexe'              => 'required|in:M,F',
+            'date_naissance'    => 'required|date',
+            // IMPORTANT: must match DB column name exactly
+            'type_analyse_id'  => 'nullable|integer',
         ]);
 
-        // Create patient
-        $patient = Patient::create([
-            'nom' => $request->nom,
-            'prenom' => $request->prenom,
-            'cin' => $request->cin,
-            'telephone' => $request->telephone,
-            'sexe' => $request->sexe,
-            'date_naissance' => $request->date_naissance,
-            'user_id' => null  // Can be updated later
-        ]);
-        
-        return response()->json($patient, 201);
+        try {
+            return DB::transaction(function () use ($request) {
+                $userId = auth()->id() ?? 3;
+
+                $patient = Patient::create([
+                    'nom'             => $request->nom,
+                    'prenom'          => $request->prenom,
+                    'cin'             => $request->cin,
+                    'telephone'       => $request->telephone,
+                    'sexe'            => $request->sexe,
+                    'date_naissance'  => $request->date_naissance,
+                    'user_id'         => $userId,
+                ]);
+
+                $examen = Examen::create([
+                    'patient_id'      => $patient->id,
+                    'date_examen'     => now(),
+                    'statut'          => 'en_cours',
+                    // IMPORTANT: sync with DB FK column type_analyse_id
+                    'type_analyse_id' => $request->type_analyse_id,
+                    'utilisateur_id'  => $userId,
+                    // Reference generation is already handled by Examen model boot() (keep it consistent)
+                ]);
+
+                return response()->json([
+                    'message' => 'Patient et Examen créés avec succès',
+                    'patient' => $patient,
+                    'examen'  => [
+                        'id' => $examen->id,
+                        'reference' => $examen->reference,
+                    ],
+                    'examen_reference' => $examen->reference,
+                ], 201);
+            });
+        } catch (\Throwable $e) {
+            return response()->json([
+                'error' => 'Erreur lors de la création',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
     }
-
     public function update(Request $request, $id)
     {
         $patient = Patient::findOrFail($id);
@@ -124,4 +152,6 @@ class PatientController extends Controller
             'alertes_pathologiques' => $alertesPathologiques
         ]);
     }
+
+    
 }
