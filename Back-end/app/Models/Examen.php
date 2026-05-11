@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Support\Str; // ضرورية باش نولدو الكود العشوائي
+use Illuminate\Support\Str;
 
 class Examen extends Model
 {
@@ -18,38 +18,36 @@ class Examen extends Model
         'patient_id',
         'utilisateur_id',
         'biologiste_id',
-        'type_analyse',
+        'type_analyse_id',
         'valeur'
     ];
 
     /**
-     * Logic أوتوماتيكي للـ Reference والوقت
+     * Génération automatique de la référence et de la date
+     * FIX: reference générée ICI seulement — le Controller ne doit pas en générer une autre
      */
     protected static function boot()
     {
         parent::boot();
-        
+
         static::creating(function ($examen) {
-            // 1. توليد Reference آمنة وغير قابلة للتوقع
-            // التنسيق: EX-2026-0001-A4B2 (الرقم الترتيبي + كود عشوائي من 4 حروف)
-            $count = Examen::count() + 1;
+            // Référence unique: EX-2026-0001-A4B2
+            $count    = Examen::count() + 1;
             $sequence = str_pad($count, 4, '0', STR_PAD_LEFT);
-            $randomSuffix = strtoupper(Str::random(4)); // كود عشوائي باش حد ما يتوقع الكود اللي قبل منه
-            
-            $examen->reference = 'EX-' . date('Y') . '-' . $sequence . '-' . $randomSuffix;
-            
-            // 2. دير تاريخ اليوم أوتوماتيكياً إلا مكنش داخل من الـ Front
+            $suffix   = strtoupper(Str::random(4));
+
+            $examen->reference = 'EX-' . date('Y') . '-' . $sequence . '-' . $suffix;
+
+            // Date automatique si non fournie
             if (!$examen->date_examen) {
                 $examen->date_examen = now();
             }
         });
     }
 
-    /**
-     * ---------------------------------------------------------
-     * العلاقات (ORM Relations)
-     * ---------------------------------------------------------
-     */
+    // ─────────────────────────────────────────
+    // Relations
+    // ─────────────────────────────────────────
 
     public function patient()
     {
@@ -66,9 +64,14 @@ class Examen extends Model
         return $this->belongsTo(User::class, 'utilisateur_id');
     }
 
+    public function biologiste()
+    {
+        return $this->belongsTo(User::class, 'biologiste_id');
+    }
+
     public function lignes()
     {
-        return $this->hasMany(LigneExamen::class,'examen_id');
+        return $this->hasMany(LigneExamen::class, 'examen_id');
     }
 
     public function facture()
@@ -78,12 +81,16 @@ class Examen extends Model
 
     public function resultats()
     {
-        return $this->hasManyThrough(Resultat::class, LigneExamen::class, 'examen_id', 'ligne_examen_id');
+        return $this->hasManyThrough(
+            Resultat::class,
+            LigneExamen::class,
+            'examen_id',
+            'ligne_examen_id'
+        );
     }
 
     public function type_analyse()
-{
-    // هادي كتربط كل examen بنوع التحليلة ديالو
-    return $this->belongsTo(TypeAnalyse::class, 'type_analyse_id'); 
-}
+    {
+        return $this->belongsTo(TypeAnalyse::class, 'type_analyse_id');
+    }
 }

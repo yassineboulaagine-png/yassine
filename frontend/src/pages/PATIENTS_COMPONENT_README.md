@@ -151,7 +151,7 @@ import PatientsManagement from "./PatientsManagement";
 ### 1. Change API Base URL
 Locate this line in `PatientsManagement.jsx`:
 ```javascript
-const API_BASE_URL = "http://localhost:8000/api";
+const API_BASE_URL = "http://projet_pff.test/Back-end/public/api";
 ```
 Update to your actual API endpoint.
 

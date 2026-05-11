@@ -369,7 +369,7 @@
                                     @if($ligne->valeur_resultat !== null)
                                         {{ number_format($ligne->valeur_resultat, 2, ',', ' ') }}
                                     @else
-                                        <em>En attente</em>
+                                        <em>en_cours</em>
                                     @endif
                                 </td>
                                 <td class="unite-col">

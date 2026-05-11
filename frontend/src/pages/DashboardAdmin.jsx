@@ -93,7 +93,7 @@ const DashboardAdmin = () => {
                   <span style={{ fontSize: '24px', fontWeight: '800' }}>85</span>
                 </div>
                 <div style={{ background: '#fff7ed', padding: '20px', borderRadius: '10px', borderLeft: '4px solid #ea580c' }}>
-                  <p style={{ color: '#9a3412', fontWeight: 'bold' }}>En Attente</p>
+                  <p style={{ color: '#9a3412', fontWeight: 'bold' }}>en_cours</p>
                   <span style={{ fontSize: '24px', fontWeight: '800' }}>12</span>
                 </div>
               </div>

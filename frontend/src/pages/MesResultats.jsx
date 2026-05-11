@@ -56,7 +56,7 @@ const MesResultats = () => {
       console.log("🔄 Fetching data for exam ID:", exam.id);
 
       // عيط لـ API وحدة كتعطي كولشي
-      const res = await axios.get(`http://localhost:8000/api/examens/results/${exam.id}`);
+      const res = await axios.get(`http://projet_pff.test/Back-end/public/api/examens/results/${exam.id}`);
       
       if (res.data.success) {
         // كنعمرو المريض والجدول فدقة وحدة
@@ -87,7 +87,7 @@ const MesResultats = () => {
 
       // Call backend PDF generation endpoint
       const response = await axios.get(
-        `http://localhost:8000/api/examens/${examen.id}/pdf`,
+        `http://projet_pff.test/Back-end/public/api/examens/${examen.id}/pdf`,
         {
           responseType: 'blob', // Important: handle response as binary
           headers: {

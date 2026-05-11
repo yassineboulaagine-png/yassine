@@ -26,7 +26,7 @@ const Profile = () => {
         
         // Fetch user data including avatar URL
         const response = await axios.get(
-          "http://localhost:8000/api/user/profile",
+          "http://projet_pff.test/Back-end/public/api/user/profile",
           {
             headers: { Authorization: `Bearer ${token}` }
           }
@@ -42,7 +42,7 @@ const Profile = () => {
         // Fetch patient count for this user
         try {
           const patientCountResponse = await axios.get(
-            `http://localhost:8000/api/patients/user-patient-count/${response.data.id}`,
+            `http://projet_pff.test/Back-end/public/api/patients/user-patient-count/${response.data.id}`,
             {
               headers: { Authorization: `Bearer ${token}` }
             }
@@ -65,14 +65,14 @@ const Profile = () => {
       try {
         const token = localStorage.getItem("token");
         const userResponse = await axios.get(
-          "http://localhost:8000/api/user/profile",
+          "http://projet_pff.test/Back-end/public/api/user/profile",
           {
             headers: { Authorization: `Bearer ${token}` }
           }
         );
         
         const patientCountResponse = await axios.get(
-          `http://localhost:8000/api/patients/user-patient-count/${userResponse.data.id}`,
+          `http://projet_pff.test/Back-end/public/api/patients/user-patient-count/${userResponse.data.id}`,
           {
             headers: { Authorization: `Bearer ${token}` }
           }
@@ -112,7 +112,7 @@ const Profile = () => {
 
       // Send to backend with proper headers
       const response = await axios.post(
-        "http://localhost:8000/api/profile/update-avatar",
+        "http://projet_pff.test/Back-end/public/api/profile/update-avatar",
         formData,
         {
           headers: {

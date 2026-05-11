@@ -26,60 +26,45 @@ class PatientController extends Controller
         ->get();
     }
 
-   public function store(Request $request)
-    {
-        $request->validate([
-            'nom'               => 'required|string',
-            'prenom'            => 'required|string',
-            'cin'               => 'required|string|unique:patients,cin',
-            'telephone'         => 'required|string|size:10',
-            'sexe'              => 'required|in:M,F',
-            'date_naissance'    => 'required|date',
-            // IMPORTANT: must match DB column name exactly
-            'type_analyse_id'  => 'nullable|integer',
+public function store(Request $request)
+{
+    try {
+        // 1. تسجيل المريض
+        $patient = Patient::create([
+            'nom'            => $request->nom,
+            'prenom'         => $request->prenom,
+            'cin'            => $request->cin,
+            'telephone'      => $request->telephone,
+            'sexe'           => $request->sexe,
+            'date_naissance' => $request->date_naissance,
+            'user_id'        => auth()->id() ?? 3, 
         ]);
 
-        try {
-            return DB::transaction(function () use ($request) {
-                $userId = auth()->id() ?? 3;
+        // 2. تسجيل التحليلة (هنا فين كاين المشكل عندك)
+        $examen = new Examen();
+        $examen->patient_id = $patient->id;
+        $examen->date_examen = now(); // باش تبان اليوم ضروري
+        $examen->statut = 'en_cours';
+        $examen->type_analyse_id = $request->type_analyse_id ?? 1;
+        $examen->utilisateur_id = auth()->id() ?? 3;
+        $examen->medecin_id = 1;
+        $examen->reference = 'REF-' . rand(1000, 9999);
+        $examen->save();
 
-                $patient = Patient::create([
-                    'nom'             => $request->nom,
-                    'prenom'          => $request->prenom,
-                    'cin'             => $request->cin,
-                    'telephone'       => $request->telephone,
-                    'sexe'            => $request->sexe,
-                    'date_naissance'  => $request->date_naissance,
-                    'user_id'         => $userId,
-                ]);
+        return response()->json([
+            'status' => 'success',
+            'examen_reference' => $examen->reference,
+            'patient' => $patient
+        ], 201);
 
-                $examen = Examen::create([
-                    'patient_id'      => $patient->id,
-                    'date_examen'     => now(),
-                    'statut'          => 'en_cours',
-                    // IMPORTANT: sync with DB FK column type_analyse_id
-                    'type_analyse_id' => $request->type_analyse_id,
-                    'utilisateur_id'  => $userId,
-                    // Reference generation is already handled by Examen model boot() (keep it consistent)
-                ]);
-
-                return response()->json([
-                    'message' => 'Patient et Examen créés avec succès',
-                    'patient' => $patient,
-                    'examen'  => [
-                        'id' => $examen->id,
-                        'reference' => $examen->reference,
-                    ],
-                    'examen_reference' => $examen->reference,
-                ], 201);
-            });
-        } catch (\Throwable $e) {
-            return response()->json([
-                'error' => 'Erreur lors de la création',
-                'message' => $e->getMessage(),
-            ], 500);
-        }
+    } catch (\Exception $e) {
+        // هاد السطر هو اللي غايقول لينا علاش ما كيبانش فـ الجدول
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Lmochkil kayn hna: ' . $e->getMessage()
+        ], 500);
     }
+}
     public function update(Request $request, $id)
     {
         $patient = Patient::findOrFail($id);

@@ -4,13 +4,13 @@
 **File:** `frontend/src/pages/PatientsManagement.jsx` (Line 11)
 ```javascript
 // Current
-const API_BASE_URL = "http://localhost:8000/api";
+const API_BASE_URL = "http://projet_pff.test/Back-end/public/api";
 
 // Production Example
 const API_BASE_URL = "https://api.helixlab.com/api";
 
 // Environment Variable (Recommended)
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://projet_pff.test/Back-end/public/api";
 ```
 
 ---
@@ -472,7 +472,7 @@ toast.success("Message", { duration: 5000 }); // 5 seconds
 ## Environment Variables (Optional)
 **Create `.env.local` in frontend directory:**
 ```
-VITE_API_BASE_URL=http://localhost:8000/api
+VITE_API_BASE_URL=http://projet_pff.test/Back-end/public/api
 VITE_APP_NAME=Helix Lab
 ```
 
@@ -487,10 +487,10 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 ```bash
 # Get all patients
 curl -H "Authorization: Bearer YOUR_TOKEN" \
-  http://localhost:8000/api/patients
+  http://projet_pff.test/Back-end/public/api/patients
 
 # Add new patient
-curl -X POST http://localhost:8000/api/patients \
+curl -X POST http://projet_pff.test/Back-end/public/api/patients \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -503,13 +503,13 @@ curl -X POST http://localhost:8000/api/patients \
   }'
 
 # Update patient
-curl -X PUT http://localhost:8000/api/patients/1 \
+curl -X PUT http://projet_pff.test/Back-end/public/api/patients/1 \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"nom":"Dupont Updated"}'
 
 # Delete patient
-curl -X DELETE http://localhost:8000/api/patients/1 \
+curl -X DELETE http://projet_pff.test/Back-end/public/api/patients/1 \
   -H "Authorization: Bearer YOUR_TOKEN"
 ```
 

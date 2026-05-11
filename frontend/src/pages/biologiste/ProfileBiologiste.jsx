@@ -29,7 +29,7 @@ const ProfileBiologiste = () => {
         
         // Fetch user data including avatar URL
         const response = await axios.get(
-          "http://localhost:8000/api/user/profile",
+          "http://projet_pff.test/Back-end/public/api/user/profile",
           {
             headers: { Authorization: `Bearer ${token}` }
           }
@@ -63,7 +63,7 @@ const ProfileBiologiste = () => {
 
         // Use the authenticated endpoint - no need to pass userId
         const response = await axios.get(
-          "http://localhost:8000/api/biologiste/stats",
+          "http://projet_pff.test/Back-end/public/api/biologiste/stats",
           {
             headers: {
               Authorization: `Bearer ${token}`
@@ -113,7 +113,7 @@ const ProfileBiologiste = () => {
 
       // Send to backend with proper headers
       const response = await axios.post(
-        "http://localhost:8000/api/profile/update-avatar",
+        "http://projet_pff.test/Back-end/public/api/profile/update-avatar",
         formData,
         {
           headers: {

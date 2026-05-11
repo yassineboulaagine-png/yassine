@@ -30,7 +30,7 @@ const DashboardBiologiste = () => {
       const token = localStorage.getItem("token");
 
       const response = await axios.get(
-        "http://localhost:8000/api/me",
+        "http://projet_pff.test/Back-end/public/api/me",
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -91,7 +91,7 @@ const DashboardBiologiste = () => {
   const fetchAnalysesLyoum = async (isInitial = false) => {
     try {
       if (isInitial) setAnalysesLoading(true);
-      const response = await axios.get("http://localhost:8000/api/examens-biologiste");
+      const response = await axios.get("http://projet_pff.test/Back-end/public/api/examens-biologiste");
       
       // Toast notification if new exams arrived
       if (!isInitial && response.data.length > previousLength) {
@@ -106,14 +106,18 @@ const DashboardBiologiste = () => {
         setAnalysesLoading(false);
       }
     } catch (error) {
-      console.error("Error fetching analyses:", error);
+      console.error("Error fetching analyses:");
+      console.log(error);
+       console.log(error.response);
+  console.log(error.response?.data);
+  console.log(error.response?.data?.message);
       if (isInitial) setAnalysesLoading(false);
     }
   };
 
   const fetchValidation = async () => {
     try {
-      const response = await axios.get("http://localhost:8000/api/examens-validation");
+      const response = await axios.get("http://projet_pff.test/Back-end/public/api/examens-validation");
       setExamenValidation(response.data);
     } catch (error) {
       console.error("Error fetching validation:", error);
@@ -122,7 +126,7 @@ const DashboardBiologiste = () => {
 
   const fetchHistorique = async () => {
     try {
-      const response = await axios.get("http://localhost:8000/api/examens-historique");
+      const response = await axios.get("http://projet_pff.test/Back-end/public/api/examens-historique");
       setExamenHistorique(response.data);
     } catch (error) {
       console.error("Error fetching historique:", error);
@@ -184,7 +188,7 @@ const DashboardBiologiste = () => {
 
     try {
       const response = await axios.post(
-        `http://localhost:8000/api/examens/${selectedExamen.id}/resultats`,
+        `http://projet_pff.test/Back-end/public/api/examens/${selectedExamen.id}/resultats`,
         { resultats: resultatsArray },
         {
           headers: {
@@ -206,7 +210,7 @@ const DashboardBiologiste = () => {
   const handleFinalApprove = async (id) => {
     try {
       await axios.patch(
-        `http://localhost:8000/api/examens/${id}/approve`,
+        `http://projet_pff.test/Back-end/public/api/examens/${id}/approve`,
         {},
         {
           headers: {
@@ -225,9 +229,9 @@ const DashboardBiologiste = () => {
   const handleReject = async (id) => {
   if (window.confirm("Voulez-vous renvoyer cet examen à la saisie pour modification ?")) {
     try {
-      // Kat-sift l-statut 'En attente' bach i-welli i-bane f "Mes Analyses"
+      // Kat-sift l-statut 'en_cours' bach i-welli i-bane f "Mes Analyses"
       await axios.put(
-        `http://localhost:8000/api/examens/${id}/reject`,
+        `http://projet_pff.test/Back-end/public/api/examens/${id}/reject`,
         { statut: 'rejete' },
         {
           headers: {
@@ -329,7 +333,7 @@ const DashboardBiologiste = () => {
               {analysesLoading ? (
                 <div style={{padding: '40px', textAlign: 'center', color: '#94a3b8'}}><p>Chargement...</p></div>
               ) : analysesLyoum.length === 0 ? (
-                <div style={{padding: '40px', textAlign: 'center', color: '#94a3b8'}}><p>Aucune analyse en attente.</p></div>
+                <div style={{padding: '40px', textAlign: 'center', color: '#94a3b8'}}><p>Aucune analyse en_cours.</p></div>
               ) : (
                 <table className="hl-table">
                   <thead>
@@ -366,7 +370,7 @@ const DashboardBiologiste = () => {
           {activeTab === 'validation' && (
             <div className="hl-table-container">
               {examenValidation.length === 0 ? (
-                <div style={{padding: '40px', textAlign: 'center', color: '#94a3b8'}}><p>Aucune analyse en attente de validation.</p></div>
+                <div style={{padding: '40px', textAlign: 'center', color: '#94a3b8'}}><p>Aucune analyse en_cours de validation.</p></div>
               ) : (
                 <table className="hl-table">
                   <thead>

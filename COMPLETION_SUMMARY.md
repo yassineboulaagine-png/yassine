@@ -188,7 +188,7 @@ The component is already imported and integrated into the admin dashboard. No ad
 ### 2. Configure API URL
 **File:** `frontend/src/pages/PatientsManagement.jsx` (Line 11)
 ```javascript
-const API_BASE_URL = "http://localhost:8000/api"; // Update this
+const API_BASE_URL = "http://projet_pff.test/Back-end/public/api"; // Update this
 ```
 
 ### 3. Create Backend API

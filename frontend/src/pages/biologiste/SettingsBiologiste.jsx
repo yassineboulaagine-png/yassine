@@ -22,7 +22,7 @@ const SettingsBiologiste = () => {
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.put(`http://localhost:8000/api/user/update-profile`, {
+      const response = await axios.put(`http://projet_pff.test/Back-end/public/api/user/update-profile`, {
         user_id: userData.id,
         ...profile
       });
@@ -46,7 +46,7 @@ const SettingsBiologiste = () => {
     }
     try {
       // T-aked dima mn l-URL anaho fih http:// o mafihch "/" f l-akhir bach t-fada error 405
-      const response = await axios.post(`http://localhost:8000/api/user/change-password`, {
+      const response = await axios.post(`http://projet_pff.test/Back-end/public/api/user/change-password`, {
         user_id: userData.id,
         oldPassword: passwords.oldPassword,
         newPassword: passwords.newPassword

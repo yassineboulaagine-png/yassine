@@ -1,4 +1,4 @@
-const API_BASE = "http://localhost:8000/api";
+const API_BASE = "http://projet_pff.test/Back-end/public/api";
 
 // LOGIN
 export async function apiLogin(email, password) {

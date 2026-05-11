@@ -28,7 +28,7 @@ All required dependencies are already in your `package.json`:
 ### Step 2: API Base URL Configuration
 **Current Setting:**
 ```javascript
-const API_BASE_URL = "http://localhost:8000/api";
+const API_BASE_URL = "http://projet_pff.test/Back-end/public/api";
 ```
 
 **Location:** `frontend/src/pages/PatientsManagement.jsx` (Line 11)

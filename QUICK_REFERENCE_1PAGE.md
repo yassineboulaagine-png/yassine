@@ -47,7 +47,7 @@
 ### Step 1: Update API URL
 **File:** `frontend/src/pages/PatientsManagement.jsx` (Line 11)
 ```javascript
-const API_BASE_URL = "http://localhost:8000/api"; // Update this
+const API_BASE_URL = "http://projet_pff.test/Back-end/public/api"; // Update this
 ```
 
 ### Step 2: Create Backend API

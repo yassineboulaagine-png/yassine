@@ -9,88 +9,88 @@ use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\BiologisteController;
 use App\Http\Controllers\Api\MedecinController;
 use App\Http\Controllers\Api\AnalyseController;
-
 use App\Http\Controllers\Api\PatientAuthController;
-// --- 1. Public Routes ---
+
+// ============================================================
+// --- 1. PUBLIC ROUTES (No Auth Required) ---
+// ============================================================
+
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/patient/auth', [ExamenController::class, 'patientLogin']);
+Route::post('/patient/check-access', [PatientAuthController::class, 'checkAccess']);
 
-// --- 2. User & Profile ---
-Route::put('/user/update-profile', [UserController::class, 'updateProfile']);
-Route::post('/user/change-password', [UserController::class, 'changePassword']);
-
-// --- 3. Patients ---
-Route::middleware('auth:sanctum')->group(function (){
-    Route::get('/patients/count/{id}', [PatientController::class, 'getUserStats']);
-    Route::get('/patients/user-patient-count/{id}', [PatientController::class, 'getUserPatientCount']);
-    Route::get('/patients/biologiste-stats/{biologistId}', [PatientController::class, 'getBiologistStats']);
-    Route::apiResource('patients', PatientController::class);
-    Route::put('/examens/{id}', [ExamenController::class, 'update']);
-});
-// --- 4. Examens (Logic dial Dashboard) ---
-// Public read routes
-Route::get('/examens-today', [ExamenController::class, 'getTodayExamens']);
+// Examens - Read public
+Route::get('/examens-today',      [ExamenController::class, 'getTodayExamens']);
 Route::get('/examens-biologiste', [ExamenController::class, 'getBiologisteExamens']);
 Route::get('/examens-validation', [ExamenController::class, 'getPendingValidation']);
 Route::get('/examens-historique', [ExamenController::class, 'getHistorique']);
-Route::get('/examens/{id}/pdf', [ExamenController::class, 'generatePDF']); // PDF generation endpoint
-
-// Protected write routes (require authentication)
-Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/examens/my-results', [ExamenController::class, 'getMyResults']);
-    Route::patch('/examens/{id}/valider', [ExamenController::class, 'validerExamen']);
-    Route::patch('/examens/{id}/annuler', [ExamenController::class, 'annulerExamen']);
-    Route::post('/examens/{id}/resultats', [ExamenController::class, 'storeResults']);
-    Route::patch('/examens/{id}/approve', [ExamenController::class, 'finalApprove']);
-    Route::put('/examens/{id}/reject', [ExamenController::class, 'reject']);
-});
-
-// --- 5. Biologiste ---
-Route::get('/biologiste/profile-stats/{userId}', [BiologisteController::class, 'profileStats']);
-
-// Authenticated route for current user's stats
-Route::middleware('auth:sanctum')->get('/biologiste/stats', [BiologisteController::class, 'getStats']);
-
-// --- 5a. Medecins and Analyses (Read-only for most users) ---
-Route::get('/medecins', [MedecinController::class, 'index']);
-Route::get('/medecins/{id}', [MedecinController::class, 'show']);
-Route::get('/analyses', [AnalyseController::class, 'index']);
-Route::get('/analyses/{id}', [AnalyseController::class, 'show']);
-
-// Protected write routes for medecins and analyses
-Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/medecins', [MedecinController::class, 'store']);
-    Route::put('/medecins/{id}', [MedecinController::class, 'update']);
-    Route::delete('/medecins/{id}', [MedecinController::class, 'destroy']);
-    Route::post('/analyses', [AnalyseController::class, 'store']);
-    Route::put('/analyses/{id}', [AnalyseController::class, 'update']);
-    Route::delete('/analyses/{id}', [AnalyseController::class, 'destroy']);
-});
-
-Route::middleware('auth:sanctum')->get('/user/profile', function (Request $request) {
-    return response()->json($request->user());
-});
-
-Route::post('/patient/check-access', [PatientAuthController::class, 'checkAccess']);
-Route::get('/patient/results/{id}', [PatientAuthController::class, 'getResults']);
-// تأكد بلي الرابط هو هادا
-Route::get('/examens/results/{id}', [App\Http\Controllers\Api\PatientAuthController::class, 'getResults']);
 Route::get('/stats/monthly-analyses', [ExamenController::class, 'getMonthlyStats']);
 
-// --- 6. Sanctum Protected ---
+// Patient results - public
+Route::get('/patient/results/{id}',  [PatientAuthController::class, 'getResults']);
+Route::get('/examens/results/{id}',  [PatientAuthController::class, 'getResults']);
+
+// Medecins & Analyses - Read public
+Route::get('/medecins',      [MedecinController::class, 'index']);
+Route::get('/medecins/{id}', [MedecinController::class, 'show']);
+Route::get('/analyses',      [AnalyseController::class, 'index']);
+Route::get('/analyses/{id}', [AnalyseController::class, 'show']);
+
+// Biologiste profile stats - public
+Route::get('/biologiste/profile-stats/{userId}', [BiologisteController::class, 'profileStats']);
+
+// ============================================================
+// --- 2. PROTECTED ROUTES (auth:sanctum Required) ---
+// ============================================================
+
 Route::middleware('auth:sanctum')->group(function () {
-    Route::apiResource('users', UserController::class);
-    Route::get('/examens', [ExamenController::class, 'index']);
-    Route::post('/examens', [ExamenController::class, 'store']);
-    Route::patch('/examens/{id}/resultat', [ExamenController::class, 'updateResult']);
+
+    // --- Auth ---
     Route::post('/logout', [AuthController::class, 'logout']);
-    
-    // Profile endpoints
+    Route::get('/me', fn(Request $r) => $r->user());
+
+    // --- Profile ---
+    Route::put('/user/update-profile',    [UserController::class, 'updateProfile']);
+    Route::post('/user/change-password',  [UserController::class, 'changePassword']);
     Route::post('/profile/update-avatar', [AuthController::class, 'updateProfile']);
-    Route::get('/profile/get', [AuthController::class, 'getProfile']);
-    
-    Route::get('/me', function (Request $request) {
-        return $request->user();
-    });
-    
+    Route::get('/profile/get',            [AuthController::class, 'getProfile']);
+    Route::get('/user/profile',           fn(Request $r) => response()->json($r->user()));
+
+    // --- Users ---
+    Route::apiResource('users', UserController::class);
+
+    // --- Patients ---
+    // IMPORTANT: Routes spécifiques AVANT apiResource pour éviter les conflits
+    Route::get('/patients/count/{id}',                    [PatientController::class, 'getUserStats']);
+    Route::get('/patients/user-patient-count/{id}',       [PatientController::class, 'getUserPatientCount']);
+    Route::get('/patients/biologiste-stats/{biologistId}',[PatientController::class, 'getBiologistStats']);
+    Route::apiResource('patients', PatientController::class);
+
+    // --- Examens ---
+    // IMPORTANT: Routes spécifiques AVANT les routes avec {id}
+    Route::get('/examens/my-results',         [ExamenController::class, 'getMyResults']);
+    Route::get('/examens',                    [ExamenController::class, 'index']);
+    Route::post('/examens',                   [ExamenController::class, 'store']);
+
+    // Routes avec {id} — après les routes fixes
+    Route::get('/examens/{id}/pdf',           [ExamenController::class, 'generatePDF']);
+    Route::post('/examens/{id}/resultats',    [ExamenController::class, 'storeResults']);
+    Route::patch('/examens/{id}/valider',     [ExamenController::class, 'validerExamen']);
+    Route::patch('/examens/{id}/annuler',     [ExamenController::class, 'annulerExamen']);
+    Route::patch('/examens/{id}/approve',     [ExamenController::class, 'finalApprove']);
+    Route::patch('/examens/{id}/resultat',    [ExamenController::class, 'updateResult']);
+    Route::put('/examens/{id}/reject',        [ExamenController::class, 'reject']);
+    Route::put('/examens/{id}',               [ExamenController::class, 'update']);
+
+    // --- Medecins & Analyses (Write) ---
+    Route::post('/medecins',        [MedecinController::class, 'store']);
+    Route::put('/medecins/{id}',    [MedecinController::class, 'update']);
+    Route::delete('/medecins/{id}', [MedecinController::class, 'destroy']);
+    Route::post('/analyses',        [AnalyseController::class, 'store']);
+    Route::put('/analyses/{id}',    [AnalyseController::class, 'update']);
+    Route::delete('/analyses/{id}', [AnalyseController::class, 'destroy']);
+
+    // --- Biologiste ---
+    Route::get('/biologiste/stats', [BiologisteController::class, 'getStats']);
+
 });
