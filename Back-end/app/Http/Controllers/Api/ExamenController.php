@@ -29,10 +29,9 @@ class ExamenController extends Controller
     public function getTodayExamens()
     {
         try {
-            $examens = Examen::with(['patient', 'lignes.analyse', 'type_analyse'])
-                ->whereDate('created_at', now()->toDateString())
-                ->latest()
-                ->get();
+           // فـ الـ function اللي كترجع الـ Examens للـ Dashboard
+$examens = Examen::with(['patient', 'typeAnalyse'])->whereDate('created_at', now())->get();
+               
 
             return response()->json($examens);
 
@@ -85,7 +84,7 @@ class ExamenController extends Controller
         try {
             $request->validate([
                 'patient_id'      => 'required|exists:patients,id',
-                'type_analyse_id' => 'required|exists:type_analyses,id',
+                'selectedExamen' => 'required|exists:type_analyses,id',
             ]);
 
             $examen = Examen::create([

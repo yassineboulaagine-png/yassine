@@ -20,7 +20,10 @@ return new class extends Migration
     $table->string('telephone');
     $table->date('date_naissance');
     $table->enum('sexe', ['M', 'F']);
+
    // اختياري باش نـفاليديو نقطة الإيميل
+   $table->string('email')->nullable();
+    $table->foreignId('user_id')->nullable()->constrained('utilisateurs')->onDelete('set null');
      
             $table->timestamps();
         });

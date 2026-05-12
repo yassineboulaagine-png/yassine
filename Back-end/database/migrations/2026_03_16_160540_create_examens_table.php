@@ -23,6 +23,9 @@ return new class extends Migration
             
             // الربط مع جدول utilisateurs (ضروري نحددو السمية هنا)
             $table->foreignId('utilisateur_id')->constrained('utilisateurs')->onDelete('cascade');
+            $table->foreignId('type_analyse_id')->nullable()->constrained('type_analyses')->onDelete('set null');
+            $table->foreignId('biologiste_id')->nullable()->constrained('utilisateurs');
+            $table->string('valeur')->nullable();
             
             $table->timestamps();
         });

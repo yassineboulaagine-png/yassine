@@ -6,9 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Patient;
 use App\Models\Examen;
-use App\Models\Analyse;
 use App\Models\LigneExamen;
-use Illuminate\Support\Facades\DB;
+
 
 
 class PatientController extends Controller
@@ -28,8 +27,19 @@ class PatientController extends Controller
 
 public function store(Request $request)
 {
+     die("HANA WASALT L HNA");
     try {
-        // 1. تسجيل المريض
+        $request->validate([
+            'nom'            => 'required|string|max:255',
+            'prenom'         => 'required|string|max:255',
+            'cin'            => 'required|string|unique:patients,cin',
+            'telephone'      => 'required|string',
+            'sexe'           => 'required|in:M,F',
+            'date_naissance' => 'required|date',
+            'type_analyse_id' => 'required|exists:type_analyses,id',
+        ]);
+
+        // ✅ Patient safi — exam kaytzad mn ExamenController
         $patient = Patient::create([
             'nom'            => $request->nom,
             'prenom'         => $request->prenom,
@@ -37,33 +47,40 @@ public function store(Request $request)
             'telephone'      => $request->telephone,
             'sexe'           => $request->sexe,
             'date_naissance' => $request->date_naissance,
-            'user_id'        => auth()->id() ?? 3, 
+            'user_id'        => auth()->id() ?? 3,
         ]);
 
-        // 2. تسجيل التحليلة (هنا فين كاين المشكل عندك)
-        $examen = new Examen();
-        $examen->patient_id = $patient->id;
-        $examen->date_examen = now(); // باش تبان اليوم ضروري
-        $examen->statut = 'en_cours';
-        $examen->type_analyse_id = $request->type_analyse_id ?? 1;
-        $examen->utilisateur_id = auth()->id() ?? 3;
-        $examen->medecin_id = 1;
-        $examen->reference = 'REF-' . rand(1000, 9999);
-        $examen->save();
-
+       $examen = new Examen();
+$examen->patient_id = $patient->id;
+$examen->date_examen = now();
+$examen->statut = 'en_cours';
+$examen->reference = 'EX-' . date('Y') . '-' . strtoupper(Str::random(4));
+$examen->medecin_id = 1;
+$examen->utilisateur_id = 99;
+$examen->type_analyse_id = $request->selectedExamen; // ID du type d'analyse sélectionné
+$examen->save();
+$examen->load('typeAnalyse');
         return response()->json([
-            'status' => 'success',
-            'examen_reference' => $examen->reference,
+            'status'  => 'success',
+            'id'      => $patient->id,   // ← React ghadi ykhdem b had l'id
             'patient' => $patient
         ], 201);
 
-    } catch (\Exception $e) {
-        // هاد السطر هو اللي غايقول لينا علاش ما كيبانش فـ الجدول
+    } catch (\Illuminate\Validation\ValidationException $e) {
         return response()->json([
             'status' => 'error',
-            'message' => 'Lmochkil kayn hna: ' . $e->getMessage()
+            'errors' => $e->errors()
+        ], 422);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'status'  => 'error',
+            'message' => $e->getMessage(),
+            'line'    => $e->getLine()
         ], 500);
     }
+
+    
 }
     public function update(Request $request, $id)
     {
@@ -137,6 +154,7 @@ public function store(Request $request)
             'alertes_pathologiques' => $alertesPathologiques
         ]);
     }
+    
 
     
 }

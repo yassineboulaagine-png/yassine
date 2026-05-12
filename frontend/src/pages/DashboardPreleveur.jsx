@@ -86,6 +86,15 @@ const DashboardPreleveur = () => {
     try {
       // ── CAS 1: Nouvel examen pour patient existant ──────────
       if (isNewExam && currentPatientId) {
+
+        console.log("🔍 selectedExamen:", selectedExamen);          // ← wach kayn ID?
+        console.log("🔍 parseInt:", parseInt(selectedExamen));
+
+         if (!selectedExamen) {
+    toast.error("Veuillez choisir un type d'analyse !");
+    return;
+  }
+
         const examPayload = {
           patient_id:      currentPatientId,
           type_analyse_id: parseInt(selectedExamen),
@@ -128,8 +137,13 @@ const DashboardPreleveur = () => {
       const patientRes = await axios.post(API_URL, patientPayload, {
         headers: { Authorization: `Bearer ${token}` }
       });
+      console.log("2️⃣ patientRes.data:", patientRes.data);
+
 
       const newPatientId = patientRes.data?.id || patientRes.data?.data?.id;
+      console.log("3️⃣ newPatientId:", newPatientId);
+console.log("4️⃣ selectedExamen:", selectedExamen);
+console.log("5️⃣ condition (newPatientId && selectedExamen):", !!(newPatientId && selectedExamen));
 
       if (newPatientId && selectedExamen) {
         const examRes = await axios.post(
