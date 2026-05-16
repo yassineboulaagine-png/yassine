@@ -340,6 +340,7 @@
 
         <!-- Results Table -->
         <div class="section">
+            
             <div class="section-title">Résultats d'Analyses</div>
             @if($lignes && count($lignes) > 0)
                 <table class="results-table">
@@ -357,18 +358,10 @@
                                 <td class="designation-col">
                                     {{ $ligne->analyse?->designation ?? 'N/A' }}
                                 </td>
-                               <td class="resultat-col 
-    @if($ligne->valeur_resultat !== null)
-        @if($ligne->valeur_resultat > $ligne->analyse?->norme_max || $ligne->valeur_resultat < $ligne->analyse?->norme_min)
-            abnormal
-        @else
-            normal
-        @endif
-    @endif
-">
-    {{-- 🛠️ هنا فين غايقرا النتيجة اللي دوزها الـ Biologiste ديريكت --}}
-    @if($ligne->valeur_resultat !== null)
-        {{ number_format($ligne->valeur_resultat, 2, ',', ' ') }}
+                              <td class="resultat-col">
+    {{-- 🌟 هنا الـ PDF غايـقـرا ديريكت من الـ داتابيز، إيلا لقى الـ رقم غايـطـبـعو بلا ما يـصـدع راسـو بـ الـ statut --}}
+    @if($ligne->valeur_resultat !== null && $ligne->valeur_resultat !== '')
+        {{ number_format((float)$ligne->valeur_resultat, 2, ',', ' ') }}
     @else
         <span style="color: #e67e22; font-style: italic;">en_cours</span>
     @endif

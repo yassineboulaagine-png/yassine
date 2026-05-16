@@ -16,6 +16,12 @@ use App\Http\Controllers\StaffController;
 // ============================================================
 // --- 1. PUBLIC ROUTES (No Auth Required) ---
 // ============================================================
+Route::get('/login', function () {
+    return response()->json(['status' => 'error', 'message' => 'Unauthenticated.'], 401);
+})->name('login');
+
+    Route::get('/examens/{id}/pdf',           [ExamenController::class, 'generatePDF']);
+
 
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/patient/auth', [ExamenController::class, 'patientLogin']);
@@ -83,7 +89,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/examens',                   [ExamenController::class, 'store']);
 
     // Routes avec {id} — après les routes fixes
-    Route::get('/examens/{id}/pdf',           [ExamenController::class, 'generatePDF']);
     Route::post('/examens/{id}/resultats',    [ExamenController::class, 'storeResults']);
     Route::patch('/examens/{id}/valider',     [ExamenController::class, 'validerExamen']);
     Route::patch('/examens/{id}/annuler',     [ExamenController::class, 'annulerExamen']);

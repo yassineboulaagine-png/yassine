@@ -56,7 +56,7 @@ const MesResultats = () => {
       console.log("🔄 Fetching data for exam ID:", exam.id);
 
       // عيط لـ API وحدة كتعطي كولشي
-      const res = await axios.get(`http://projet_pff.test/apiexamens/results/${exam.id}`);
+      const res = await axios.get(`http://projet_pff.test/api/examens/results/${exam.id}`);
       
       if (res.data.success) {
         // كنعمرو المريض والجدول فدقة وحدة
@@ -79,51 +79,47 @@ const MesResultats = () => {
 
      
 
-  const generatePDF = async (examen) => {
+ const generatePDF = async (examen) => {
     try {
       setGeneratingPDF(true);
       console.log("📄 Generating PDF for exam ID:", examen.id);
-      console.log("📄 Examen data:", examen);
-
-      // Call backend PDF generation endpoint
+  
+      // 1. جلب الـ Token لي عندك ديجا مخزّن ف المتصفح
+      const token = localStorage.getItem('token'); 
+  
+      // 2. صيفط الطلب بـ الـ Blob ديالك القديم + الـ Token ف الـ Headers
       const response = await axios.get(
-        `http://projet_pff.test/apiexamens/${examen.id}/pdf`,
+        `http://projet_pff.test/api/examens/${examen.id}/pdf`,
         {
-          responseType: 'blob', // Important: handle response as binary
+          responseType: 'blob', // الكود ديالك القديم النقي
           headers: {
+            'Authorization': `Bearer ${token}`, // 🌟 هادي هي لي كاتحل القفل ديال الـ Auth
             'Accept': 'application/pdf'
           }
         }
       );
-
-      // Create blob URL and trigger download
+  
+      // 3. تحويل الـ Blob وتحميل الملف (الكود ديالك القديم كمـا هو)
       const blob = new Blob([response.data], { type: 'application/pdf' });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
       link.download = `Rapport_${examen.reference}_${new Date().toISOString().split('T')[0]}.pdf`;
       
-      // Append to body, click, and clean up
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-
+  
       console.log("✅ PDF downloaded successfully!");
       toast.success("Rapport PDF téléchargé avec succès!");
     } catch (error) {
       console.error("❌ Error generating PDF:", error);
-      
-      // Check if error response has specific message
-      if (error.response?.data?.message) {
-        toast.error(`Erreur: ${error.response.data.message}`);
-      } else {
-        toast.error("Erreur lors de la génération du rapport PDF");
-      }
+      toast.error("Erreur lors de la génération du rapport PDF");
     } finally {
       setGeneratingPDF(false);
     }
-  };
+};
 
   const handleLoginClick = () => {
     window.location.href = "/login";

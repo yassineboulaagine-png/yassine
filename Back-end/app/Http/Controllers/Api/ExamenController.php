@@ -10,6 +10,10 @@ use PDF;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\ResultatExamenMail;
+use App\Models\LigneExamen;
+use App\Models\Analyse;
+use App\Models\Patient;
+
 
 class ExamenController extends Controller
 {
@@ -166,61 +170,69 @@ $examens = Examen::with(['patient', 'type_analyse'])->whereDate('created_at', no
     }
 
     /**
-     * Saisir les résultats d'un examen
+     * Enregistrer les résultats (Par l'Admin / Préleveur)
      */
-   public function storeResults(Request $request, $id)
-{
-    // 1. 🚨 جلب الـ Examen أول حاجة (كانت ناقصة عندك ف السكرين!)
-    $examen = Examen::findOrFail($id);
-
-    // 2. الـ Validation
-    $request->validate([
-        'resultats' => 'required|array',
-        'resultats.*.ligne_id' => 'required|integer',
-        'resultats.*.valeur' => 'nullable|string',
-        'resultats.*.commentaire' => 'nullable|string',
-    ]);
-
-    try {
-        // 3. الـ Loop باستعمال الـ Model ديريكت باش نقطعو الشك ف الـ Relation
-        foreach ($request->resultats as $resultat) {
-            
-            // 🛠️ هنا دق ف الباب ديال الـ Model ديريكت بـ الـ ID ديال الـ السطر
-            // وتأكد باللي هاد السطر تابع للـ Examen ديالنا
-            $ligne = \App\Models\LigneExamen::where('id', $resultat['ligne_id'])
-                                            ->where('examen_id', $id)
-                                            ->first();
-            
-            if ($ligne) {
-                $valeur = $resultat['valeur'] ?? null;
-                // تنظيف وتحويل القيمة لـ float
-                $valeurClean = ($valeur !== null && $valeur !== '') ? (float)str_replace(',', '.', $valeur) : null;
-
-                $ligne->update([
-                    'valeur_resultat' => $valeurClean,
-                    'commentaire' => $resultat['commentaire'] ?? null
-                ]);
-            }
-        }
-
-        // 4. تحديث الـ Statut ديال الفحص لـ 'termine'
-        $examen->update([
-            'statut' => 'termine'
+    public function storeResults(Request $request, $id)
+    {
+        \Log::info('📥 storeResults REQUEST RECEIVED:', [
+            'examen_id' => $id,
+            'all_data' => $request->all()
         ]);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Résultats enregistrés avec succès',
-            'examen' => $examen->load('lignes')
-        ], 200);
+        $examen = Examen::findOrFail($id);
 
-    } catch (\Exception $e) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Erreur: ' . $e->getMessage()
-        ], 500);
+        try {
+            // 1. Check if data comes as an array or direct input from React
+            if ($request->has('resultats') && is_array($request->resultats)) {
+                foreach ($request->resultats as $resultat) {
+                    $ligne = $examen->lignes()->find($resultat['ligne_id']);
+                    if ($ligne) {
+                        $valeur = $resultat['valeur'] ?? null;
+                        $valeurClean = ($valeur !== null && $valeur !== '') ? (float)str_replace(',', '.', $valeur) : null;
+                        
+                        $ligne->update([
+                            'valeur_resultat' => $valeurClean,
+                            'commentaire' => $resultat['commentaire'] ?? null
+                        ]);
+                    }
+                }
+            } else {
+                // Fallback: If React sends direct input fields instead of an array
+                $ligne = \App\Models\LigneExamen::where('examen_id', $id)->first();
+                if ($ligne) {
+                    $valeurInput = $request->valeur ?? $request->valeur_resultat ?? $request->input('resultats.0.valeur');
+                    $valeurClean = ($valeurInput !== null && $valeurInput !== '') ? (float)str_replace(',', '.', $valeurInput) : null;
+
+                    \Log::info('💾 Saving via storeResults (Direct Input Fallback):', ['valeur_clean' => $valeurClean]);
+
+                    $ligne->update([
+                        'valeur_resultat' => $valeurClean,
+                        'commentaire' => $request->commentaire ?? $request->input('resultats.0.commentaire') ?? null
+                    ]);
+                }
+            }
+
+            // 2. FORCE 'valide' status so Cards calculate it and PDF displays the number
+            $examen->update([
+                'statut' => 'en_validation' // نغيروها لـ 'en_validation' باش البايولوجيست يشوفها فـ Pending Validation ويعطيها Validation نهائية
+            ]);
+
+            \Log::info('✨ storeResults SUCCESS: Status strictly updated to valide');
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Résultats enregistrés et validés avec succès',
+                'examen' => $examen->load('lignes')
+            ], 200);
+
+        } catch (\Exception $e) {
+            \Log::error('❌ Error in storeResults: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur: ' . $e->getMessage()
+            ], 500);
+        }
     }
-}
 
     /**
      * Valider un examen — FIX: auth()->id() (machi auth()->$id())
@@ -277,14 +289,14 @@ $examens = Examen::with(['patient', 'type_analyse'])->whereDate('created_at', no
     }
 
     /**
-     * Approbation finale d'un examen
+     * Approbation finale d'un examen (Par le Biologiste)
      */
     public function finalApprove($id)
     {
         $examen = Examen::findOrFail($id);
 
         $examen->update([
-            'statut'        => 'termine',
+            'statut' => 'termine',
             'biologiste_id' => auth()->id()
         ]);
 
@@ -297,31 +309,58 @@ $examens = Examen::with(['patient', 'type_analyse'])->whereDate('created_at', no
             'message' => 'Examen validé et terminé!'
         ]);
     }
-
     /**
-     * Mettre à jour le statut d'un examen
+     * Mettre à jour le statut et la valeur d'un examen dynamically
      */
     public function updateResult(Request $request, $id)
     {
+        \Log::info('📥 updateResult REQUEST RECEIVED:', [
+            'examen_id' => $id,
+            'all_data' => $request->all()
+        ]);
+
         $examen = Examen::findOrFail($id);
 
         $request->validate([
             'statut' => 'required|in:en_cours,valide,termine,annule,rejete,en_validation',
         ]);
 
-        $examen->update(['statut' => $request->statut]);
+        try {
+            $ligne = \App\Models\LigneExamen::where('examen_id', $id)->first();
+            if ($ligne) {
+                $valeurInput = $request->valeur ?? $request->valeur_resultat;
+                if ($valeurInput !== null) {
+                    $valeurClean = ($valeurInput !== '') ? (float)str_replace(',', '.', $valeurInput) : null;
+                    
+                    \Log::info('💾 Saving via updateResult:', ['valeur_clean' => $valeurClean]);
+                    
+                    $ligne->update([
+                        'valeur_resultat' => $valeurClean,
+                        'commentaire' => $request->commentaire ?? $ligne->commentaire
+                    ]);
+                }
+            }
 
-        return response()->json($examen);
+            // Dynamically updates based on the exact react instruction
+            $updated = $examen->update([
+                'statut' => $request->statut
+            ]);
+
+            \Log::info('✨ updateResult COMPLETED SUCCESSFULLY');
+
+            return response()->json([
+                'success' => true,
+                'examen' => $examen->load('lignes')
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('❌ Error in updateResult: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur: ' . $e->getMessage()
+            ], 500);
+        }
     }
-
-    /**
-     * Mettre à jour un examen (valeur + statut)
-     */
-   
-
-    /**
-     * Rejeter un examen (renvoyer à la saisie)
-     */
    public function reject($id)
 {
     try {
@@ -388,30 +427,36 @@ $examens = Examen::with(['patient', 'type_analyse'])->whereDate('created_at', no
     /**
      * Générer un PDF pour les résultats d'un examen
      */
-    public function generatePDF($id)
+ public function generatePDF($id)
     {
         try {
+            // 1. جلب البيانات مع العلاقات كاملين
             $examen = Examen::with(['lignes.analyse', 'patient', 'type_analyse'])
                 ->findOrFail($id);
 
             $patient = $examen->patient;
             $lignes  = $examen->lignes;
 
-            $pdf = PDF::loadView('resultats', [
+            // 2. توليد الـ PDF ف الـ الـ ذاكرة (Memory)
+            $pdf = \PDF::loadView('resultats', [
                 'examen'  => $examen,
                 'patient' => $patient,
                 'lignes'  => $lignes
             ]);
-
+            
             $pdf->setPaper('A4', 'portrait');
-            $pdf->setOption('isHtml5ParserEnabled', true);
-            $pdf->setOption('isRemoteEnabled', true);
 
             $filename = 'Rapport_' . $examen->reference . '_' . now()->format('d-m-Y') . '.pdf';
 
-            return $pdf->download($filename);
+            // 🌟 3. ها هو السطر لّي كاتقلّب عليه محطوط هنا ف الـلّخر ديال الـ try:
+            return $pdf->stream($filename, [
+                "Content-Type" => "application/pdf",
+                "Content-Disposition" => "attachment; filename=\"" . $filename . "\""
+            ]);
 
         } catch (\Exception $e) {
+            \Log::error('❌ PDF Generation Error: ' . $e->getMessage());
+            
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur lors de la génération du PDF: ' . $e->getMessage()

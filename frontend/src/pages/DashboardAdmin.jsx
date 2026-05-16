@@ -62,7 +62,7 @@ const DashboardAdmin = () => {
   // 🎨 ألوان الـ Pie Chart (أخضر للـ Validées، ليموني للـ En cours)
   const COLORS = ['#16a34a', '#ea580c'];
   const pieData = [
-    { name: 'Valide', value: stats.cards.analyses_validees },
+    { name: 'valide', value: stats.cards.analyses_validees },
     { name: 'en_cours', value: stats.cards.en_cours },
   ];
 

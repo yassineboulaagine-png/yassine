@@ -13,11 +13,12 @@ class DashboardController extends Controller
     {
         // 1. حساب الأرقام الإجمالية للـ Cards
         $totalPatients = Patient::count();
-        $analysesValidees = Examen::where('statut', 'Valide')->count(); // أو 'Terminé' على حسب شنو داير
+       // الـ كود الـ مريّغل الجديد:
+        $analysesValidees = Examen::whereIn('statut', ['valide', 'termine'])->count(); // أو 'Terminé' على حسب شنو داير
         $analysesEnCours = Examen::where('statut', 'en_cours')->count(); // أو 'En attente'
 
         // 2. جلب بيانات الـ Graph (مثلاً: عدد التحاليل Validées في كل شهر من هاد العام)
-        $graphData = Examen::where('statut', 'Valide')
+        $graphData = Examen::where('statut', 'valide')
             ->whereYear('created_at', date('Y'))
             ->select(DB::raw('MONTH(created_at) as month'), DB::raw('count(*) as count'))
             ->groupBy('month')
