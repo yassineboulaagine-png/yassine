@@ -22,7 +22,7 @@ const DashboardPatient = () => {
   
   try {
     // 1. عيط للـ Backend
-    const response = await axios.post("http://projet_pff.test/Back-end/public/api/patient/check-access", {
+    const response = await axios.post("http://projet_pff.test/api/patient/check-access", {
       reference: code,
       telephone: phone
     });

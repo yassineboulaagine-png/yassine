@@ -30,7 +30,7 @@ class ExamenController extends Controller
     {
         try {
            // فـ الـ function اللي كترجع الـ Examens للـ Dashboard
-$examens = Examen::with(['patient', 'typeAnalyse'])->whereDate('created_at', now())->get();
+$examens = Examen::with(['patient', 'type_analyse'])->whereDate('created_at', now())->get();
                
 
             return response()->json($examens);
@@ -50,7 +50,7 @@ $examens = Examen::with(['patient', 'typeAnalyse'])->whereDate('created_at', now
      */
     public function getBiologisteExamens()
     {
-        return Examen::with(['patient', 'lignes.analyse.typeAnalyse'])
+        return Examen::with(['patient','type_analyse', 'lignes.analyse.typeAnalyse'])
             ->where('statut', 'valide')
             ->latest()
             ->get();
@@ -78,42 +78,89 @@ $examens = Examen::with(['patient', 'typeAnalyse'])->whereDate('created_at', now
 
     /**
      * Créer un nouvel examen — FIX: reference gérée par boot(), utilisateur_id sécurisé
+     * DEBUG: Comprehensive logging pour debuguer type_analyse_id NULL
      */
     public function store(Request $request)
     {
         try {
-            $request->validate([
-                'patient_id'      => 'required|exists:patients,id',
-                'selectedExamen' => 'required|exists:type_analyses,id',
+            // ─── STEP 1: Log Raw Request Data ───────────────────────
+            \Log::info('📥 RAW REQUEST DATA:', [
+                'all'     => $request->all(),
+                'json'    => $request->json()->all(),
+                'input'   => $request->input(),
             ]);
 
-            $examen = Examen::create([
+            // ─── STEP 2: Log Individual Fields ──────────────────────
+            \Log::info('🔍 INDIVIDUAL FIELDS:', [
+                'patient_id'      => $request->patient_id,
+                'type_analyse_id' => $request->type_analyse_id,
+                'medecin_id'      => $request->medecin_id,
+            ]);
+
+            // ─── STEP 3: Validate with Detailed Messages ────────────
+            $validated = $request->validate([
+                'patient_id'      => 'required|exists:patients,id',
+                'type_analyse_id' => 'required|exists:type_analyses,id',
+            ]);
+
+            \Log::info('✅ VALIDATION PASSED:', $validated);
+
+            // ─── STEP 4: Log Before Create ──────────────────────────
+            $createData = [
                 'patient_id'      => $request->patient_id,
                 'type_analyse_id' => $request->type_analyse_id,
                 'medecin_id'      => $request->medecin_id ?? 1,
                 'utilisateur_id'  => auth()->id(),
                 'statut'          => 'en_cours',
-                // reference et date_examen sont générés automatiquement dans boot()
-            ]);
+            ];
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Examen créé avec succès',
-                'data'    => $examen->load(['patient', 'type_analyse'])
-            ], 201);
+            \Log::info('📝 DATA BEFORE CREATE:', $createData);
+
+            // ─── STEP 5: Create and Log Result ──────────────────────
+           $examen = Examen::create($createData);
+
+    // ✅ هاد الجزء هو اللي ناقصك باش تعمر جدول ligne_examens
+    // كنجيبو كاع الـ analyses اللي تابعين لهاد نوع التحليلة (Hématologie مثلا)
+    $analyses = \App\Models\Analyse::where('type_analyse_id', $examen->type_analyse_id)->get();
+
+    foreach ($analyses as $analyse) {
+        \App\Models\LigneExamen::create([
+            'examen_id' => $examen->id,
+            'analyse_id' => $analyse->id,
+            'valeur_resultat' => null, // كيبقى خاوي فالبداية
+            'commentaire' => null
+        ]);
+    }
+
+    \Log::info('✨ EXAMEN & LIGNES CREATED:', [
+        'id' => $examen->id,
+        'lignes_count' => $analyses->count(),
+    ]);
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Examen et lignes créés avec succès',
+        'data'    => $examen->load(['patient', 'type_analyse', 'lignes']) // ✅ زدنا lignes هنا
+    ], 201);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
+            \Log::error('❌ VALIDATION FAILED:', $e->errors());
+            
             return response()->json([
                 'success' => false,
                 'errors'  => $e->errors()
             ], 422);
 
         } catch (\Exception $e) {
+            \Log::error('💥 EXCEPTION:', [
+                'message' => $e->getMessage(),
+                'file'    => $e->getFile(),
+                'line'    => $e->getLine(),
+            ]);
+
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage(),
-                'file'    => $e->getFile(),
-                'line'    => $e->getLine()
             ], 500);
         }
     }
@@ -121,45 +168,59 @@ $examens = Examen::with(['patient', 'typeAnalyse'])->whereDate('created_at', now
     /**
      * Saisir les résultats d'un examen
      */
-    public function storeResults(Request $request, $id)
-    {
-        $examen = Examen::findOrFail($id);
+   public function storeResults(Request $request, $id)
+{
+    // 1. 🚨 جلب الـ Examen أول حاجة (كانت ناقصة عندك ف السكرين!)
+    $examen = Examen::findOrFail($id);
 
-        $request->validate([
-            'resultats'                => 'required|array',
-            'resultats.*.ligne_id'     => 'required|integer',
-            'resultats.*.valeur'       => 'nullable|string',
-            'resultats.*.commentaire'  => 'nullable|string',
+    // 2. الـ Validation
+    $request->validate([
+        'resultats' => 'required|array',
+        'resultats.*.ligne_id' => 'required|integer',
+        'resultats.*.valeur' => 'nullable|string',
+        'resultats.*.commentaire' => 'nullable|string',
+    ]);
+
+    try {
+        // 3. الـ Loop باستعمال الـ Model ديريكت باش نقطعو الشك ف الـ Relation
+        foreach ($request->resultats as $resultat) {
+            
+            // 🛠️ هنا دق ف الباب ديال الـ Model ديريكت بـ الـ ID ديال الـ السطر
+            // وتأكد باللي هاد السطر تابع للـ Examen ديالنا
+            $ligne = \App\Models\LigneExamen::where('id', $resultat['ligne_id'])
+                                            ->where('examen_id', $id)
+                                            ->first();
+            
+            if ($ligne) {
+                $valeur = $resultat['valeur'] ?? null;
+                // تنظيف وتحويل القيمة لـ float
+                $valeurClean = ($valeur !== null && $valeur !== '') ? (float)str_replace(',', '.', $valeur) : null;
+
+                $ligne->update([
+                    'valeur_resultat' => $valeurClean,
+                    'commentaire' => $resultat['commentaire'] ?? null
+                ]);
+            }
+        }
+
+        // 4. تحديث الـ Statut ديال الفحص لـ 'termine'
+        $examen->update([
+            'statut' => 'termine'
         ]);
 
-        try {
-            foreach ($request->resultats as $resultat) {
-                $ligne = $examen->lignes()->find($resultat['ligne_id']);
-                if ($ligne) {
-                    $valeur = $resultat['valeur'] ?? null;
-                    $valeur = !empty($valeur) ? (float) $valeur : null;
+        return response()->json([
+            'success' => true,
+            'message' => 'Résultats enregistrés avec succès',
+            'examen' => $examen->load('lignes')
+        ], 200);
 
-                    $ligne->update([
-                        'valeur_resultat' => $valeur,
-                        'commentaire'     => $resultat['commentaire'] ?? null,
-                    ]);
-                }
-            }
-
-            $examen->update(['statut' => 'en_validation']);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Résultats saisis avec succès!'
-            ]);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage()
-            ], 500);
-        }
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Erreur: ' . $e->getMessage()
+        ], 500);
     }
+}
 
     /**
      * Valider un examen — FIX: auth()->id() (machi auth()->$id())
@@ -256,40 +317,40 @@ $examens = Examen::with(['patient', 'typeAnalyse'])->whereDate('created_at', now
     /**
      * Mettre à jour un examen (valeur + statut)
      */
-    public function update(Request $request, $id)
-    {
-        $examen = Examen::findOrFail($id);
-
-        $request->validate([
-            'valeur' => 'required',
-        ]);
-
-        $examen->update([
-            'valeur' => $request->valeur,
-            'statut' => 'Terminée',
-        ]);
-
-        return response()->json([
-            'message' => 'Résultat enregistré avec succès',
-            'examen'  => $examen
-        ]);
-    }
+   
 
     /**
      * Rejeter un examen (renvoyer à la saisie)
      */
-    public function reject($id)
-    {
-        $examen = Examen::find($id);
+   public function reject($id)
+{
+    try {
+        // كنستعملو \App\Models\Examen باش نقطعو الشك فـ Namespace
+        $examen = \App\Models\Examen::find($id);
 
         if (!$examen) {
             return response()->json(['message' => 'Examen non trouvé'], 404);
         }
 
-        $examen->update(['statut' => 'rejete']);
+        // تبديل الحالة
+        $examen->statut = 'rejete';
+        $examen->save(); // save() حسن من update() فـ التيست حيت كتعطيك Error واضحة
 
-        return response()->json(['message' => 'Examen renvoyé à la saisie']);
+        return response()->json([
+            'success' => true,
+            'message' => 'Examen renvoyé à la saisie',
+            'data' => $examen
+        ]);
+
+    } catch (\Exception $e) {
+        // هاد السطر غايخليك تشوف المشكل الحقيقي فـ laravel.log
+        \Log::error("Reject Error ID $id: " . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'error' => $e->getMessage()
+        ], 500);
     }
+}
 
     /**
      * Authentification patient par référence + téléphone

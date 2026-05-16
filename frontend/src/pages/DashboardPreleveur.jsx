@@ -8,7 +8,7 @@ import {
 import { toast } from "sonner";
 import "./Dashboard.css";
 
-const API_BASE   = "http://projet_pff.test/Back-end/public/api";
+const API_BASE   = "http://projet_pff.test/api";
 const API_URL    = `${API_BASE}/patients`;
 const EXAMEN_URL = `${API_BASE}/examens`;
 const TODAY_URL  = `${API_BASE}/examens-today`;
@@ -42,16 +42,28 @@ const DashboardPreleveur = () => {
   const fetchPatients = async (query = "") => {
     try {
       const token = localStorage.getItem("token");
+      
+      // 🛡️ حماية إضافية إيلا ماكانش الـ token
+      if (!token) return; 
+
       const response = await axios.get(`${API_URL}?search=${query}`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          "Accept": "application/json" // زد هادي باش Laravel يجاوبك ديما بـ JSON
+        }
       });
+      
       setPatients(response.data);
     } catch (error) {
       console.error("API error:", error);
+      // إيلا كان الـ error 401، غالباً الـ token مابقاش خدام
+      if (error.response?.status === 401) {
+          localStorage.removeItem("token");
+          navigate("/login");
+      }
       setPatients([]);
     }
-  };
-
+};
   // ─── Fetch analyses du jour ───────────────────────────────
   const fetchAnalysesLyoum = async (isInitial = false) => {
     try {
@@ -86,23 +98,50 @@ const DashboardPreleveur = () => {
     try {
       // ── CAS 1: Nouvel examen pour patient existant ──────────
       if (isNewExam && currentPatientId) {
+        console.log("🔍 CAS 1 - selectedExamen:", selectedExamen);
+        console.log("🔍 CAS 1 - currentPatientId:", currentPatientId);
 
-        console.log("🔍 selectedExamen:", selectedExamen);          // ← wach kayn ID?
-        console.log("🔍 parseInt:", parseInt(selectedExamen));
+        if (!selectedExamen || selectedExamen === "") {
+          toast.error("Veuillez choisir un type d'analyse !");
+          return;
+        }
 
-         if (!selectedExamen) {
-    toast.error("Veuillez choisir un type d'analyse !");
-    return;
-  }
+        // ─── ENSURE PROPER DATA TYPES ─────────────────────────
+        const patientId = parseInt(currentPatientId, 10);
+        const typeAnalyseId = parseInt(selectedExamen, 10);
+        
+        if (isNaN(patientId)) {
+          console.error("❌ Invalid patient_id:", currentPatientId);
+          toast.error("Patient invalide !");
+          return;
+        }
+
+        if (isNaN(typeAnalyseId)) {
+          console.error("❌ Invalid type_analyse_id:", selectedExamen);
+          toast.error("Type d'analyse invalide !");
+          return;
+        }
 
         const examPayload = {
-          patient_id:      currentPatientId,
-          type_analyse_id: parseInt(selectedExamen),
+          patient_id:      patientId,
+          type_analyse_id: typeAnalyseId,
         };
 
+        console.log("📤 CAS 1 - Payload:", JSON.stringify(examPayload, null, 2));
+
+        // ─── AXIOS WITH EXPLICIT HEADERS ──────────────────────
         const response = await axios.post(EXAMEN_URL, examPayload, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          }
         });
+
+        console.log("✅ CAS 1 - Full Response:", response.data);
+        console.log("✅ CAS 1 - type_analyse_id in response:", 
+          response.data?.data?.type_analyse_id
+        );
 
         const ref = response.data?.data?.reference || response.data?.reference;
         if (ref) setGeneratedCode(ref);
@@ -134,47 +173,71 @@ const DashboardPreleveur = () => {
         date_naissance: newPatient.date_naissance,
       };
 
+      console.log("1️⃣ CAS 3 - Patient payload:", patientPayload);
+
       const patientRes = await axios.post(API_URL, patientPayload, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      console.log("2️⃣ patientRes.data:", patientRes.data);
 
+      console.log("2️⃣ CAS 3 - Patient response:", patientRes.data);
 
       const newPatientId = patientRes.data?.id || patientRes.data?.data?.id;
-      console.log("3️⃣ newPatientId:", newPatientId);
-console.log("4️⃣ selectedExamen:", selectedExamen);
-console.log("5️⃣ condition (newPatientId && selectedExamen):", !!(newPatientId && selectedExamen));
+      
+      console.log("3️⃣ CAS 3 - newPatientId:", newPatientId);
+      console.log("4️⃣ CAS 3 - selectedExamen:", selectedExamen);
+      console.log("5️⃣ CAS 3 - Condition check:", !!(newPatientId && selectedExamen));
 
       if (newPatientId && selectedExamen) {
-        const examRes = await axios.post(
-          EXAMEN_URL,
-          {
-            patient_id:      newPatientId,
-            type_analyse_id: parseInt(selectedExamen),
-          },
-          { headers: { Authorization: `Bearer ${token}` } }
+        const typeAnalyseId = parseInt(selectedExamen, 10);
+        
+        if (isNaN(typeAnalyseId)) {
+          console.error("❌ Invalid type_analyse_id in CAS 3:", selectedExamen);
+          toast.error("Type d'analyse invalide !");
+          return;
+        }
+
+        const examPayload = {
+          patient_id:      newPatientId,
+          type_analyse_id: typeAnalyseId,
+        };
+
+        console.log("6️⃣ CAS 3 - Exam payload:", JSON.stringify(examPayload, null, 2));
+
+        const examRes = await axios.post(EXAMEN_URL, examPayload, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          }
+        });
+
+        console.log("✅ CAS 3 - Exam response:", examRes.data);
+        console.log("✅ CAS 3 - type_analyse_id in response:", 
+          examRes.data?.data?.type_analyse_id
         );
 
         const ref = examRes.data?.data?.reference || examRes.data?.reference;
         if (ref) setGeneratedCode(ref);
+      } else {
+        console.warn("⚠️ CAS 3 - Condition failed:", { newPatientId, selectedExamen });
       }
 
       toast.success("Patient et examen enregistrés !");
       fetchPatients(searchTerm);
       fetchAnalysesLyoum();
-      notifyPatientCountUpdate();
 
     } catch (error) {
-      console.error("❌ Error:", error.response?.data || error.message);
+      console.error("❌ Full Error:", {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
+      
       const msg = error.response?.data?.message
         || error.response?.data?.errors
         || "Erreur d'enregistrement";
       toast.error(typeof msg === "string" ? msg : JSON.stringify(msg));
     }
-  };
-
-  const notifyPatientCountUpdate = () => {
-    window.dispatchEvent(new Event("patientCountUpdated"));
   };
 
   // ─── Status change ────────────────────────────────────────

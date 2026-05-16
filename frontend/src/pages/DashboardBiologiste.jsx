@@ -30,7 +30,7 @@ const DashboardBiologiste = () => {
       const token = localStorage.getItem("token");
 
       const response = await axios.get(
-        "http://projet_pff.test/Back-end/public/api/me",
+        "http://projet_pff.test/api/me",
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -91,7 +91,7 @@ const DashboardBiologiste = () => {
   const fetchAnalysesLyoum = async (isInitial = false) => {
     try {
       if (isInitial) setAnalysesLoading(true);
-      const response = await axios.get("http://projet_pff.test/Back-end/public/api/examens-biologiste");
+      const response = await axios.get("http://projet_pff.test/api/examens-biologiste");
       
       // Toast notification if new exams arrived
       if (!isInitial && response.data.length > previousLength) {
@@ -117,7 +117,7 @@ const DashboardBiologiste = () => {
 
   const fetchValidation = async () => {
     try {
-      const response = await axios.get("http://projet_pff.test/Back-end/public/api/examens-validation");
+      const response = await axios.get("http://projet_pff.test/api/examens-validation");
       setExamenValidation(response.data);
     } catch (error) {
       console.error("Error fetching validation:", error);
@@ -126,7 +126,7 @@ const DashboardBiologiste = () => {
 
   const fetchHistorique = async () => {
     try {
-      const response = await axios.get("http://projet_pff.test/Back-end/public/api/examens-historique");
+      const response = await axios.get("http://projet_pff.test/api/examens-historique");
       setExamenHistorique(response.data);
     } catch (error) {
       console.error("Error fetching historique:", error);
@@ -188,7 +188,7 @@ const DashboardBiologiste = () => {
 
     try {
       const response = await axios.post(
-        `http://projet_pff.test/Back-end/public/api/examens/${selectedExamen.id}/resultats`,
+        `http://projet_pff.test/api/examens/${selectedExamen.id}/resultats`,
         { resultats: resultatsArray },
         {
           headers: {
@@ -210,7 +210,7 @@ const DashboardBiologiste = () => {
   const handleFinalApprove = async (id) => {
     try {
       await axios.patch(
-        `http://projet_pff.test/Back-end/public/api/examens/${id}/approve`,
+        `http://projet_pff.test/api/examens/${id}/approve`,
         {},
         {
           headers: {
@@ -231,7 +231,7 @@ const DashboardBiologiste = () => {
     try {
       // Kat-sift l-statut 'en_cours' bach i-welli i-bane f "Mes Analyses"
       await axios.put(
-        `http://projet_pff.test/Back-end/public/api/examens/${id}/reject`,
+        `http://projet_pff.test/api/examens/${id}/reject`,
         { statut: 'rejete' },
         {
           headers: {
@@ -353,13 +353,15 @@ const DashboardBiologiste = () => {
                         <td>
                           {ana.lignes && ana.lignes.length > 0 
                             ? ana.lignes.map((l, i) => <div key={i}>{l.analyse?.designation || "Examen"}</div>) 
-                            : "N/A"}
+                            : ana.type_analyse?.libelle || "N/A"}
                         </td>
                         <td><span className={`status-badge ${ana.statut}`}>{ana.statut}</span></td>
                         <td>
                           <button className="btn-valider" onClick={() => openSaisieModal(ana)}>Saisir</button>
                         </td>
                       </tr>
+
+
                     ))}
                   </tbody>
                 </table>
@@ -390,7 +392,7 @@ const DashboardBiologiste = () => {
                         <td>
                           {ana.lignes && ana.lignes.length > 0 
                             ? ana.lignes.map((l, i) => <div key={i}>{l.analyse?.designation}</div>) 
-                            : "N/A"}
+                            : ana.type_analyse?.libelle || "N/A"}
                         </td>
                         <td>
                           {ana.lignes && ana.lignes.length > 0 
@@ -467,7 +469,7 @@ const DashboardBiologiste = () => {
                         <td>
                           {ana.lignes && ana.lignes.length > 0 
                             ? ana.lignes.map((l, i) => <div key={i}>{l.analyse?.designation}</div>) 
-                            : "N/A"}
+                            : ana.type_analyse?.libelle || "N/A"}
                         </td>
                         <td>
                           {ana.lignes && ana.lignes.length > 0 
@@ -548,7 +550,7 @@ const DashboardBiologiste = () => {
                     <input
                       type="number"
                       step="0.01"
-                      placeholder={`Valeur (${ana.unite_mesure})`}
+                     placeholder={`Valeur (${ana.unite_mesure || 'sisair valeur'})`}
                       value={currentVal}
                       onChange={(e) => setResults({
                         ...results,
@@ -566,7 +568,7 @@ const DashboardBiologiste = () => {
                       }}
                     />
                     <span style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', fontSize: '0.85em', fontWeight: '500' }}>
-                      {ana.unite_mesure}
+                      {ana.unite_mesure||'sisair valeur'}
                     </span>
                   </div>
 

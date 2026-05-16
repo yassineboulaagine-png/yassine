@@ -357,21 +357,22 @@
                                 <td class="designation-col">
                                     {{ $ligne->analyse?->designation ?? 'N/A' }}
                                 </td>
-                                <td class="resultat-col 
-                                    @if($ligne->valeur_resultat !== null)
-                                        @if($ligne->valeur_resultat > $ligne->analyse?->norme_max || $ligne->valeur_resultat < $ligne->analyse?->norme_min)
-                                            abnormal
-                                        @else
-                                            normal
-                                        @endif
-                                    @endif
-                                ">
-                                    @if($ligne->valeur_resultat !== null)
-                                        {{ number_format($ligne->valeur_resultat, 2, ',', ' ') }}
-                                    @else
-                                        <em>en_cours</em>
-                                    @endif
-                                </td>
+                               <td class="resultat-col 
+    @if($ligne->valeur_resultat !== null)
+        @if($ligne->valeur_resultat > $ligne->analyse?->norme_max || $ligne->valeur_resultat < $ligne->analyse?->norme_min)
+            abnormal
+        @else
+            normal
+        @endif
+    @endif
+">
+    {{-- 🛠️ هنا فين غايقرا النتيجة اللي دوزها الـ Biologiste ديريكت --}}
+    @if($ligne->valeur_resultat !== null)
+        {{ number_format($ligne->valeur_resultat, 2, ',', ' ') }}
+    @else
+        <span style="color: #e67e22; font-style: italic;">en_cours</span>
+    @endif
+</td>
                                 <td class="unite-col">
                                     {{ $ligne->analyse?->unite_mesure ?? '-' }}
                                 </td>

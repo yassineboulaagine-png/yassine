@@ -22,10 +22,13 @@ const SettingsBiologiste = () => {
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.put(`http://projet_pff.test/Back-end/public/api/user/update-profile`, {
+      const token = localStorage.getItem("token");
+      const response = await axios.put(`http://projet_pff.test/api/user/update-profile`, {
         user_id: userData.id,
         ...profile
-      });
+      },
+    {
+        headers: { Authorization: `Bearer ${token}` } });
 
       if (response.status === 200) {
         // Kan-keep-iw dakchi li kan f localStorage (b7al plain_password) o n-zidou 3lih jdid
@@ -45,12 +48,15 @@ const SettingsBiologiste = () => {
       return;
     }
     try {
+      const token = localStorage.getItem("token");
       // T-aked dima mn l-URL anaho fih http:// o mafihch "/" f l-akhir bach t-fada error 405
-      const response = await axios.post(`http://projet_pff.test/Back-end/public/api/user/change-password`, {
+      const response = await axios.post(`http://projet_pff.test/api/user/change-password`, {
         user_id: userData.id,
         oldPassword: passwords.oldPassword,
         newPassword: passwords.newPassword
-      });
+      },
+    {
+        headers: { Authorization: `Bearer ${token}` } });
 
       if (response.status === 200) {
         // Hna l-muhim: Updati l-pass jdid bach l-3in t-welli t-affichi l-jdid

@@ -62,7 +62,7 @@ const Login = () => {
   } else {
   // حالة دخول المريض (الـ else اللي فيها api/patient/auth)
   try {
-    const response = await axios.post("http://projet_pff.test/Back-end/public/api/patient/auth", {
+    const response = await axios.post("/api/patient/auth", {
       reference: reference,
       telephone: telephone
     });

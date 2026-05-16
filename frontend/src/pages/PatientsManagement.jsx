@@ -8,7 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import "./Dashboard.css";
 import "./PatientsManagement.css";
 
-const API_BASE_URL = "http://projet_pff.test/Back-end/public/api";
+const API_BASE_URL = "http://projet_pff.test/api";
 
 const PatientsManagement = () => {
   const { token } = useAuth();

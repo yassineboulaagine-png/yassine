@@ -12,7 +12,7 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['http://localhost:8080'], // هادي هي اللي غاتخلي Lovable يتواصل معاك
+    'allowed_origins' => [],
 
     'allowed_origins_patterns' => [],
 

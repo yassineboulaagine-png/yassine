@@ -1,9 +1,12 @@
-const API_BASE = "http://projet_pff.test/Back-end/public/api";
+// src/lib/api.js
+
+// كنقرأو العنوان من .env وإيلا مالقاش كياخد هادا كاحتياط
+const API_URL = import.meta.env.VITE_API_BASE_URL || "http://Projet_PFF.test/api";
 
 // LOGIN
 export async function apiLogin(email, password) {
   try {
-    const res = await fetch(`${API_BASE}/login`, {
+    const res = await fetch(`${API_URL}/login`, { // ✅ استعملنا API_URL
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -12,42 +15,28 @@ export async function apiLogin(email, password) {
       body: JSON.stringify({ email, password }),
     });
 
-    // 1. كنقرأو الـ JSON مرة وحدة فقط
     const data = await res.json();
 
-    console.log("🔍 RAW RESPONSE FROM /login:", data);
-    console.log("🔍 Response status:", res.ok);
-    console.log("🔍 Token value:", data?.token);
-    console.log("🔍 User value:", data?.user);
-
-    // 2. كنتشكيو واش الـ Response فيه مشكل
     if (!res.ok) {
-      // كترميو Error فيه الميساج اللي جاي من Laravel
       throw new Error(data.message || "Email ou mot de passe incorrect");
     }
 
     return data; 
   } catch (error) {
-    // هاد السطر مهم باش الـ Error يطلع ليك فـ الـ Console فاش يوقع
     console.error("Fetch Error:", error);
-    throw error; // كنعاودو نلوحوه باش يوصل للـ catch اللي فـ Login.jsx
+    throw error;
   }
 }
 
-// AUTH HEADER
-export function getAuthHeader() {
-  const token = localStorage.getItem("token");
-  return token ? { Authorization: `Bearer ${token}` } : {};
-}
-
-// GENERIC FETCH
+// GENERIC FETCH (للمناداة على أي API أخرى)
 export async function apiFetch(url, options = {}) {
-  const res = await fetch(`${API_BASE}${url}`, {
+  const token = localStorage.getItem("token");
+  const res = await fetch(`${API_URL}${url}`, { // ✅ استعملنا API_URL
     ...options,
     headers: {
       "Content-Type": "application/json",
-      Accept: "application/json",
-      ...getAuthHeader(),
+      "Accept": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(options.headers || {}),
     },
   });

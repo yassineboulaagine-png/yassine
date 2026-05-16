@@ -8,7 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import "./Dashboard.css";
 import "./AnalysesManagement.css";
 
-const API_BASE_URL = "http://projet_pff.test/Back-end/public/api";
+const API_BASE_URL = "http://projet_pff.test/api";
 
 const AnalysesManagement = () => {
   const { token } = useAuth();
@@ -28,6 +28,7 @@ const AnalysesManagement = () => {
   const [formData, setFormData] = useState({
     patient_id: "",
   });
+  const [typeAnalyseId, setTypeAnalyseId] = useState("");
 
   // Get axios config with auth header
   const getAxiosConfig = () => ({
@@ -106,37 +107,40 @@ const AnalysesManagement = () => {
     }));
   };
 
-  const handleAddAnalyse = async (e) => {
+ const handleAddAnalyse = async (e) => {
     e.preventDefault();
 
-    // Validation
-    if (!formData.patient_id) {
-      toast.error("Veuillez sélectionner un patient");
+    // 1. Validation: زيد تشيك حتى على النوع
+    if (!formData.patient_id || !formData.type_analyse_id) {
+      toast.error("Veuillez sélectionner un patient et un type d'analyse");
       return;
     }
 
     try {
       setIsSubmitting(true);
+      
+      // 2. صيفط كاع البيانات اللي محتاجها Laravel
       const analyseData = {
         patient_id: formData.patient_id,
+        type_analyse_id: formData.type_analyse_id, // 👈 هادي هي اللي كانت ناقصة!
+        statut: 'en_cours' // من الأحسن تحدد الحالة البدئية هنا
       };
 
       await axios.post(`${API_BASE_URL}/examens`, analyseData, getAxiosConfig());
+      
       toast.success("Analyse créée avec succès");
       resetForm();
       fetchExamens();
     } catch (error) {
       console.error("Error creating analyse:", error);
       toast.error(
-        error.response?.data?.message ||
-          (error.response?.data?.errors
-            ? Object.values(error.response.data.errors).flat().join(", ")
-            : "Erreur lors de la création de l'analyse")
+        error.response?.data?.message || 
+        "Erreur lors de la création de l'analyse"
       );
     } finally {
       setIsSubmitting(false);
     }
-  };
+};
 
   const handleGeneratePDF = async (examenId) => {
     try {
@@ -366,6 +370,19 @@ const AnalysesManagement = () => {
                   ))}
                 </select>
               </div>
+                               <div className="form-group">
+  <label>Type d'Analyse</label>
+  <select
+    className="hl-input"
+    value={formData.type_analyse_id}
+    onChange={(e) => setFormData({...formData, type_analyse_id: e.target.value})}
+  >
+    <option value="">-- Sélectionner le type --</option>
+    {/* هنا تقدر تدير map لـ types اللي جايين من الـ DB */}
+    <option value="1">Biochimie</option>
+    <option value="2">Hématologie</option>
+  </select>
+</div>
 
               {/* Form Actions */}
               <div className="form-actions">

@@ -10,6 +10,8 @@ use App\Http\Controllers\Api\BiologisteController;
 use App\Http\Controllers\Api\MedecinController;
 use App\Http\Controllers\Api\AnalyseController;
 use App\Http\Controllers\Api\PatientAuthController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\StaffController;
 
 // ============================================================
 // --- 1. PUBLIC ROUTES (No Auth Required) ---
@@ -48,6 +50,14 @@ Route::middleware('auth:sanctum')->group(function () {
     // --- Auth ---
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', fn(Request $r) => $r->user());
+
+    //admin stats
+    Route::get('/admin/stats', [DashboardController::class, 'getAdminStats']);
+
+    //stuuf
+    Route::get('/admin/staff', [StaffController::class, 'index']);
+    Route::post('/admin/staff', [StaffController::class, 'store']);
+    Route::delete('/admin/staff/{id}', [StaffController::class, 'destroy']);
 
     // --- Profile ---
     Route::put('/user/update-profile',    [UserController::class, 'updateProfile']);

@@ -487,10 +487,10 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 ```bash
 # Get all patients
 curl -H "Authorization: Bearer YOUR_TOKEN" \
-  http://projet_pff.test/Back-end/public/api/patients
+  http://projet_pff.test/apipatients
 
 # Add new patient
-curl -X POST http://projet_pff.test/Back-end/public/api/patients \
+curl -X POST http://projet_pff.test/apipatients \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -503,13 +503,13 @@ curl -X POST http://projet_pff.test/Back-end/public/api/patients \
   }'
 
 # Update patient
-curl -X PUT http://projet_pff.test/Back-end/public/api/patients/1 \
+curl -X PUT http://projet_pff.test/apipatients/1 \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"nom":"Dupont Updated"}'
 
 # Delete patient
-curl -X DELETE http://projet_pff.test/Back-end/public/api/patients/1 \
+curl -X DELETE http://projet_pff.test/apipatients/1 \
   -H "Authorization: Bearer YOUR_TOKEN"
 ```
 
