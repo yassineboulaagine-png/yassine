@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import "./Dashboard.css";
+import { Link } from "react-router-dom";
 
 const API_BASE   = "http://projet_pff.test/api";
 const API_URL    = `${API_BASE}/patients`;
@@ -306,12 +307,19 @@ const DashboardPreleveur = () => {
           >
             <ClipboardCheck size={20} /> Analyses du jour
           </button>
+
+           <Link to="/dashboard/rendez-vous" className="menu-link">
+          📊 Gestion des Rendez-vous
+           </Link>
         </nav>
         <div className="hl-logout-section">
           <button onClick={() => { localStorage.clear(); navigate("/login"); }}>
             <LogOut size={20} /> Déconnexion
           </button>
+
+         
         </div>
+
       </aside>
 
       <main className="hl-main">

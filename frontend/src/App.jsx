@@ -12,6 +12,8 @@ import DashboardPreleveur from "./pages/DashboardPreleveur";
 import NotFound from "./pages/NotFound";
 import MesResultats from "./pages/MesResultats";
 import PatientResults from "./pages/PatientResults";
+import PrendreRendezVous from "./pages/PrendreRendezVous";
+import DashboardRendezVous from "./pages/DashboardRendezVous";
 
 // Preleveur
 import ProfilePreleveur from "./pages/ProfilePreleveur";
@@ -141,6 +143,10 @@ const AppRoutes = () => (
     <Route path="*" element={<NotFound />} />
 
     <Route path="/patient/results" element={<PatientResults />} />
+
+
+    <Route path="/prendre-rendez-vous" element={<PrendreRendezVous />} />
+    <Route path="/dashboard/rendez-vous" element={<DashboardRendezVous />} />
   </Routes>
 );
 

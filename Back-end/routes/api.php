@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\AnalyseController;
 use App\Http\Controllers\Api\PatientAuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\StaffController;
+use App\Http\Controllers\Api\RendezVousController;
 
 // ============================================================
 // --- 1. PUBLIC ROUTES (No Auth Required) ---
@@ -22,6 +23,10 @@ Route::get('/login', function () {
 
     Route::get('/examens/{id}/pdf',           [ExamenController::class, 'generatePDF']);
 
+
+
+Route::post('/rendezvous/send-code', [RendezVousController::class, 'sendVerificationCode']);
+Route::post('/rendezvous/store',     [RendezVousController::class, 'store']);
 
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/patient/auth', [ExamenController::class, 'patientLogin']);
@@ -59,6 +64,15 @@ Route::middleware('auth:sanctum')->group(function () {
 
     //admin stats
     Route::get('/admin/stats', [DashboardController::class, 'getAdminStats']);
+
+    // 1. روت باش الـ Biologiste يشوف المواعيد لّي كتسنى التحاليل
+    Route::get('/biologiste/rendezvous-valides', [RendezVousController::class, 'getRendezVousValides']);
+
+// 2. روت باش الـ Biologiste يسيفط النتيجة ويعمّر الطابلو د resultats
+    Route::post('/biologiste/store-resultat', [RendezVousController::class, 'storeResultat']);
+
+    Route::get('/rendezvous', [RendezVousController::class, 'index']);
+    Route::put('/rendezvous/{id}/statut', [RendezVousController::class, 'updateStatut']);
 
     //stuuf
     Route::get('/admin/staff', [StaffController::class, 'index']);
