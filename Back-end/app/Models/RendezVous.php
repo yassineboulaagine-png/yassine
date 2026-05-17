@@ -17,7 +17,11 @@ class RendezVous extends Model
         'date_rendez_vous',
         'statut',
         'heure_rendez_vous',
-        'code_acces'
+        'code_acces',
+        'cin',              
+        'sexe',             
+        'date_naissance'
+        
 
     ];
 }

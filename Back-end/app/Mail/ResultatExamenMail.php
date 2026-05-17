@@ -3,9 +3,7 @@
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
-use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
@@ -15,31 +13,23 @@ class ResultatExamenMail extends Mailable
 {
     use Queueable, SerializesModels;
 
+    public $examen;
+
     /**
      * Create a new message instance.
      */
-    public $examen;
     public function __construct(Examen $examen)
-     {
+    {
         $this->examen = $examen;
-        }
-    
+    }
 
     /**
      * Get the message envelope.
      */
-
-    public function build()
-    {
-        return $this->subject('Résultats de votre examen' )
-        ->view('emails.resultat');
-                    
-                        
-    }
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Resultat Examen Mail',
+            subject: 'Helix Lab - Vos résultats d\'analyse sont prêts ✨',
         );
     }
 
@@ -49,14 +39,12 @@ class ResultatExamenMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'view.name',
+            view: 'emails.resultat', // 🎯 غادي يصيفط للـ View لي سميتها resultat.blade.php
         );
     }
 
     /**
      * Get the attachments for the message.
-     *
-     * @return array<int, Attachment>
      */
     public function attachments(): array
     {

@@ -32,12 +32,14 @@ class Examen extends Model
 
         static::creating(function ($examen) {
             // Référence unique: EX-2026-0001-A4B2
+
+            if (empty($examen->reference)) {
             $count    = Examen::count() + 1;
             $sequence = str_pad($count, 4, '0', STR_PAD_LEFT);
             $suffix   = strtoupper(Str::random(4));
 
             $examen->reference = 'EX-' . date('Y') . '-' . $sequence . '-' . $suffix;
-
+            }
             // Date automatique si non fournie
             if (!$examen->date_examen) {
                 $examen->date_examen = now();

@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\VerificationCodeMail;
 use App\Models\RendezVous;
+use App\Models\Patient;
+use App\Models\examen;
 
 class RendezVousController extends Controller
 {
@@ -84,13 +86,17 @@ public function updateStatut(Request $request, $id)
     public function store(Request $request)
     {
         $request->validate([
-            'nom' => 'required|string',
-            'prenom' => 'required|string',
-            'telephone' => 'required|string',
-            'email' => 'required|email',
-    
-            'date_rendez_vous' => 'required|date',
-            'code' => 'required|integer'
+           'nom'               => 'required|string',
+        'prenom'            => 'required|string',
+        'telephone'         => 'required|string',
+        'email'             => 'required|email',
+        'date_rendez_vous'  => 'required|date',
+        'code'              => 'required|integer',
+        
+        'cin'               => 'required|string',
+        'date_naissance'    => 'required|date',
+        'sexe'              => 'required|string|in:M,F',
+        'analyse_id'        => 'nullable|exists:analyses,id'
         ]);
 
         $savedCode = Cache::get('verification_code_' . $request->email);
@@ -100,13 +106,18 @@ public function updateStatut(Request $request, $id)
         }
 
        $rendezVous = RendezVous::create([
-            'nom' => $request->nom,
-            'prenom' => $request->prenom,
-            'telephone' => $request->telephone,
-            'email' => $request->email,
-            'analyse_id' => $request->analyse_id,
-            'date_rendez_vous' => $request->date_rendez_vous,
-            'statut' => 'en_cours' 
+           'nom'               => $request->nom,
+        'prenom'            => $request->prenom,
+        'telephone'         => $request->telephone,
+        'email'             => $request->email,
+        'analyse_id'        => $request->analyse_id,
+        'date_rendez_vous'  => $request->date_rendez_vous,
+        'statut'            => 'en_cours',
+        
+        
+        'cin'               => $request->cin,
+        'date_naissance'    => $request->date_naissance,
+        'sexe'              => $request->sexe,
         ]);
         Cache::forget('verification_code_' . $request->email);
 
@@ -138,5 +149,72 @@ public function storeResultat(Request $request) {
     ]);
 
     return response()->json(['success' => true, 'message' => 'Résultat enregistré avec succès !', 'data' => $resultat]);
+}
+
+public function passerAuLabo(Request $request, $id)
+{
+    // 1. 🚀 لغينا الـ Validation بمرة باش ما تحبسناش!
+    // غانقراو الـ ID د التحليلة، وإيلا مالقاهاش ف الـ request غايمشي يعطيها 1 أوتوماتيك (NFS) كـ حل مؤقت
+    $analyseId = $request->input('analyse_id', 1);
+
+    // 2. كنجيبو الموعد من الداتابيز بـ الـ ID
+    $rdv = RendezVous::findOrFail($id);
+
+    // 3. 🛡️ كـنكريو المريض ف جدول Patients (البحث بـ الـ CIN)
+    $patient = Patient::firstOrCreate(
+        ['cin' => $rdv->cin ?? 'CIN-' . rand(1000, 9999)], // إيلا مكانش الـ cin عامر كيعطيه كود عشوائي
+        [
+            'nom'            => $rdv->nom,
+            'prenom'         => $rdv->prenom,
+            'telephone'      => $rdv->telephone,
+            'email'          => $rdv->email,
+            'sexe'           => $rdv->sexe ?? 'M',
+            'date_naissance' => $rdv->date_naissance ?? now()->format('Y-m-d'),
+        ]
+    );
+
+    // 4. 🧪 كنكريو السطر ف جدول الـ Examens (باش تطلع نيشان ف الـ Analyses du jour)
+   $examen= \App\Models\Examen::create([
+        'patient_id' => $patient->id, 
+        'type_analyse_id' => $analyseId, 
+        'statut'     => 'en_cours'
+    ]);
+
+    $analysesSub = \DB::table('analyses')->where('type_analyse_id', $analyseId)->get(); // أو على حساب كفاش رابطهم ف الـ DB
+
+
+    if ($analysesSub->count() > 0) {
+        foreach ($analysesSub as $sub) {
+            \DB::table('ligne_examens')->insert([
+                'examen_id'         => $examen->id,
+                'analyse_id'        => $sub->id, // الـ ID د التحليلة الفرعية (مثلاً Glycémie)
+                'valeur_resultat'   => null,
+                'commentaire'       => null,
+                'created_at'        => now(),
+                'updated_at'        => now()
+            ]);
+        }
+    } else {
+        // 🛡️ خطة احتياطية أوتوماتيكية: إيلا مالقاش ربط ف جدول الـ analyses، غادي يصاوب ليه سطر تجريبي بـ نفس الـ ID د التحليلة
+        \DB::table('ligne_examens')->insert([
+            'examen_id'         => $examen->id,
+            'analyse_id'        => $analyseId,
+            'valeur_resultat'   => null,
+            'commentaire'       => null,
+            'created_at'        => now(),
+            'updated_at'        => now()
+        ]);
+    }
+
+    // 5. كنرجعو الموعد 'traite' باش يختفى من الـ Dashboard ويتحول للـ المختبر
+    $rdv->update([
+        'analyse_id' => $analyseId,
+        'statut'     => 'valide'
+    ]);
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Passé au labo direct avec succès !'
+    ]);
 }
 }

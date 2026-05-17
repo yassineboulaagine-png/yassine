@@ -15,6 +15,7 @@ use App\Models\Analyse;
 use App\Models\Patient;
 
 
+
 class ExamenController extends Controller
 {
     /**
@@ -348,6 +349,22 @@ $examens = Examen::with(['patient', 'type_analyse'])->whereDate('created_at', no
 
             \Log::info('✨ updateResult COMPLETED SUCCESSFULLY');
 
+            $statutInput = $request->input('statut');
+        $examen->update(['statut' => $statutInput]);
+
+        $examen->load('patient');
+
+        // 2. 🔥 الـ نـوتـيـفـيـكـاسـيـون الأوتوماتيكية:
+        // كيتأكد بلي الـ statut رجع "valide" والمريض عنده إيميل
+        if ($statutInput === 'valide' || $statutInput === 'termine') {
+            // كانديرو load للـ patient باش نضمنو الداتا ديالو كاينا ف الـ $examen
+            $examen->load('patient'); 
+            
+            if ($examen->patient && $examen->patient->email) {
+                \Illuminate\Support\Facades\Mail::to($examen->patient->email)->send(new \App\Mail\ResultatExamenMail($examen));
+            }
+        }
+
             return response()->json([
                 'success' => true,
                 'examen' => $examen->load('lignes')
@@ -360,6 +377,8 @@ $examens = Examen::with(['patient', 'type_analyse'])->whereDate('created_at', no
                 'message' => 'Erreur: ' . $e->getMessage()
             ], 500);
         }
+
+
     }
    public function reject($id)
 {

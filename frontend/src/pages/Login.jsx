@@ -5,6 +5,7 @@ import axios from "axios";
 import "./Login.css"; 
 import { apiLogin } from "../lib/api";
 import { useAuth } from "../contexts/AuthContext";
+import {Link} from "react-router-dom";
 
 const Login = () => {
   const { user } = useAuth();
@@ -122,6 +123,8 @@ const Login = () => {
                     <Lock size={18} />
                     <input type="password" className="helix-input" value={password} onChange={(e) => setPassword(e.target.value)} required />
                   </div>
+                  {/* 🚀 زيد هاد البارتي تحت الخانة د Mot de passe وقبل السدّة د الـ </form> */}
+
                 </div>
               </div>
             ) : (
@@ -139,7 +142,10 @@ const Login = () => {
                         required 
                     />
                   </div>
+
+                  
                 </div>
+                
                 <div className="field-container">
                   <label className="field-label">Référence d'examen</label>
                   <div className="input-icon-wrapper">
@@ -160,9 +166,18 @@ const Login = () => {
             <button type="submit" className="helix-login-btn" disabled={loading}>
               {loading ? "Chargement..." : (isStaff ? "Se Connecter" : "Voir mes Résultats")}
             </button>
+            
           </form>
+          <div style={{ textAlign: 'center', marginTop: '20px', fontSize: '14px' }}>
+    <span style={{ color: '#64748b' }}>Vous n'avez pas de rendez-vous ? </span>
+    <Link to="/prendre-rendez-vous" style={{ color: '#10b981', fontWeight: 'bold', textDecoration: 'none', marginLeft: '5px' }}>
+        Prendre un rendez-vous ➔
+    </Link>
+</div>
         </div>
+        
       </div>
+      
 
       <div className="login-right-visual"></div>
     </div>

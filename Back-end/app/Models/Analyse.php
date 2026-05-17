@@ -26,7 +26,7 @@ class Analyse extends Model
      */
     public function typeAnalyse()
     {
-        return $this->belongsTo(TypeAnalyse::class, 'type_analyse_id');
+        return $this->belongsTo(TypeAnalyse::class, 'type_analyse_id','id');
     }
 
     /**

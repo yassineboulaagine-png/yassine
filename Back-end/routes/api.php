@@ -28,6 +28,9 @@ Route::get('/login', function () {
 Route::post('/rendezvous/send-code', [RendezVousController::class, 'sendVerificationCode']);
 Route::post('/rendezvous/store',     [RendezVousController::class, 'store']);
 
+
+ Route::get('/analyses',      [AnalyseController::class, 'index']);
+
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/patient/auth', [ExamenController::class, 'patientLogin']);
 Route::post('/patient/check-access', [PatientAuthController::class, 'checkAccess']);
@@ -46,7 +49,7 @@ Route::get('/examens/results/{id}',  [PatientAuthController::class, 'getResults'
 // Medecins & Analyses - Read public
 Route::get('/medecins',      [MedecinController::class, 'index']);
 Route::get('/medecins/{id}', [MedecinController::class, 'show']);
-Route::get('/analyses',      [AnalyseController::class, 'index']);
+
 Route::get('/analyses/{id}', [AnalyseController::class, 'show']);
 
 // Biologiste profile stats - public
@@ -61,6 +64,13 @@ Route::middleware('auth:sanctum')->group(function () {
     // --- Auth ---
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', fn(Request $r) => $r->user());
+
+
+    //analyse 
+   
+
+    //redez_vous_enregistrer_au_labo
+    Route::post('/rendez-vous/{id}/passer-au-labo', [RendezVousController::class, 'passerAuLabo']);
 
     //admin stats
     Route::get('/admin/stats', [DashboardController::class, 'getAdminStats']);

@@ -3,11 +3,12 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import {
   Users, LogOut, UserCircle, X, ClipboardCheck,
-  User, Settings, Search
+  User, Settings, Search,Calendar
 } from "lucide-react";
 import { toast } from "sonner";
 import "./Dashboard.css";
 import { Link } from "react-router-dom";
+import DashboardRendezVous from "./DashboardRendezVous";
 
 const API_BASE   = "http://projet_pff.test/api";
 const API_URL    = `${API_BASE}/patients`;
@@ -308,9 +309,14 @@ const DashboardPreleveur = () => {
             <ClipboardCheck size={20} /> Analyses du jour
           </button>
 
-           <Link to="/dashboard/rendez-vous" className="menu-link">
-          📊 Gestion des Rendez-vous
-           </Link>
+         <button
+    className={`hl-nav-btn ${activeTab === "rendezvous" ? "active" : ""}`}
+    onClick={() => setActiveTab("rendezvous")}
+>
+    
+    <Calendar size={20} /> 
+    Gestion des Rendez-vous
+</button>
         </nav>
         <div className="hl-logout-section">
           <button onClick={() => { localStorage.clear(); navigate("/login"); }}>
@@ -321,6 +327,13 @@ const DashboardPreleveur = () => {
         </div>
 
       </aside>
+
+      
+{activeTab === "rendezvous" && (
+    <div style={{ width: '100%', flex: 1, padding: '20px' }}>
+        <DashboardRendezVous />
+    </div>
+)}
 
       <main className="hl-main">
         <header className="hl-header">
