@@ -40,21 +40,30 @@ public function updateStatut(Request $request, $id)
     }
 
     // 🔑 إيلا كان الـ statut رجع 'valide' وماعندوش ديجا كود، غانصاوبو ليه واحد أوتوماتيك
-    if ($request->statut === 'valide' && empty($rendezVous->code_acces)) {
-        // غايصاوب كود فريد بحال: LAB-A83B1
-        $rendezVous->code_acces = 'LAB-' . strtoupper(\Illuminate\Support\Str::random(5));
+    $examen = \App\Models\Examen::find($rendezVous->analyse_id);
+    if ($request->statut === 'valide') {
+        if ($examen && !empty($examen->reference)) {
+            // ✅ لقى التحليلة؟ كياخد الـ reference ديالها EX-2026-XXXX الحقيقي
+            $rendezVous->code_acces = $examen->reference;
+        } else {
+            // 🔄 خطة بديلة احتياطية بالفورمة لي بغيتي إيلا مالقاش التحليلة ف هاد اللحظة
+            $rendezVous->code_acces = 'EX-' . date('Y') . '-' . strtoupper(\Illuminate\Support\Str::random(4));
+        }
     }
 
     $rendezVous->save();
-
-    // 🚀 صيفط النوتيفيكاسيون ديريكت للـ مريض ف الـ Mailtrap!
+    
     try {
-        // دابا الـ $rendezVous غايمشي ومعاه الـ code_acces الجديد ديالو ناضي
-        \Illuminate\Support\Facades\Mail::to($rendezVous->email)->send(new \App\Mail\StatutRendezVousMail($rendezVous));
+        \Illuminate\Support\Facades\Mail::to($rendezVous->email)
+            ->send(new \App\Mail\StatutRendezVousMail($rendezVous));
     } catch (\Exception $e) {
-        // وخا يفشل المايل مايتبلوكاش السيستم
+        \Log::error("Erreur d'envoi mail rendez-vous: " . $e->getMessage());
     }
 
+    
+
+    // 🚀 صيفط النوتيفيكاسيون ديريكت للـ مريض ف الـ Mailtrap!
+   
     return response()->json([
         'statut' => 'success', 
         'message' => 'Rendez-vous mis à jour et email envoyé !', 

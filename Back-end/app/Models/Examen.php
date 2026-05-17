@@ -21,31 +21,34 @@ class Examen extends Model
         'type_analyse_id',
         'valeur'
     ];
+    protected $connection = 'mysql';
+
+    protected static function boot()
+    {
+        parent::boot();
+
+    // 🎯 هادي لي غاتقاد ليك الـ reference والـ date وتـهـنّـيـك مـن هاد الـ Error بمرة
+    static::creating(function ($examen) {
+        if (empty($examen->reference)) {
+            $count    = self::on('mysql')->count() + 1;
+            $sequence = str_pad($count, 4, '0', STR_PAD_LEFT);
+            $suffix   = strtoupper(\Illuminate\Support\Str::random(4));
+
+            $examen->reference = 'EX-' . date('Y') . '-' . $sequence . '-' . $suffix;
+        }
+        
+        // 🚨 هادي هي لي كتحل المشكل د Field 'date_examen' doesn't have a default value
+        if (!$examen->date_examen) {
+            $examen->date_examen = now();
+        }
+    });
+     }
 
     /**
      * Génération automatique de la référence et de la date
      * FIX: reference générée ICI seulement — le Controller ne doit pas en générer une autre
      */
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::creating(function ($examen) {
-            // Référence unique: EX-2026-0001-A4B2
-
-            if (empty($examen->reference)) {
-            $count    = Examen::count() + 1;
-            $sequence = str_pad($count, 4, '0', STR_PAD_LEFT);
-            $suffix   = strtoupper(Str::random(4));
-
-            $examen->reference = 'EX-' . date('Y') . '-' . $sequence . '-' . $suffix;
-            }
-            // Date automatique si non fournie
-            if (!$examen->date_examen) {
-                $examen->date_examen = now();
-            }
-        });
-    }
+    
 
     // ─────────────────────────────────────────
     // Relations

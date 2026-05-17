@@ -218,6 +218,11 @@ $examens = Examen::with(['patient', 'type_analyse'])->whereDate('created_at', no
                 'statut' => 'en_validation' // نغيروها لـ 'en_validation' باش البايولوجيست يشوفها فـ Pending Validation ويعطيها Validation نهائية
             ]);
 
+            $examen->load('patient');
+            if ($examen->patient && $examen->patient->email) {
+                Mail::to($examen->patient->email)->send(new \App\Mail\VerificationCodeMail($examen->reference));
+            }
+
             \Log::info('✨ storeResults SUCCESS: Status strictly updated to valide');
 
             return response()->json([
@@ -246,6 +251,11 @@ $examens = Examen::with(['patient', 'type_analyse'])->whereDate('created_at', no
             'statut'        => 'valide',
             'biologiste_id' => auth()->id() // FIX: était auth()->$id()
         ]);
+
+        $examen->load('patient');
+        if ($examen->patient && $examen->patient->email) {
+            \Illuminate\Support\Facades\Mail::to($examen->patient->email)->send(new \App\Mail\VerificationCodeMail($examen->reference));
+        }
 
         return response()->json([
             'success' => true,
@@ -300,6 +310,8 @@ $examens = Examen::with(['patient', 'type_analyse'])->whereDate('created_at', no
             'statut' => 'termine',
             'biologiste_id' => auth()->id()
         ]);
+
+        $examen->load('patient');
 
         if ($examen->patient && $examen->patient->email) {
             Mail::to($examen->patient->email)->send(new ResultatExamenMail($examen));
@@ -356,14 +368,17 @@ $examens = Examen::with(['patient', 'type_analyse'])->whereDate('created_at', no
 
         // 2. 🔥 الـ نـوتـيـفـيـكـاسـيـون الأوتوماتيكية:
         // كيتأكد بلي الـ statut رجع "valide" والمريض عنده إيميل
-        if ($statutInput === 'valide' || $statutInput === 'termine') {
-            // كانديرو load للـ patient باش نضمنو الداتا ديالو كاينا ف الـ $examen
-            $examen->load('patient'); 
-            
-            if ($examen->patient && $examen->patient->email) {
-                \Illuminate\Support\Facades\Mail::to($examen->patient->email)->send(new \App\Mail\ResultatExamenMail($examen));
-            }
-        }
+        if ($statutInput === 'valide') {
+    if ($examen->patient && $examen->patient->email) {
+        // 🚀 هادي لّي زِدنا: كادّوز الـ reference (الـ كود) الصّحيح نِيت لّي تْـسِيفا ف الـ Base
+        Mail::to($examen->patient->email)->send(new \App\Mail\VerificationCodeMail($examen->reference));
+    }
+} elseif ($statutInput === 'termine') {
+    if ($examen->patient && $examen->patient->email) {
+        // هادي كادّوز المايل د النتائج ف الـلّخر ملي الـ بيولوجيست كايْفِينِي التحليلة
+        Mail::to($examen->patient->email)->send(new \App\Mail\ResultatExamenMail($examen));
+    }
+}
 
             return response()->json([
                 'success' => true,
