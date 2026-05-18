@@ -145,6 +145,7 @@
   width: 100%;
   border-collapse: collapse;
   text-align: left;
+  direction: ltr;
 }
 
 .hl-table th {
@@ -165,6 +166,12 @@
 }
 
 .hl-table tr:hover { background-color: #fbfcfe; }
+
+body[dir="rtl"] .hl-table,
+body[dir="rtl"] .hl-table th,
+body[dir="rtl"] .hl-table td {
+  text-align: left;
+}
 
 .hl-welcome-card {
   background: white;

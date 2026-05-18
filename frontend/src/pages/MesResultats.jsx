@@ -264,6 +264,7 @@ const MesResultats = () => {
     table: {
       width: "100%",
       borderCollapse: "collapse",
+      direction: "ltr",
     },
     thead: {
       background: "#f9fafb",

@@ -112,7 +112,7 @@ const StaffManagement = () => {
         ) : staff.length === 0 ? (
           <div style={{ padding: '24px', textAlign: 'center', color: '#64748b' }}>{t("staff.empty")}</div>
         ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', direction: 'ltr' }}>
             <thead>
               <tr style={{ background: '#f8fafc', borderBottom: '1px solid #f1f5f9', color: '#64748b', fontSize: '13px', fontWeight: '600' }}>
                 <th style={{ padding: '14px 20px' }}>{t("staff.fullName")}</th>

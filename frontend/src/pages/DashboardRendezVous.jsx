@@ -203,7 +203,8 @@ const DashboardRendezVous = () => {
                     <table
                         style={{
                             width: '100%',
-                            borderCollapse: 'collapse'
+                            borderCollapse: 'collapse',
+                            direction: 'ltr'
                         }}
                     >
 
