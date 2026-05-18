@@ -6,6 +6,7 @@ import "./Login.css";
 import { apiLogin } from "../lib/api";
 import { useAuth } from "../contexts/AuthContext";
 import {Link} from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 const Login = () => {
   const { user } = useAuth();
@@ -15,6 +16,19 @@ const Login = () => {
   const [reference, setReference] = useState("");
   const [telephone, setTelephone] = useState("");
   const [loading, setLoading] = useState(false);
+  const {t,i18n} = useTranslation();
+
+  const changeLanguage = (e) => {
+    const selectedLanguage = e.target.value;
+    i18n.changeLanguage(selectedLanguage);
+    
+    // 💡 بلان إضافي: باش تقلب الاتجاه د الصفحة (RTL) إلى تختار العَرَبية
+    if (selectedLanguage === 'ar') {
+      document.body.dir = 'rtl';
+    } else {
+      document.body.dir = 'ltr';
+    }
+  };
 
   // Check if user is already logged in
   useEffect(() => {
@@ -98,27 +112,33 @@ const Login = () => {
 
   return (
     <div className="helix-login-page">
+      <div style={{ position: 'absolute', top: '20px', right: '20px', zIndex: 10 }}>
+  <select onChange={changeLanguage} value={i18n.language} style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: '#fff', cursor: 'pointer' }}>
+    <option value="fr">🇫🇷 Français</option>
+    <option value="ar">🇲🇦 العربية</option>
+  </select>
+</div>
       <div className="login-left">
         <div className="login-form-box">
           <h1 className="login-logo">Helix <span>Lab</span></h1>
           
           <div className="simple-tabs">
-            <button type="button" onClick={() => setIsStaff(true)} className={isStaff ? "active" : ""}>Personnel</button>
-            <button type="button" onClick={() => setIsStaff(false)} className={!isStaff ? "active" : ""}>Patient</button>
+            <button type="button" onClick={() => setIsStaff(true)} className={isStaff ? "active" : ""}>{t('login.tab_personnel')}</button>
+            <button type="button" onClick={() => setIsStaff(false)} className={!isStaff ? "active" : ""}>{t('login.tab_patient')}</button>
           </div>
 
           <form onSubmit={handleSubmit}>
             {isStaff ? (
               <div className="fade-in">
                 <div className="field-container">
-                  <label className="field-label">Email</label>
+                  <label className="field-label">{t('login.email_label')}</label>
                   <div className="input-icon-wrapper">
                     <Mail size={18} />
                     <input type="email" className="helix-input" value={email} onChange={(e) => setEmail(e.target.value)} required />
                   </div>
                 </div>
                 <div className="field-container">
-                  <label className="field-label">Mot de passe</label>
+                  <label className="field-label">{t('login.password_label')}</label>
                   <div className="input-icon-wrapper">
                     <Lock size={18} />
                     <input type="password" className="helix-input" value={password} onChange={(e) => setPassword(e.target.value)} required />
@@ -130,7 +150,7 @@ const Login = () => {
             ) : (
               <div className="fade-in">
                 <div className="field-container">
-                  <label className="field-label">N° de Téléphone</label>
+                  <label className="field-label">{t('login.phone_label')}</label>
                   <div className="input-icon-wrapper">
                     <Phone size={18} />
                     <input 
@@ -147,7 +167,7 @@ const Login = () => {
                 </div>
                 
                 <div className="field-container">
-                  <label className="field-label">Référence d'examen</label>
+                  <label className="field-label">{t('login.reference_label')}</label>
                   <div className="input-icon-wrapper">
                     <Hash size={18} />
                     <input 
@@ -164,14 +184,14 @@ const Login = () => {
             )}
 
             <button type="submit" className="helix-login-btn" disabled={loading}>
-              {loading ? "Chargement..." : (isStaff ? "Se Connecter" : "Voir mes Résultats")}
+              {loading ? t('login.charger') : (isStaff ? t('login.submit_btn') : t('login.btn_results'))}
             </button>
             
           </form>
           <div style={{ textAlign: 'center', marginTop: '20px', fontSize: '14px' }}>
-    <span style={{ color: '#64748b' }}>Vous n'avez pas de rendez-vous ? </span>
+    <span style={{ color: '#64748b' }}>{t('login.no_appointment')}</span>
     <Link to="/prendre-rendez-vous" style={{ color: '#10b981', fontWeight: 'bold', textDecoration: 'none', marginLeft: '5px' }}>
-        Prendre un rendez-vous ➔
+       {t('login.take_appointment')}
     </Link>
 </div>
         </div>

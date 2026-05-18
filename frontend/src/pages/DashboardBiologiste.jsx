@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import axios from "axios";
 import ResultDetailsModal from "@/components/ResultDetailsModal";
 import "./Dashboard.css";
+import { t } from "i18next";
 
 
 const DashboardBiologiste = () => {
@@ -580,7 +581,7 @@ const DashboardBiologiste = () => {
                 </div>
 
                 <textarea
-                  placeholder="Commentaire médical..."
+                  placeholder={t(biologiste.modal.medicalComment)}
                   value={results[ligne.id]?.commentaire || ''}
                   onChange={(e) => setResults({
                     ...results,

@@ -1,67 +1,81 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Mail, Lock, CheckCircle, AlertTriangle, ArrowLeft, Camera, Eye, EyeOff, Settings } from 'lucide-react';
+import {
+  Mail,
+  Lock,
+  CheckCircle,
+  AlertTriangle,
+  ArrowLeft,
+  Camera,
+  Eye,
+  EyeOff,
+  Settings
+} from 'lucide-react';
+
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 const ProfileBiologiste = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
-  
-  // State initialization - user data and avatar
+
+  const { t } = useTranslation();
+
   const [user, setUser] = useState({});
   const [avatarUrl, setAvatarUrl] = useState(null);
   const [previewImage, setPreviewImage] = useState(null);
   const [isLoadingAvatar, setIsLoadingAvatar] = useState(false);
-  
+
   const [stats, setStats] = useState({
     total_validated: 0,
     pathological_count: 0
   });
+
   const [isHovered, setIsHovered] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  // Fetch user profile data from backend on mount
+  // Fetch profile
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
         const token = localStorage.getItem("token");
-        
-        // Fetch user data including avatar URL
+
         const response = await axios.get(
           "http://projet_pff.test/api/user/profile",
           {
-            headers: { Authorization: `Bearer ${token}` }
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
           }
         );
 
         setUser(response.data);
-        
-        // Set avatar URL from backend if exists
+
         if (response.data.avatar) {
-          setAvatarUrl(`http://localhost:8000/avatars/${response.data.avatar}`);
+          setAvatarUrl(
+            `http://localhost:8000/avatars/${response.data.avatar}`
+          );
         }
+
       } catch (error) {
         console.error("Error fetching user profile:", error);
-        toast.error("Erreur lors du chargement du profil");
+
+        toast.error(t("profile.error_loading"));
       }
     };
 
     fetchUserProfile();
-  }, []);
+  }, [t]);
 
-  // Fetch biologist statistics (authenticated endpoint)
+  // Fetch stats
   useEffect(() => {
     const fetchStats = async () => {
       try {
         const token = localStorage.getItem("token");
-        
-        if (!token) {
-          console.error("No authentication token found");
-          return;
-        }
 
-        // Use the authenticated endpoint - no need to pass userId
+        if (!token) return;
+
         const response = await axios.get(
           "http://projet_pff.test/api/biologiste/stats",
           {
@@ -75,43 +89,45 @@ const ProfileBiologiste = () => {
           total_validated: response.data.total_validated || 0,
           pathological_count: response.data.pathological_count || 0
         });
+
       } catch (error) {
         console.error("Error fetching stats:", error);
-        // Don't show error toast for stats, just log it
       }
     };
 
     fetchStats();
-    
-    // Refresh stats every 10 seconds to keep them up-to-date
+
     const interval = setInterval(fetchStats, 10000);
+
     return () => clearInterval(interval);
+
   }, []);
 
-  // Handle image change and upload to backend
+  // Upload avatar
   const handleImageChange = async (e) => {
     const file = e.target.files[0];
+
     if (!file) return;
 
-    // Show preview immediately
     const reader = new FileReader();
+
     reader.onloadend = () => {
       setPreviewImage(reader.result);
     };
+
     reader.readAsDataURL(file);
 
-    // Upload to backend using FormData
     try {
       setIsLoadingAvatar(true);
+
       const token = localStorage.getItem("token");
-      
-      // Create FormData for multipart/form-data request
+
       const formData = new FormData();
+
       formData.append('avatar', file);
       formData.append('nom_complet', user.nom_complet);
       formData.append('email', user.email);
 
-      // Send to backend with proper headers
       const response = await axios.post(
         "http://projet_pff.test/api/profile/update-avatar",
         formData,
@@ -123,140 +139,488 @@ const ProfileBiologiste = () => {
         }
       );
 
-      // Update user data and avatar URL from backend response
       setUser(response.data.user);
       setAvatarUrl(response.data.avatar_url);
-      
-      // Update localStorage for fallback
-      localStorage.setItem("user", JSON.stringify(response.data.user));
-      
-      toast.success("Avatar mis à jour avec succès!");
-      setPreviewImage(null); // Clear preview after successful upload
+
+      localStorage.setItem(
+        "user",
+        JSON.stringify(response.data.user)
+      );
+
+      toast.success(t("profile.avatar_success"));
+
+      setPreviewImage(null);
+
     } catch (error) {
       console.error("Error uploading avatar:", error);
-      toast.error(error.response?.data?.message || "Erreur lors de la mise à jour de l'avatar");
+
+      toast.error(
+        error.response?.data?.message ||
+        t("profile.avatar_error")
+      );
+
       setPreviewImage(null);
+
     } finally {
       setIsLoadingAvatar(false);
     }
   };
 
   return (
-    <div style={{ padding: '30px', maxWidth: '600px', margin: '40px auto' }}>
+    <div
+      style={{
+        padding: '30px',
+        maxWidth: '600px',
+        margin: '40px auto'
+      }}
+    >
+
+      {/* Top Nav */}
       <div style={topNavStyle}>
-        <button onClick={() => navigate(-1)} style={backBtnStyle}>
-          <ArrowLeft size={18} /> Retour
+
+        <button
+          onClick={() => navigate(-1)}
+          style={backBtnStyle}
+        >
+          <ArrowLeft size={18} />
+          {t("profile.back")}
         </button>
-        <button onClick={() => navigate('/settings-biologiste')} style={iconSettingsStyle}>
+
+        <button
+          onClick={() => navigate('/settings-biologiste')}
+          style={iconSettingsStyle}
+        >
           <Settings size={20} />
         </button>
+
       </div>
 
+      {/* Card */}
       <div style={cardStyle}>
-        {/* SECTION HEADER: Avatar & Role */}
+
+        {/* Header */}
         <div style={headerStyle}>
+
           <div style={avatarWrapper}>
-            <input type="file" ref={fileInputRef} onChange={handleImageChange} style={{ display: 'none' }} accept="image/*" disabled={isLoadingAvatar} />
-            <div 
-              style={avatarStyle} 
-              onClick={() => !isLoadingAvatar && fileInputRef.current.click()}
+
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleImageChange}
+              style={{ display: 'none' }}
+              accept="image/*"
+              disabled={isLoadingAvatar}
+            />
+
+            <div
+              style={avatarStyle}
+              onClick={() =>
+                !isLoadingAvatar &&
+                fileInputRef.current.click()
+              }
               onMouseEnter={() => setIsHovered(true)}
               onMouseLeave={() => setIsHovered(false)}
-              title={isLoadingAvatar ? "Upload en cours..." : "Cliquez pour changer"}
+              title={
+                isLoadingAvatar
+                  ? t("profile.uploading")
+                  : t("profile.change_photo")
+              }
             >
+
               {previewImage ? (
-                <img src={previewImage} alt="Profile Preview" style={imageStyle} />
+
+                <img
+                  src={previewImage}
+                  alt="Preview"
+                  style={imageStyle}
+                />
+
               ) : avatarUrl ? (
-                <img src={avatarUrl} alt="Profile" style={imageStyle} />
+
+                <img
+                  src={avatarUrl}
+                  alt="Profile"
+                  style={imageStyle}
+                />
+
               ) : (
                 user.nom_complet?.charAt(0) || "B"
               )}
-              {isHovered && !isLoadingAvatar && <div style={cameraOverlayStyle}><Camera size={24} color="white" /></div>}
-              {isLoadingAvatar && <div style={cameraOverlayStyle}><span style={{ color: 'white', fontSize: '12px' }}>Upload...</span></div>}
+
+              {isHovered && !isLoadingAvatar && (
+                <div style={cameraOverlayStyle}>
+                  <Camera size={24} color="white" />
+                </div>
+              )}
+
+              {isLoadingAvatar && (
+                <div style={cameraOverlayStyle}>
+                  <span
+                    style={{
+                      color: 'white',
+                      fontSize: '12px'
+                    }}
+                  >
+                    {t("profile.uploading")}
+                  </span>
+                </div>
+              )}
+
             </div>
+
             <div style={onlineBadge}></div>
           </div>
-          <h2 style={{ margin: '15px 0 5px 0', color: '#1e293b' }}>{user.nom_complet || "Mon Profil"}</h2>
-          <span style={roleBadge}>BIOLOGISTE</span>
+
+          <h2
+            style={{
+              margin: '15px 0 5px 0',
+              color: '#1e293b'
+            }}
+          >
+            {user.nom_complet || t("profile.my_profile")}
+          </h2>
+
+          <span style={roleBadge}>
+            BIOLOGISTE
+          </span>
+
         </div>
 
-        {/* SECTION INFO: Email & Password */}
+        {/* Infos */}
         <div style={infoGrid}>
-          <div style={infoItem}>
-            <Mail size={20} color="#10b981" />
-            <div style={{ marginLeft: '12px', flex: 1 }}>
-              <label style={labelStyle}>Email Address</label>
-              <p style={valueStyle}>{user.email}</p>
-            </div>
-          </div>
 
+          {/* Email */}
           <div style={infoItem}>
-            <Lock size={20} color="#10b981" />
-            <div style={{ marginLeft: '12px', flex: 1 }}>
-              <label style={labelStyle}>Mot de passe</label>
-              {/* DYNAMIQUE: kaye-qra plain_password li ghadi n-sauvgaurdiw f Settings */}
+
+            <Mail size={20} color="#10b981" />
+
+            <div
+              style={{
+                marginLeft: '12px',
+                flex: 1
+              }}
+            >
+              <label style={labelStyle}>
+                {t("profile.email")}
+              </label>
+
               <p style={valueStyle}>
-                {showPassword ? (user.plain_password || "password123") : "••••••••••••"}
+                {user.email}
               </p>
             </div>
-            <button onClick={() => setShowPassword(!showPassword)} style={eyeButtonStyle}>
-              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-            </button>
+
           </div>
+
+          {/* Password */}
+          <div style={infoItem}>
+
+            <Lock size={20} color="#10b981" />
+
+            <div
+              style={{
+                marginLeft: '12px',
+                flex: 1
+              }}
+            >
+              <label style={labelStyle}>
+                {t("profile.password")}
+              </label>
+
+              <p style={valueStyle}>
+                {showPassword
+                  ? (user.plain_password || "password123")
+                  : "••••••••••••"}
+              </p>
+            </div>
+
+            <button
+              onClick={() =>
+                setShowPassword(!showPassword)
+              }
+              style={eyeButtonStyle}
+            >
+              {showPassword
+                ? <EyeOff size={18} />
+                : <Eye size={18} />
+              }
+            </button>
+
+          </div>
+
         </div>
 
-        {/* BOUTON SETTINGS: Best Practice */}
-        <button 
-          onClick={() => navigate('/settings-biologiste')} 
+        {/* Edit Button */}
+        <button
+          onClick={() =>
+            navigate('/settings-biologiste')
+          }
           style={editProfileBtn}
-          onMouseOver={(e) => e.currentTarget.style.background = '#f1f5f9'}
-          onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
+          onMouseOver={(e) =>
+            e.currentTarget.style.background = '#f1f5f9'
+          }
+          onMouseOut={(e) =>
+            e.currentTarget.style.background = 'transparent'
+          }
         >
-          <Settings size={16} /> Modifier le profil
+          <Settings size={16} />
+
+          {t("profile.edit_profile")}
         </button>
 
-        {/* SECTION STATS: Analyses Validées & Alertes Pathologiques */}
+        {/* Stats */}
         <div style={statsGrid}>
+
+          {/* Validated */}
           <div style={statCard}>
-            <div style={{ background: '#10b981', padding: '12px', borderRadius: '12px', marginBottom: '12px' }}>
-              <CheckCircle size={24} color="white" />
+
+            <div
+              style={{
+                background: '#10b981',
+                padding: '12px',
+                borderRadius: '12px',
+                marginBottom: '12px'
+              }}
+            >
+              <CheckCircle
+                size={24}
+                color="white"
+              />
             </div>
-            <h3 style={{ margin: '0 0 5px 0', fontSize: '18px', color: '#1e293b' }}>{stats.total_validated || 0}</h3>
-            <p style={{ margin: 0, color: '#64748b', fontSize: '13px' }}>Analyses Validées</p>
+
+            <h3
+              style={{
+                margin: '0 0 5px 0',
+                fontSize: '18px',
+                color: '#1e293b'
+              }}
+            >
+              {stats.total_validated || 0}
+            </h3>
+
+            <p
+              style={{
+                margin: 0,
+                color: '#64748b',
+                fontSize: '13px'
+              }}
+            >
+              {t("profile.validated_analyses")}
+            </p>
+
           </div>
 
+          {/* Pathological */}
           <div style={statCard}>
-            <div style={{ background: '#d97706', padding: '12px', borderRadius: '12px', marginBottom: '12px' }}>
-              <AlertTriangle size={24} color="white" />
+
+            <div
+              style={{
+                background: '#d97706',
+                padding: '12px',
+                borderRadius: '12px',
+                marginBottom: '12px'
+              }}
+            >
+              <AlertTriangle
+                size={24}
+                color="white"
+              />
             </div>
-            <h3 style={{ margin: '0 0 5px 0', fontSize: '18px', color: '#1e293b' }}>{stats.pathological_count || 0}</h3>
-            <p style={{ margin: 0, color: '#64748b', fontSize: '13px' }}>Alertes Pathologiques</p>
+
+            <h3
+              style={{
+                margin: '0 0 5px 0',
+                fontSize: '18px',
+                color: '#1e293b'
+              }}
+            >
+              {stats.pathological_count || 0}
+            </h3>
+
+            <p
+              style={{
+                margin: 0,
+                color: '#64748b',
+                fontSize: '13px'
+              }}
+            >
+              {t("profile.pathological_alerts")}
+            </p>
+
           </div>
+
         </div>
+
       </div>
     </div>
   );
 };
 
-// --- STYLES OBJECTS ---
-const topNavStyle = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' };
-const cardStyle = { background: 'white', padding: '35px', borderRadius: '25px', boxShadow: '0 10px 40px rgba(0,0,0,0.06)', border: '1px solid #f1f5f9' };
-const headerStyle = { textAlign: 'center', marginBottom: '35px' };
-const avatarWrapper = { position: 'relative', display: 'inline-block', marginBottom: '10px' };
-const avatarStyle = { width: '100px', height: '100px', background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', color: 'white', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '40px', fontWeight: 'bold', position: 'relative', cursor: 'pointer', border: '4px solid white', overflow: 'hidden' };
-const imageStyle = { width: '100%', height: '100%', objectFit: 'cover' };
-const cameraOverlayStyle = { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' };
-const onlineBadge = { width: '22px', height: '22px', background: '#22c55e', border: '3px solid white', borderRadius: '50%', position: 'absolute', bottom: '5px', right: '5px', zIndex: 10 };
-const roleBadge = { background: '#d1fae5', color: '#059669', padding: '5px 15px', borderRadius: '20px', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase' };
-const infoGrid = { display: 'grid', gap: '15px', marginBottom: '20px' };
-const infoItem = { display: 'flex', alignItems: 'center', padding: '15px 20px', background: '#f8fafc', borderRadius: '15px', border: '1px solid #f1f5f9' };
-const labelStyle = { fontSize: '12px', color: '#64748b', display: 'block' };
-const valueStyle = { margin: 0, fontWeight: '600', color: '#1e293b' };
-const statsGrid = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginTop: '25px' };
-const statCard = { padding: '20px', background: '#d1fae5', borderRadius: '15px', border: '1px solid #a7f3d0', textAlign: 'center' };
-const backBtnStyle = { display: 'flex', alignItems: 'center', gap: '8px', border: 'none', background: 'none', color: '#64748b', cursor: 'pointer', fontWeight: '600' };
-const iconSettingsStyle = { border: 'none', background: 'none', color: '#64748b', cursor: 'pointer' };
-const editProfileBtn = { width: '100%', padding: '12px', marginBottom: '25px', borderRadius: '12px', border: '1px solid #e2e8f0', background: 'transparent', color: '#475569', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: '0.2s' };
-const eyeButtonStyle = { border: 'none', background: 'none', cursor: 'pointer', color: '#64748b' };
+// Styles
+const topNavStyle = {
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  marginBottom: '25px'
+};
+
+const cardStyle = {
+  background: 'white',
+  padding: '35px',
+  borderRadius: '25px',
+  boxShadow: '0 10px 40px rgba(0,0,0,0.06)',
+  border: '1px solid #f1f5f9'
+};
+
+const headerStyle = {
+  textAlign: 'center',
+  marginBottom: '35px'
+};
+
+const avatarWrapper = {
+  position: 'relative',
+  display: 'inline-block',
+  marginBottom: '10px'
+};
+
+const avatarStyle = {
+  width: '100px',
+  height: '100px',
+  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+  color: 'white',
+  borderRadius: '50%',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  fontSize: '40px',
+  fontWeight: 'bold',
+  position: 'relative',
+  cursor: 'pointer',
+  border: '4px solid white',
+  overflow: 'hidden'
+};
+
+const imageStyle = {
+  width: '100%',
+  height: '100%',
+  objectFit: 'cover'
+};
+
+const cameraOverlayStyle = {
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  width: '100%',
+  height: '100%',
+  background: 'rgba(0,0,0,0.4)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center'
+};
+
+const onlineBadge = {
+  width: '22px',
+  height: '22px',
+  background: '#22c55e',
+  border: '3px solid white',
+  borderRadius: '50%',
+  position: 'absolute',
+  bottom: '5px',
+  right: '5px',
+  zIndex: 10
+};
+
+const roleBadge = {
+  background: '#d1fae5',
+  color: '#059669',
+  padding: '5px 15px',
+  borderRadius: '20px',
+  fontSize: '12px',
+  fontWeight: '700',
+  textTransform: 'uppercase'
+};
+
+const infoGrid = {
+  display: 'grid',
+  gap: '15px',
+  marginBottom: '20px'
+};
+
+const infoItem = {
+  display: 'flex',
+  alignItems: 'center',
+  padding: '15px 20px',
+  background: '#f8fafc',
+  borderRadius: '15px',
+  border: '1px solid #f1f5f9'
+};
+
+const labelStyle = {
+  fontSize: '12px',
+  color: '#64748b',
+  display: 'block'
+};
+
+const valueStyle = {
+  margin: 0,
+  fontWeight: '600',
+  color: '#1e293b'
+};
+
+const statsGrid = {
+  display: 'grid',
+  gridTemplateColumns: '1fr 1fr',
+  gap: '15px',
+  marginTop: '25px'
+};
+
+const statCard = {
+  padding: '20px',
+  background: '#d1fae5',
+  borderRadius: '15px',
+  border: '1px solid #a7f3d0',
+  textAlign: 'center'
+};
+
+const backBtnStyle = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '8px',
+  border: 'none',
+  background: 'none',
+  color: '#64748b',
+  cursor: 'pointer',
+  fontWeight: '600'
+};
+
+const iconSettingsStyle = {
+  border: 'none',
+  background: 'none',
+  color: '#64748b',
+  cursor: 'pointer'
+};
+
+const editProfileBtn = {
+  width: '100%',
+  padding: '12px',
+  marginBottom: '25px',
+  borderRadius: '12px',
+  border: '1px solid #e2e8f0',
+  background: 'transparent',
+  color: '#475569',
+  fontWeight: '600',
+  cursor: 'pointer',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: '8px',
+  transition: '0.2s'
+};
+
+const eyeButtonStyle = {
+  border: 'none',
+  background: 'none',
+  cursor: 'pointer',
+  color: '#64748b'
+};
 
 export default ProfileBiologiste;
