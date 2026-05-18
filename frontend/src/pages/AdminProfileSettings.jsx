@@ -2,8 +2,10 @@ import React, { useState,useEffect } from 'react';
 import { User, Lock, Save, ShieldCheck } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 const AdminProfileSettings = ({ userData, setUserData }) => {
+  const { t } = useTranslation();
   const [profile, setProfile] = useState({
     nom_complet: userData.nom_complet || '',
     email: userData.email || ''
@@ -35,9 +37,9 @@ const AdminProfileSettings = ({ userData, setUserData }) => {
       const updatedUser = { ...userData, ...profile };
       localStorage.setItem("user", JSON.stringify(updatedUser));
       setUserData(updatedUser);
-      toast.success("Informations mises à jour !");
+      toast.success(t('adminProfile.updateSuccess'));
     } catch (error) {
-      toast.error("Erreur lors de la mise à jour");
+      toast.error(t('adminProfile.updateError'));
     }
   };
 
@@ -54,7 +56,7 @@ useEffect(() => {
   const handleChangePassword = async (e) => {
     e.preventDefault();
     if (passwords.newPassword !== passwords.confirmPassword) {
-      return toast.error("Les mots de passe ne correspondent pas");
+      return toast.error(t('adminProfile.passwordMismatch'));
     }
     try {
         const token = localStorage.getItem("token");
@@ -62,29 +64,29 @@ useEffect(() => {
         headers: { Authorization: `Bearer ${token}` }
       };
       await axios.post('http://projet_pff.test/api/user/change-password', passwords, config);
-      toast.success("Mot de passe modifié !");
+      toast.success(t('adminProfile.passwordSuccess'));
       setPasswords({ oldPassword: '', newPassword: '', confirmPassword: '' });
     } catch (error) {
-      toast.error(error.response?.data?.message || "Erreur mot de passe");
+      toast.error(error.response?.data?.message || t('adminProfile.passwordError'));
     }
   };
 
   return (
     <div className="hl-admin-profile-container">
       <div className="hl-profile-header">
-        <h2>Paramètres du Compte Administrateur</h2>
-        <p>Gérez vos informations personnelles et la sécurité de votre accès.</p>
+        <h2>{t('adminProfile.title')}</h2>
+        <p>{t('adminProfile.subtitle')}</p>
       </div>
 
       <div className="hl-profile-grid">
         {/* Section Informations */}
         <div className="hl-card">
           <div className="card-title">
-            <User size={20} /> <h3>Informations Personnelles</h3>
+            <User size={20} /> <h3>{t('adminProfile.personalInfo')}</h3>
           </div>
           <form onSubmit={handleUpdateInfo}>
             <div className="form-group">
-              <label>Nom Complet</label>
+              <label>{t('adminProfile.fullName')}</label>
               <input 
                 type="text" 
                 value={profile.nom_complet}
@@ -92,7 +94,7 @@ useEffect(() => {
               />
             </div>
             <div className="form-group">
-              <label>Email Address</label>
+              <label>{t('adminProfile.email')}</label>
               <input 
                 type="email" 
                 value={profile.email}
@@ -100,7 +102,7 @@ useEffect(() => {
               />
             </div>
             <button type="submit" className="hl-btn-primary">
-              <Save size={18} /> Enregistrer
+              <Save size={18} /> {t('adminProfile.save')}
             </button>
           </form>
         </div>
@@ -108,11 +110,11 @@ useEffect(() => {
         {/* Section Sécurité */}
         <div className="hl-card">
           <div className="card-title">
-            <ShieldCheck size={20} /> <h3>Sécurité du compte</h3>
+            <ShieldCheck size={20} /> <h3>{t('adminProfile.security')}</h3>
           </div>
           <form onSubmit={handleChangePassword}>
             <div className="form-group">
-              <label>Ancien mot de passe</label>
+              <label>{t('adminProfile.oldPassword')}</label>
               <input 
                 type="password" 
                 value={passwords.oldPassword}
@@ -120,7 +122,7 @@ useEffect(() => {
               />
             </div>
             <div className="form-group">
-              <label>Nouveau mot de passe</label>
+              <label>{t('adminProfile.newPassword')}</label>
               <input 
                 type="password" 
                 value={passwords.newPassword}
@@ -128,7 +130,7 @@ useEffect(() => {
               />
             </div>
             <div className="form-group">
-              <label>Confirmer le nouveau</label>
+              <label>{t('adminProfile.confirmPassword')}</label>
               <input 
                 type="password" 
                 value={passwords.confirmPassword}
@@ -136,7 +138,7 @@ useEffect(() => {
               />
             </div>
             <button type="submit" className="hl-btn-secondary">
-              <Lock size={18} /> Changer le mot de passe
+              <Lock size={18} /> {t('adminProfile.changePassword')}
             </button>
           </form>
         </div>

@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTranslation } from "react-i18next";
 import "./Dashboard.css";
 import "./PatientsManagement.css";
 
@@ -12,6 +13,7 @@ const API_BASE_URL = "http://projet_pff.test/api";
 
 const PatientsManagement = () => {
   const { token } = useAuth();
+  const { t, i18n } = useTranslation();
   const [patients, setPatients] = useState([]);
   const [filteredPatients, setFilteredPatients] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -62,7 +64,7 @@ const PatientsManagement = () => {
       setPatients(response.data.data || response.data);
     } catch (error) {
       console.error("Error fetching patients:", error);
-      toast.error("Erreur lors du chargement des patients");
+      toast.error(t("patientsManagement.loadError"));
     } finally {
       setLoading(false);
     }
@@ -81,7 +83,7 @@ const PatientsManagement = () => {
 
     // Validation
     if (!formData.nom || !formData.prenom || !formData.cin || !formData.telephone || !formData.date_naissance) {
-      toast.error("Veuillez remplir tous les champs obligatoires");
+      toast.error(t("common.required_fields"));
       return;
     }
 
@@ -99,17 +101,18 @@ const PatientsManagement = () => {
       if (editingId) {
         // Update patient
         await axios.put(`${API_BASE_URL}/patients/${editingId}`, patientData, getAxiosConfig());
-        toast.success("Patient mis à jour avec succès");
+        toast.success(t("patientsManagement.updateSuccess"));
       } else {
         // Add new patient
         await axios.post(`${API_BASE_URL}/patients`, patientData, getAxiosConfig());
-        toast.success("Patient ajouté avec succès");
+        toast.success(t("patientsManagement.saveSuccess"));
       }
       resetForm();
       fetchPatients();
     } catch (error) {
       console.error("Error saving patient:", error);
-      toast.error(error.response?.data?.message || error.response?.data?.errors ? Object.values(error.response.data.errors).flat().join(', ') : "Erreur lors de l'enregistrement du patient");
+      const validationErrors = error.response?.data?.errors;
+      toast.error(error.response?.data?.message || (validationErrors ? Object.values(validationErrors).flat().join(", ") : t("patientsManagement.saveError")));
     } finally {
       setIsSubmitting(false);
     }
@@ -129,14 +132,14 @@ const PatientsManagement = () => {
   };
 
   const handleDeletePatient = async (id) => {
-    if (window.confirm("Êtes-vous sûr de vouloir supprimer ce patient ?")) {
+    if (window.confirm(t("patientsManagement.deleteConfirm"))) {
       try {
         await axios.delete(`${API_BASE_URL}/patients/${id}`, getAxiosConfig());
-        toast.success("Patient supprimé avec succès");
+        toast.success(t("patientsManagement.deleteSuccess"));
         fetchPatients();
       } catch (error) {
         console.error("Error deleting patient:", error);
-        toast.error("Erreur lors de la suppression du patient");
+        toast.error(t("patientsManagement.deleteError"));
       }
     }
   };
@@ -157,7 +160,7 @@ const PatientsManagement = () => {
   const formatDate = (dateString) => {
     if (!dateString) return "-";
     const options = { year: "numeric", month: "long", day: "numeric" };
-    return new Date(dateString).toLocaleDateString("fr-FR", options);
+    return new Date(dateString).toLocaleDateString(i18n.language?.startsWith("ar") ? "ar-MA" : "fr-FR", options);
   };
 
   return (
@@ -165,7 +168,7 @@ const PatientsManagement = () => {
       {/* Header Section */}
       <div className="patients-header">
         <div className="patients-header-top">
-          <h1>Gestion des Patients</h1>
+          <h1>{t("patientsManagement.title")}</h1>
           <Button
             onClick={() => {
               resetForm();
@@ -173,7 +176,7 @@ const PatientsManagement = () => {
             }}
             className="btn-add-patient"
           >
-            <Plus size={20} /> Ajouter Patient
+            <Plus size={20} /> {t("patientsManagement.addPatient")}
           </Button>
         </div>
 
@@ -182,7 +185,7 @@ const PatientsManagement = () => {
           <Search size={18} className="search-icon" />
           <Input
             type="text"
-            placeholder="Rechercher par nom ou CIN..."
+            placeholder={t("patientsManagement.searchPlaceholder")}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="search-input"
@@ -194,25 +197,25 @@ const PatientsManagement = () => {
       <div className="hl-table-container">
         {loading ? (
           <div className="loading-state">
-            <p>Chargement des patients...</p>
+            <p>{t("patientsManagement.loading")}</p>
           </div>
         ) : filteredPatients.length === 0 ? (
           <div className="empty-state">
             <p>
               {patients.length === 0
-                ? "Aucun patient enregistré"
-                : "Aucun patient trouvé pour votre recherche"}
+                ? t("patientsManagement.empty")
+                : t("patientsManagement.noSearchResult")}
             </p>
           </div>
         ) : (
           <table className="hl-table">
             <thead>
               <tr>
-                <th>Nom Complet</th>
+                <th>{t("patientsManagement.fullName")}</th>
                 <th>CIN</th>
-                <th>Téléphone</th>
-                <th>Date d'inscription</th>
-                <th>Actions</th>
+                <th>{t("patientsManagement.phone")}</th>
+                <th>{t("patientsManagement.registrationDate")}</th>
+                <th>{t("common.actions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -229,14 +232,14 @@ const PatientsManagement = () => {
                       <button
                         className="action-btn edit-btn"
                         onClick={() => handleEditPatient(patient)}
-                        title="Modifier"
+                        title={t("common.modify")}
                       >
                         <Edit2 size={18} />
                       </button>
                       <button
                         className="action-btn delete-btn"
                         onClick={() => handleDeletePatient(patient.id)}
-                        title="Supprimer"
+                        title={t("common.delete")}
                       >
                         <Trash2 size={18} />
                       </button>
@@ -255,7 +258,7 @@ const PatientsManagement = () => {
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             {/* Modal Header */}
             <div className="modal-header">
-              <h2>{editingId ? "Modifier Patient" : "Ajouter un Nouveau Patient"}</h2>
+              <h2>{editingId ? t("patientsManagement.editTitle") : t("patientsManagement.addTitle")}</h2>
               <button className="modal-close-btn" onClick={() => resetForm()}>
                 <X size={24} />
               </button>
@@ -265,7 +268,7 @@ const PatientsManagement = () => {
             <form onSubmit={handleAddPatient} className="patient-form">
               <div className="form-row">
                 <div className="form-group">
-                  <label htmlFor="nom">Nom *</label>
+                  <label htmlFor="nom">{t("patientsManagement.lastName")} *</label>
                   <Input
                     id="nom"
                     name="nom"
@@ -277,7 +280,7 @@ const PatientsManagement = () => {
                   />
                 </div>
                 <div className="form-group">
-                  <label htmlFor="prenom">Prénom *</label>
+                  <label htmlFor="prenom">{t("patientsManagement.firstName")} *</label>
                   <Input
                     id="prenom"
                     name="prenom"
@@ -304,7 +307,7 @@ const PatientsManagement = () => {
                   />
                 </div>
                 <div className="form-group">
-                  <label htmlFor="telephone">Téléphone *</label>
+                  <label htmlFor="telephone">{t("patientsManagement.phone")} *</label>
                   <Input
                     id="telephone"
                     name="telephone"
@@ -319,7 +322,7 @@ const PatientsManagement = () => {
 
               <div className="form-row">
                 <div className="form-group">
-                  <label htmlFor="sexe">Sexe</label>
+                  <label htmlFor="sexe">{t("patients.sexe")}</label>
                   <select
                     id="sexe"
                     name="sexe"
@@ -327,12 +330,12 @@ const PatientsManagement = () => {
                     onChange={handleInputChange}
                     className="form-select"
                   >
-                    <option value="M">Masculin</option>
-                    <option value="F">Féminin</option>
+                    <option value="M">{t("patientsManagement.male")}</option>
+                    <option value="F">{t("patientsManagement.female")}</option>
                   </select>
                 </div>
                 <div className="form-group">
-                  <label htmlFor="date_naissance">Date de Naissance *</label>
+                  <label htmlFor="date_naissance">{t("patientsManagement.birthDate")} *</label>
                   <Input
                     id="date_naissance"
                     name="date_naissance"
@@ -351,14 +354,14 @@ const PatientsManagement = () => {
                   onClick={() => resetForm()}
                   className="btn-cancel"
                 >
-                  Annuler
+                  {t("common.cancel")}
                 </Button>
                 <Button
                   type="submit"
                   disabled={isSubmitting}
                   className="btn-submit"
                 >
-                  {isSubmitting ? "Enregistrement..." : editingId ? "Mettre à jour" : "Ajouter"}
+                  {isSubmitting ? t("patientsManagement.submitSaving") : editingId ? t("common.update") : t("common.add")}
                 </Button>
               </div>
             </form>

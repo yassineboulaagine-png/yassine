@@ -1,9 +1,14 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Search, FileText, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import axios from "axios";
+import { useTranslation } from "react-i18next";
 import "./Login.css";
 
 const DashboardPatient = () => {
+  const navigate = useNavigate();
+  const { t } = useTranslation();
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   // زيد هادي حدا الـ code
@@ -14,7 +19,7 @@ const DashboardPatient = () => {
   e.preventDefault();
   
   if (!code || !phone) { // تأكد بلي زدتي State ديال phone
-    toast.error("Veuillez remplir tous les champs");
+    toast.error(t("dashboardPatient.fillFields"));
     return;
   }
   
@@ -28,7 +33,7 @@ const DashboardPatient = () => {
     });
 
     if (response.data.success) {
-      toast.success("Accès autorisé !");
+      toast.success(t("dashboardPatient.accessSuccess"));
       
       // 2. خزن الـ ID فـ localStorage باش نجبدو النتائج فـ الصفحة الجاية
       localStorage.setItem("patient_exam_id", response.data.exam_id);
@@ -38,7 +43,7 @@ const DashboardPatient = () => {
     }
   } catch (error) {
     // إيلا المعلومات غلط
-    const msg = error.response?.data?.message || "Informations incorrectes";
+    const msg = error.response?.data?.message || t("dashboardPatient.incorrect");
     toast.error(msg);
   } finally {
     setLoading(false);
@@ -51,9 +56,9 @@ const DashboardPatient = () => {
         <div className="patient-header">
           {/* أي Class فيها Tailwind (flex, items-center...) غاتخدم يلا كنتي منصبو */}
           <FileText size={48} className="mx-auto text-blue-600 mb-4" />
-          <h1 className="patient-title">Espace Patient</h1>
+          <h1 className="patient-title">{t("dashboardPatient.title")}</h1>
           <p className="patient-desc">
-            Saisissez le code figurant sur votre ticket pour consulter vos résultats.
+            {t("dashboardPatient.description")}
           </p>
         </div>
 
@@ -76,14 +81,14 @@ const DashboardPatient = () => {
             ) : (
               <div className="flex items-center justify-center gap-2">
                 <Search size={20} />
-                Consulter mes résultats
+                {t("dashboardPatient.consult")}
               </div>
             )}
           </button>
         </form>
 
         <p className="mt-8 text-xs text-slate-400">
-          En cas de problème, veuillez contacter le secrétariat du laboratoire.
+          {t("dashboardPatient.help")}
         </p>
       </div>
     </div>

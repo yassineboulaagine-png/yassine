@@ -71,7 +71,7 @@ const Login = () => {
       }
     } catch (err) {
       console.error("❌ STAFF LOGIN ERROR:", err);
-      toast.error("Email ou Mot de passe incorrect");
+      toast.error(t('login.staff_error'));
       setLoading(false);
     }
   } else {
@@ -94,14 +94,14 @@ const Login = () => {
       // استعملنا response.data.examen حيت زدناها فـ Laravel
       localStorage.setItem("currentExamen", JSON.stringify(response.data.examen));
 
-      toast.success("Accès réussi");
+      toast.success(t('login.patient_success'));
 
       // 4. توجيه المريض لصفحة النتائج
       window.location.href = "/mes-resultats"; 
     }
   } catch (err) {
     console.error("❌ PATIENT LOGIN ERROR:", err);
-    toast.error("Référence ou Numéro de téléphone incorrect");
+    toast.error(t('login.patient_error'));
     setLoading(false);
   }
 };};
@@ -113,9 +113,9 @@ const Login = () => {
   return (
     <div className="helix-login-page">
       <div style={{ position: 'absolute', top: '20px', right: '20px', zIndex: 10 }}>
-  <select onChange={changeLanguage} value={i18n.language} style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: '#fff', cursor: 'pointer' }}>
-    <option value="fr">🇫🇷 Français</option>
-    <option value="ar">🇲🇦 العربية</option>
+  <select onChange={changeLanguage} value={i18n.language?.startsWith('ar') ? 'ar' : 'fr'} style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: '#fff', cursor: 'pointer' }}>
+    <option value="fr">FR</option>
+    <option value="ar">AR</option>
   </select>
 </div>
       <div className="login-left">

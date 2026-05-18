@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTranslation } from "react-i18next";
 import "./Dashboard.css";
 import "./AnalysesManagement.css";
 
@@ -12,6 +13,7 @@ const API_BASE_URL = "http://projet_pff.test/api";
 
 const AnalysesManagement = () => {
   const { token } = useAuth();
+  const { t, i18n } = useTranslation();
   const [examens, setExamens] = useState([]);
   const [filteredExamens, setFilteredExamens] = useState([]);
   const [patients, setPatients] = useState([]);
@@ -66,7 +68,7 @@ const AnalysesManagement = () => {
       setExamens(response.data.data || response.data);
     } catch (error) {
       console.error("Error fetching examens:", error);
-      toast.error("Erreur lors du chargement des analyses");
+      toast.error(t("analysesManagement.loadError"));
     } finally {
       setLoading(false);
     }
@@ -82,10 +84,10 @@ const AnalysesManagement = () => {
     setIsResultModalOpen(false);
     setResultValue("");
     fetchExamens();
-    toast.success("Résultat enregistré !");
+    toast.success(t("analysesManagement.resultSaved"));
   } catch (error) {
     console.error("Error saving result:", error);
-    toast.error("Erreur lors de l'enregistrement");
+    toast.error(t("analysesManagement.saveResultError"));
   }
 };
 
@@ -95,7 +97,7 @@ const AnalysesManagement = () => {
       setPatients(response.data.data || response.data);
     } catch (error) {
       console.error("Error fetching patients:", error);
-      toast.error("Erreur lors du chargement des patients");
+      toast.error(t("analysesManagement.patientLoadError"));
     }
   };
 
@@ -112,7 +114,7 @@ const AnalysesManagement = () => {
 
     // 1. Validation: زيد تشيك حتى على النوع
     if (!formData.patient_id || !formData.type_analyse_id) {
-      toast.error("Veuillez sélectionner un patient et un type d'analyse");
+      toast.error(t("analysesManagement.selectPatientAndType"));
       return;
     }
 
@@ -128,14 +130,14 @@ const AnalysesManagement = () => {
 
       await axios.post(`${API_BASE_URL}/examens`, analyseData, getAxiosConfig());
       
-      toast.success("Analyse créée avec succès");
+      toast.success(t("analysesManagement.createSuccess"));
       resetForm();
       fetchExamens();
     } catch (error) {
       console.error("Error creating analyse:", error);
       toast.error(
         error.response?.data?.message || 
-        "Erreur lors de la création de l'analyse"
+        t("analysesManagement.createError")
       );
     } finally {
       setIsSubmitting(false);
@@ -162,24 +164,24 @@ const AnalysesManagement = () => {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
 
-      toast.success("PDF téléchargé avec succès");
+      toast.success(t("analysesManagement.pdfDownloaded"));
     } catch (error) {
       console.error("Error generating PDF:", error);
-      toast.error("Erreur lors de la génération du PDF");
+      toast.error(t("analysesManagement.pdfError"));
     } finally {
       setDownloadingPdf(null);
     }
   };
 
   const handleDeleteAnalyse = async (id) => {
-    if (window.confirm("Êtes-vous sûr de vouloir supprimer cette analyse ?")) {
+    if (window.confirm(t("analysesManagement.deleteConfirm"))) {
       try {
         await axios.delete(`${API_BASE_URL}/examens/${id}`, getAxiosConfig());
-        toast.success("Analyse supprimée avec succès");
+        toast.success(t("analysesManagement.deleteSuccess"));
         fetchExamens();
       } catch (error) {
         console.error("Error deleting analyse:", error);
-        toast.error("Erreur lors de la suppression de l'analyse");
+        toast.error(t("analysesManagement.deleteError"));
       }
     }
   };
@@ -194,7 +196,7 @@ const AnalysesManagement = () => {
   const formatDate = (dateString) => {
     if (!dateString) return "-";
     const options = { year: "numeric", month: "long", day: "numeric" };
-    return new Date(dateString).toLocaleDateString("fr-FR", options);
+    return new Date(dateString).toLocaleDateString(i18n.language?.startsWith("ar") ? "ar-MA" : "fr-FR", options);
   };
 
   const getStatusBadgeClass = (status) => {
@@ -211,12 +213,12 @@ const AnalysesManagement = () => {
 
   const getStatusDisplay = (status) => {
     const statusMap = {
-      en_cours: "En cours",
-      valide: "Validée",
-      termine: "Terminée",
-      annule: "Annulée",
-      rejete: "Rejetée",
-      en_validation: "En validation",
+      en_cours: t("status.en_cours"),
+      valide: t("status.validee"),
+      termine: t("status.terminee"),
+      annule: t("status.annulee"),
+      rejete: t("status.rejetee"),
+      en_validation: t("status.en_validation"),
     };
     return statusMap[status] || status;
   };
@@ -231,7 +233,7 @@ const AnalysesManagement = () => {
       {/* Header Section */}
       <div className="analyses-header">
         <div className="analyses-header-top">
-          <h1>Gestion des Analyses</h1>
+          <h1>{t("analysesManagement.title")}</h1>
           <Button
             onClick={() => {
               resetForm();
@@ -239,7 +241,7 @@ const AnalysesManagement = () => {
             }}
             className="btn-add-analyse"
           >
-            <Plus size={20} /> Nouvelle Analyse
+            <Plus size={20} /> {t("analysesManagement.newAnalysis")}
           </Button>
         </div>
 
@@ -248,7 +250,7 @@ const AnalysesManagement = () => {
           <Search size={18} className="search-icon" />
           <Input
             type="text"
-            placeholder="Rechercher par patient ou référence..."
+            placeholder={t("analysesManagement.searchPlaceholder")}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="search-input"
@@ -260,25 +262,25 @@ const AnalysesManagement = () => {
       <div className="hl-table-container">
         {loading ? (
           <div className="loading-state">
-            <p>Chargement des analyses...</p>
+            <p>{t("analysesManagement.loading")}</p>
           </div>
         ) : filteredExamens.length === 0 ? (
           <div className="empty-state">
             <p>
               {examens.length === 0
-                ? "Aucune analyse enregistrée"
-                : "Aucune analyse trouvée pour votre recherche"}
+                ? t("analysesManagement.empty")
+                : t("analysesManagement.noSearchResult")}
             </p>
           </div>
         ) : (
           <table className="hl-table">
             <thead>
               <tr>
-                <th>Référence</th>
-                <th>Patient</th>
-                <th>Statut</th>
-                <th>Date Création</th>
-                <th>Actions</th>
+                <th>{t("common.reference")}</th>
+                <th>{t("common.patient")}</th>
+                <th>{t("common.status")}</th>
+                <th>{t("analysesManagement.creationDate")}</th>
+                <th>{t("common.actions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -310,7 +312,7 @@ const AnalysesManagement = () => {
                             setResultValue(examen.valeur || "");
                             setIsResultModalOpen(true);
                           }}
-                          title="Saisie des Résultats"
+                          title={t("analysesManagement.resultTitle")}
                         >
                           <Edit3 size={18} />
                         </button>
@@ -319,14 +321,14 @@ const AnalysesManagement = () => {
                         className="action-btn pdf-btn"
                         onClick={() => handleGeneratePDF(examen.id)}
                         disabled={downloadingPdf === examen.id}
-                        title="Voir PDF"
+                        title={t("analysesManagement.pdfTitle")}
                       >
                         <FileText size={18} />
                       </button>
                       <button
                         className="action-btn delete-btn"
                         onClick={() => handleDeleteAnalyse(examen.id)}
-                        title="Supprimer"
+                        title={t("common.delete")}
                       >
                         <Trash2 size={18} />
                       </button>
@@ -345,7 +347,7 @@ const AnalysesManagement = () => {
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             {/* Modal Header */}
             <div className="modal-header">
-              <h2>Créer une Nouvelle Analyse</h2>
+              <h2>{t("analysesManagement.modalTitle")}</h2>
               <button className="modal-close-btn" onClick={() => resetForm()}>
                 <X size={24} />
               </button>
@@ -354,7 +356,7 @@ const AnalysesManagement = () => {
             {/* Modal Body */}
             <form onSubmit={handleAddAnalyse} className="analyse-form">
               <div className="form-group">
-                <label htmlFor="patient_id">Patient *</label>
+                <label htmlFor="patient_id">{t("analysesManagement.patientRequired")}</label>
                 <select
                   id="patient_id"
                   name="patient_id"
@@ -362,7 +364,7 @@ const AnalysesManagement = () => {
                   onChange={handleInputChange}
                   className="form-select"
                 >
-                  <option value="">-- Sélectionner un patient --</option>
+                  <option value="">{t("analysesManagement.selectPatient")}</option>
                   {patients.map((patient) => (
                     <option key={patient.id} value={patient.id}>
                       {patient.prenom} {patient.nom} - CIN: {patient.cin}
@@ -371,13 +373,13 @@ const AnalysesManagement = () => {
                 </select>
               </div>
                                <div className="form-group">
-  <label>Type d'Analyse</label>
+  <label>{t("analysesManagement.analysisType")}</label>
   <select
     className="hl-input"
     value={formData.type_analyse_id}
     onChange={(e) => setFormData({...formData, type_analyse_id: e.target.value})}
   >
-    <option value="">-- Sélectionner le type --</option>
+    <option value="">{t("analysesManagement.selectType")}</option>
     {/* هنا تقدر تدير map لـ types اللي جايين من الـ DB */}
     <option value="1">Biochimie</option>
     <option value="2">Hématologie</option>
@@ -391,14 +393,14 @@ const AnalysesManagement = () => {
                   onClick={() => resetForm()}
                   className="btn-cancel"
                 >
-                  Annuler
+                  {t("common.cancel")}
                 </Button>
                 <Button
                   type="submit"
                   disabled={isSubmitting}
                   className="btn-submit"
                 >
-                  {isSubmitting ? "Création en cours..." : "Créer l'Analyse"}
+                  {isSubmitting ? t("analysesManagement.createRunning") : t("analysesManagement.createAnalysis")}
                 </Button>
 
                 
@@ -420,16 +422,16 @@ const AnalysesManagement = () => {
       borderRadius: '12px', width: '400px', boxShadow: '0 10px 40px rgba(0,0,0,0.2)'
     }}>
       <h2 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '16px' }}>
-        Saisir le résultat
+        {t("analysesManagement.enterResult")}
       </h2>
       <p style={{ color: '#666', marginBottom: '16px', fontSize: '14px' }}>
-        Patient: <strong>{selectedExamen?.patient?.prenom} {selectedExamen?.patient?.nom}</strong>
+        {t("analysesManagement.patientLabel")} <strong>{selectedExamen?.patient?.prenom} {selectedExamen?.patient?.nom}</strong>
       </p>
       <input
         type="text"
         value={resultValue}
         onChange={(e) => setResultValue(e.target.value)}
-        placeholder="Ex: 1.20 g/l"
+        placeholder={t("analysesManagement.resultPlaceholder")}
         style={{ width: '100%', border: '1px solid #ddd', padding: '8px', borderRadius: '6px', marginBottom: '16px' }}
       />
       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
@@ -437,13 +439,13 @@ const AnalysesManagement = () => {
           onClick={() => setIsResultModalOpen(false)}
           style={{ padding: '8px 16px', color: '#666' }}
         >
-          Annuler
+          {t("common.cancel")}
         </button>
         <button 
           onClick={handleSaveResult}
           style={{ padding: '8px 16px', backgroundColor: '#2563eb', color: 'white', borderRadius: '6px' }}
         >
-          Valider
+          {t("common.validate")}
         </button>
       </div>
     </div>

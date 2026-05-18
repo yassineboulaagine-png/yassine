@@ -1,25 +1,21 @@
-import i18n from 'i18next';
-import { initReactI18next } from 'react-i18next';
-import LanguageDetector from 'i18next-browser-languagedetector';
+import i18n from "i18next";
+import { initReactI18next } from "react-i18next";
+import LanguageDetector from "i18next-browser-languagedetector";
 
 const resources = {
   fr: {
     translation: {
-
-      // ================= SIDEBAR =================
       sidebar: {
-        patients_list: "Liste Patients",
+        patients_list: "Liste des patients",
         today_analyses: "Analyses du jour",
-        appointments_management: "Gestion des Rendez-vous",
-        logout: "Déconnexion"
+        appointments_management: "Gestion des rendez-vous",
+        logout: "Déconnexion",
       },
 
-      // ================= HEADER =================
       header: {
-        space: "Espace"
+        space: "Espace",
       },
 
-      // ================= COMMON =================
       common: {
         actions: "Actions",
         status: "Statut",
@@ -31,65 +27,88 @@ const resources = {
         save: "Enregistrer",
         finish: "Terminer",
         choose: "-- Choisir --",
+        close: "Fermer",
+        search: "Rechercher",
+        add: "Ajouter",
+        create: "Créer",
+        update: "Mettre à jour",
+        patient: "Patient",
+        reference: "Référence",
+        exam: "Examen",
+        results: "Résultats",
+        date: "Date",
+        download: "Télécharger",
         confirm_delete: "Supprimer ce patient ?",
-        confirm_cancel_exam: "Annuler cet examen ?"
+        confirm_cancel_exam: "Annuler cet examen ?",
+        required_fields: "Veuillez remplir tous les champs obligatoires",
       },
 
-      // ================= PATIENTS =================
+      status: {
+        en_cours: "En cours",
+        valide: "Validé",
+        validee: "Validée",
+        termine: "Terminé",
+        terminee: "Terminée",
+        annule: "Annulé",
+        annulee: "Annulée",
+        rejete: "Rejeté",
+        rejetee: "Rejetée",
+        en_validation: "En validation",
+      },
+
       patients: {
-        search_placeholder: "Rechercher par CIN ou Nom...",
-        new_patient: "Nouveau Patient",
-        name_prenom: "Nom & Prénom",
+        search_placeholder: "Rechercher par CIN ou nom...",
+        new_patient: "Nouveau patient",
+        name_prenom: "Nom & prénom",
         sexe: "Sexe",
         cin: "CIN",
         phone: "Téléphone",
-        birth_date: "Date Naissance",
-        new_exam: "Nouvel Examen"
+        birth_date: "Date de naissance",
+        new_exam: "Nouvel examen",
       },
 
-      // ================= ANALYSES =================
       analyses: {
         reference: "Référence",
         patient: "Patient",
         exam: "Examen",
-        no_analyses: "Aucune analyse."
+        no_analyses: "Aucune analyse.",
       },
 
-      // ================= RENDEZVOUS =================
       rendezvous: {
-        title: "Dashboard - Gestion des Rendez-vous",
+        title: "Dashboard - Gestion des rendez-vous",
         patient: "Patient",
         contact: "Contact",
         requested_date: "Date demandée",
-        fix_time: "Fixer l'Heure",
-        saisir_analyse: "Saisir Analyse",
-        at_lab: "Au Labo 🧪",
-        modal_title: "Sélectionner le Type d'Analyse",
+        fix_time: "Fixer l'heure",
+        saisir_analyse: "Saisir analyse",
+        at_lab: "Au laboratoire",
+        modal_title: "Sélectionner le type d'analyse",
         analysis_type: "Type d'analyse",
         choose_hour: "Veuillez choisir une heure avant de valider !",
         error_update: "Erreur lors de la modification",
         select_analysis: "Veuillez sélectionner un type d'analyse !",
-        error_transfer: "Erreur lors du transfert au laboratoire"
+        error_transfer: "Erreur lors du transfert au laboratoire",
       },
 
-      // ================= LOGIN =================
       login: {
         tab_personnel: "Personnel",
         tab_patient: "Patient",
         email_label: "Email",
         password_label: "Mot de passe",
-        submit_btn: "Se Connecter",
-        btn_results: "Voir mes Résultats",
+        submit_btn: "Se connecter",
+        btn_results: "Voir mes résultats",
         no_appointment: "Vous n'avez pas de rendez-vous ?",
         take_appointment: "Prendre un rendez-vous",
-        phone_label: "N° de Téléphone",
+        phone_label: "N° de téléphone",
         reference_label: "Référence d'examen",
-        charger: "Chargement..."
+        charger: "Chargement...",
+        staff_error: "Email ou mot de passe incorrect",
+        patient_success: "Accès réussi",
+        patient_error: "Référence ou numéro de téléphone incorrect",
       },
 
-      // ================= APPOINTMENT FORM =================
       appointment_form: {
-        title: "Prendre un Rendez-vous",
+        title: "Prendre un rendez-vous",
         nom: "Nom",
         prenom: "Prénom",
         phone: "Téléphone",
@@ -101,165 +120,338 @@ const resources = {
         birth_date: "Date de naissance",
         cin: "CIN",
         desired_date: "Date souhaitée",
-        btn_next: "Suivant (Vérifier mon Email)",
-        btn_login_patient: "Se connecter (Espace Patient) ➔"
+        btn_next: "Suivant (vérifier mon email)",
+        btn_login_patient: "Se connecter à l'espace patient",
+        send_error: "Erreur lors de l'envoi du code",
+        success: "Votre rendez-vous a été enregistré avec succès !",
       },
 
-      // ================= VERIFICATION =================
       verification: {
         msg_sent: "Un code de vérification a été envoyé à",
         enter_code: "Entrez le code à 4 chiffres :",
-        btn_confirm: "Confirmer le Rendez-vous",
+        btn_confirm: "Confirmer le rendez-vous",
         btn_loading: "Vérification...",
         btn_back: "Retour / Modifier les infos",
-        sent: "Envoi du code..."
+        sent: "Envoi du code...",
       },
 
-      // ================= PROFILE =================
       profile: {
         back: "Retour",
         uploading: "Upload...",
         change_photo: "Cliquez pour changer",
-        my_profile: "Mon Profil",
-        email: "Adresse Email",
+        my_profile: "Mon profil",
+        email: "Adresse email",
         password: "Mot de passe",
         edit_profile: "Modifier le profil",
         patients: "Patients",
         patient_desc: "Inscriptions réalisées par vous",
-        avatar_success: "Avatar mis à jour avec succès!",
+        validated_analyses: "Analyses validées",
+        pathological_alerts: "Alertes pathologiques",
+        avatar_success: "Avatar mis à jour avec succès !",
         avatar_error: "Erreur lors de la mise à jour de l'avatar",
-        error_loading: "Erreur lors du chargement du profil"
+        error_loading: "Erreur lors du chargement du profil",
       },
 
-      // ================= SETTINGS =================
       settings: {
         back: "Retour",
-        my_profile: "Mon Profil",
+        my_profile: "Mon profil",
         full_name: "Nom complet",
-        email: "Adresse Email",
+        email: "Adresse email",
         save_changes: "Enregistrer les modifications",
         security: "Sécurité",
         old_password: "Ancien mot de passe",
         new_password: "Nouveau mot de passe",
         confirm_password: "Confirmer le nouveau mot de passe",
         update_password: "Mettre à jour le mot de passe",
-
         profile_updated: "Informations mises à jour !",
         profile_update_error: "Erreur lors de la mise à jour",
         password_not_match: "Les mots de passe ne correspondent pas !",
         password_updated: "Mot de passe changé avec succès !",
-        old_password_incorrect: "Erreur : l'ancien mot de passe est incorrect"
+        old_password_incorrect: "Erreur : l'ancien mot de passe est incorrect",
       },
 
-      // ================= DASHBOARD BIOLOGISTE =================
       biologiste: {
         sidebar: {
-          myAnalyses: "Mes Analyses",
+          myAnalyses: "Mes analyses",
           validation: "Validation",
           history: "Historique",
-          logout: "Déconnexion"
+          logout: "Déconnexion",
         },
-
         header: {
-          title: "Espace Biologiste"
+          title: "Espace biologiste",
         },
-
         loading: "Chargement...",
         noAnalysis: "Aucune analyse en cours.",
         noValidation: "Aucune analyse en cours de validation.",
         noHistory: "Aucun historique.",
-
+        graphTitle: "Voir le graphique",
         table: {
           reference: "Référence",
           patient: "Patient",
           exam: "Examen",
           status: "Statut",
           actions: "Actions",
-          results: "Résultats"
+          results: "Résultats",
         },
-
         buttons: {
           enter: "Saisir",
           approve: "Approuver",
           view: "Voir",
           modify: "Modifier",
           cancel: "Annuler",
-          save: "Enregistrer"
+          save: "Enregistrer",
         },
-
         toast: {
-          newAnalysis: "{{count}} nouvelle(s) analyse(s)!",
+          newAnalysis: "{{count}} nouvelle(s) analyse(s) !",
           logoutSuccess: "Déconnexion réussie !",
           resultsSaved: "Résultats saisis ! En cours de validation.",
           approveSuccess: "Examen approuvé !",
           rejectSuccess: "Examen renvoyé pour modification",
           saveError: "Erreur lors de la sauvegarde",
           approveError: "Erreur lors de l'approbation",
-          modifyError: "Erreur lors de la modification"
+          modifyError: "Erreur lors de la modification",
         },
-
         confirm: {
-          rejectExam: "Voulez-vous renvoyer cet examen à la saisie pour modification ?"
+          rejectExam: "Voulez-vous renvoyer cet examen à la saisie pour modification ?",
         },
-
         modal: {
-          title: "Saisie des Résultats",
+          title: "Saisie des résultats",
           age: "Âge",
           years: "ans",
-          male: "👨",
-          female: "👩",
+          sex: "Sexe",
+          male: "Masculin",
+          female: "Féminin",
           normalRange: "Norme",
           valuePlaceholder: "Valeur",
+          valueWithUnit: "Valeur ({{unit}})",
+          noUnit: "valeur",
           pathological: "PATHOLOGIQUE",
-          medicalComment: "Commentaire médical..."
-        }
-
+          medicalComment: "Commentaire médical...",
+        },
       },
 
-      // ================= PROFILE =================
-profile: {
-  back: "Retour",
-  uploading: "Upload...",
-  change_photo: "Cliquez pour changer",
-  my_profile: "Mon Profil",
+      adminDashboard: {
+        sidebar: {
+          dashboard: "Tableau de bord",
+          patients: "Patients",
+          analyses: "Analyses",
+          staff: "Gestion du staff",
+          logout: "Déconnexion",
+        },
+        headerTitle: "Espace administrateur",
+        welcomeTitle: "Bienvenue sur Helix Lab",
+        welcomeSubtitle: "Le système est prêt. Voici la synthèse de l'activité.",
+        totalPatients: "Total patients",
+        validatedAnalyses: "Analyses validées",
+        inProgress: "En cours",
+        analysesEvolution: "Évolution des analyses validées",
+        analysesDistribution: "Répartition des analyses",
+        logoutSuccess: "Déconnexion réussie !",
+      },
 
-  email: "Adresse Email",
-  password: "Mot de passe",
+      patientsManagement: {
+        title: "Gestion des patients",
+        addPatient: "Ajouter patient",
+        searchPlaceholder: "Rechercher par nom ou CIN...",
+        loading: "Chargement des patients...",
+        empty: "Aucun patient enregistré",
+        noSearchResult: "Aucun patient trouvé pour votre recherche",
+        fullName: "Nom complet",
+        phone: "Téléphone",
+        registrationDate: "Date d'inscription",
+        editTitle: "Modifier patient",
+        addTitle: "Ajouter un nouveau patient",
+        firstName: "Prénom",
+        lastName: "Nom",
+        birthDate: "Date de naissance",
+        male: "Masculin",
+        female: "Féminin",
+        submitSaving: "Enregistrement...",
+        saveSuccess: "Patient ajouté avec succès",
+        updateSuccess: "Patient mis à jour avec succès",
+        loadError: "Erreur lors du chargement des patients",
+        saveError: "Erreur lors de l'enregistrement du patient",
+        deleteConfirm: "Êtes-vous sûr de vouloir supprimer ce patient ?",
+        deleteSuccess: "Patient supprimé avec succès",
+        deleteError: "Erreur lors de la suppression du patient",
+      },
 
-  edit_profile: "Modifier le profil",
+      analysesManagement: {
+        title: "Gestion des analyses",
+        newAnalysis: "Nouvelle analyse",
+        searchPlaceholder: "Rechercher par patient ou référence...",
+        loading: "Chargement des analyses...",
+        empty: "Aucune analyse enregistrée",
+        noSearchResult: "Aucune analyse trouvée pour votre recherche",
+        creationDate: "Date création",
+        modalTitle: "Créer une nouvelle analyse",
+        patientRequired: "Patient *",
+        selectPatient: "-- Sélectionner un patient --",
+        analysisType: "Type d'analyse",
+        selectType: "-- Sélectionner le type --",
+        createRunning: "Création en cours...",
+        createAnalysis: "Créer l'analyse",
+        enterResult: "Saisir le résultat",
+        patientLabel: "Patient :",
+        resultPlaceholder: "Ex : 1.20 g/L",
+        resultSaved: "Résultat enregistré !",
+        pdfDownloaded: "PDF téléchargé avec succès",
+        pdfTitle: "Voir PDF",
+        resultTitle: "Saisie des résultats",
+        deleteConfirm: "Êtes-vous sûr de vouloir supprimer cette analyse ?",
+        deleteSuccess: "Analyse supprimée avec succès",
+        loadError: "Erreur lors du chargement des analyses",
+        patientLoadError: "Erreur lors du chargement des patients",
+        selectPatientAndType: "Veuillez sélectionner un patient et un type d'analyse",
+        createSuccess: "Analyse créée avec succès",
+        createError: "Erreur lors de la création de l'analyse",
+        saveResultError: "Erreur lors de l'enregistrement",
+        pdfError: "Erreur lors de la génération du PDF",
+        deleteError: "Erreur lors de la suppression de l'analyse",
+      },
 
-  validated_analyses: "Analyses Validées",
-  pathological_alerts: "Alertes Pathologiques",
+      staff: {
+        title: "Gestion du staff",
+        subtitle: "Gérez les comptes des biologistes et préleveurs du laboratoire",
+        addButton: "Ajouter du personnel",
+        loading: "Chargement...",
+        empty: "Aucun membre du staff trouvé.",
+        fullName: "Nom complet",
+        email: "Email",
+        role: "Rôle",
+        actions: "Actions",
+        newAccount: "Nouveau compte staff",
+        emailAddress: "Adresse email",
+        password: "Mot de passe",
+        roleAssigned: "Rôle affecté",
+        createAccount: "Créer le compte",
+        passwordPlaceholder: "Minimum 6 caractères",
+        namePlaceholder: "Ex : Anas",
+        emailPlaceholder: "Ex : anas@helixlab.com",
+        biologiste: "Biologiste",
+        preleveur: "Préleveur",
+        loadError: "Erreur lors du chargement du staff",
+        addSuccess: "Membre du staff ajouté !",
+        addError: "Erreur lors de l'ajout",
+        deleteConfirm: "Voulez-vous vraiment supprimer cet utilisateur ?",
+        deleteSuccess: "Utilisateur supprimé !",
+        deleteError: "Erreur lors de la suppression",
+      },
 
-  avatar_success: "Avatar mis à jour avec succès!",
-  avatar_error: "Erreur lors de la mise à jour de l'avatar",
+      resultModal: {
+        title: "Détails du résultat",
+        subtitle: "Analyse complète et visualisation",
+        reference: "Référence :",
+        patient: "Patient",
+        analysis: "Analyse",
+        normalValues: "Valeurs normales",
+        resultStatus: "Statut du résultat",
+        normal: "Normal",
+        low: "Bas",
+        high: "Élevé",
+        measuredValue: "Valeur mesurée",
+        medicalComment: "Commentaire médical",
+        visualization: "Visualisation",
+        close: "Fermer",
+      },
 
-  error_loading: "Erreur lors du chargement du profil"
-},
-    }
+      mesResultats: {
+        title: "Mes analyses médicales",
+        subtitleLogin: "Connectez-vous pour consulter vos résultats",
+        subtitle: "Consultez et téléchargez vos résultats d'analyses validées",
+        authRequired: "Authentification requise",
+        authError: "Vous devez être connecté pour voir vos résultats. Token non trouvé dans localStorage.",
+        authDefault: "Vous devez être connecté pour voir vos résultats.",
+        loginButton: "Aller à la page de connexion",
+        fullName: "Nom complet",
+        accessDate: "Date d'accès",
+        noResultsTitle: "Aucune analyse disponible",
+        noResultsText: "Vous n'avez pas encore de résultats d'analyses validées.",
+        resultsTitle: "Vos résultats d'analyses",
+        patientLabel: "Patient :",
+        analysisType: "Type d'analyse",
+        action: "Action",
+        downloadTitle: "Télécharger le rapport PDF",
+        tipTitle: "Astuce :",
+        tipText: "Cliquez sur le bouton PDF pour télécharger un rapport professionnel de vos analyses avec tous les détails.",
+        pdfSuccess: "Rapport PDF téléchargé avec succès !",
+        pdfError: "Erreur lors de la génération du rapport PDF",
+      },
+
+      dashboardPatient: {
+        title: "Espace patient",
+        description: "Saisissez le code figurant sur votre ticket pour consulter vos résultats.",
+        consult: "Consulter mes résultats",
+        help: "En cas de problème, veuillez contacter le secrétariat du laboratoire.",
+        fillFields: "Veuillez remplir tous les champs",
+        accessSuccess: "Accès autorisé !",
+        incorrect: "Informations incorrectes",
+      },
+
+      patientResults: {
+        title: "Bienvenue dans votre espace résultats",
+        analysisId: "ID de votre analyse :",
+      },
+
+      notFound: {
+        title: "Oups ! Page introuvable",
+        message: "Désolé, la page {{path}} n'existe pas ou a été déplacée.",
+        backLogin: "Retour à la page de connexion",
+      },
+
+      adminProfile: {
+        title: "Paramètres du compte administrateur",
+        subtitle: "Gérez vos informations personnelles et la sécurité de votre accès.",
+        personalInfo: "Informations personnelles",
+        fullName: "Nom complet",
+        email: "Adresse email",
+        save: "Enregistrer",
+        security: "Sécurité du compte",
+        oldPassword: "Ancien mot de passe",
+        newPassword: "Nouveau mot de passe",
+        confirmPassword: "Confirmer le nouveau",
+        changePassword: "Changer le mot de passe",
+        updateSuccess: "Informations mises à jour !",
+        updateError: "Erreur lors de la mise à jour",
+        passwordMismatch: "Les mots de passe ne correspondent pas",
+        passwordSuccess: "Mot de passe modifié !",
+        passwordError: "Erreur mot de passe",
+      },
+
+      preleveur: {
+        profile: "Mon profil",
+        settings: "Paramètres",
+        patientDeleted: "Patient supprimé !",
+        chooseAnalysis: "Veuillez choisir un type d'analyse !",
+        examSaved: "Nouvel examen enregistré !",
+        patientUpdated: "Patient modifié !",
+        patientExamSaved: "Patient et examen enregistrés !",
+        saveError: "Erreur d'enregistrement",
+        examValidated: "Examen validé !",
+        examCancelled: "Examen annulé !",
+        updateError: "Erreur lors de la mise à jour",
+        examCreated: "Examen créé avec succès !",
+      },
+    },
   },
 
   ar: {
     translation: {
-
-      // ================= SIDEBAR =================
       sidebar: {
         patients_list: "لائحة المرضى",
         today_analyses: "تحاليل اليوم",
-        appointments_management: "تسيير المواعيد",
-        logout: "تسجيل الخروج"
+        appointments_management: "تدبير المواعيد",
+        logout: "تسجيل الخروج",
       },
 
-      // ================= HEADER =================
       header: {
-        space: "فضاء"
+        space: "فضاء",
       },
 
-      // ================= COMMON =================
       common: {
         actions: "الإجراءات",
         status: "الحالة",
-        loading: "جارٍ التحميل...",
+        loading: "جار التحميل...",
         cancel: "إلغاء",
         validate: "تأكيد",
         delete: "حذف",
@@ -267,107 +459,131 @@ profile: {
         save: "حفظ",
         finish: "إنهاء",
         choose: "-- اختر --",
-        confirm_delete: "هل أنت متأكد من حذف هذا المريض؟",
-        confirm_cancel_exam: "هل أنت متأكد من إلغاء هذا الفحص؟"
+        close: "إغلاق",
+        search: "بحث",
+        add: "إضافة",
+        create: "إنشاء",
+        update: "تحديث",
+        patient: "المريض",
+        reference: "المرجع",
+        exam: "الفحص",
+        results: "النتائج",
+        date: "التاريخ",
+        download: "تحميل",
+        confirm_delete: "هل تريد حذف هذا المريض؟",
+        confirm_cancel_exam: "هل تريد إلغاء هذا الفحص؟",
+        required_fields: "يرجى ملء جميع الحقول الإلزامية",
       },
 
-      // ================= PATIENTS =================
+      status: {
+        en_cours: "قيد المعالجة",
+        valide: "مصادق عليه",
+        validee: "مصادق عليها",
+        termine: "منتهٍ",
+        terminee: "منتهية",
+        annule: "ملغى",
+        annulee: "ملغاة",
+        rejete: "مرفوض",
+        rejetee: "مرفوضة",
+        en_validation: "قيد التحقق",
+      },
+
       patients: {
-        search_placeholder: "البحث عن طريق بطاقة التعريف أو الاسم...",
+        search_placeholder: "البحث بواسطة رقم البطاقة أو الاسم...",
         new_patient: "مريض جديد",
-        name_prenom: "الاسم الكامل",
+        name_prenom: "الاسم والنسب",
         sexe: "الجنس",
-        cin: "رقم بطاقة التعريف",
+        cin: "رقم البطاقة الوطنية",
         phone: "الهاتف",
         birth_date: "تاريخ الازدياد",
-        new_exam: "فحص جديد"
+        new_exam: "فحص جديد",
       },
 
-      // ================= ANALYSES =================
       analyses: {
-        reference: "الرقم المرجعي",
+        reference: "المرجع",
         patient: "المريض",
         exam: "الفحص",
-        no_analyses: "لا توجد أي تحاليل اليوم."
+        no_analyses: "لا توجد تحاليل.",
       },
 
-      // ================= RENDEZVOUS =================
       rendezvous: {
-        title: "لوحة التحكم - تسيير المواعيد",
+        title: "لوحة التحكم - تدبير المواعيد",
         patient: "المريض",
         contact: "معلومات الاتصال",
         requested_date: "التاريخ المطلوب",
-        fix_time: "تحديد الوقت",
+        fix_time: "تحديد الساعة",
         saisir_analyse: "إدخال التحليل",
-        at_lab: "في المختبر 🧪",
+        at_lab: "في المختبر",
         modal_title: "اختيار نوع التحليل",
         analysis_type: "نوع التحليل",
-        choose_hour: "المرجو اختيار الوقت قبل التأكيد",
-        error_update: "خطأ أثناء التعديل",
-        select_analysis: "المرجو اختيار نوع التحليل",
-        error_transfer: "خطأ أثناء تحويل الموعد إلى المختبر"
+        choose_hour: "يرجى اختيار الساعة قبل التأكيد!",
+        error_update: "حدث خطأ أثناء التعديل",
+        select_analysis: "يرجى اختيار نوع التحليل!",
+        error_transfer: "حدث خطأ أثناء التحويل إلى المختبر",
       },
 
-      // ================= LOGIN =================
       login: {
-        tab_personnel: "الموظفين",
-        tab_patient: "المرضى",
+        tab_personnel: "الموظفون",
+        tab_patient: "المريض",
         email_label: "البريد الإلكتروني",
         password_label: "كلمة المرور",
         submit_btn: "تسجيل الدخول",
         btn_results: "عرض نتائجي",
         no_appointment: "ليس لديك موعد؟",
-        take_appointment: "احجز موعداً الآن",
+        take_appointment: "حجز موعد",
         phone_label: "رقم الهاتف",
-        reference_label: "الرقم المرجعي للفحص",
-        charger: "جارٍ التحميل..."
+        reference_label: "مرجع الفحص",
+        charger: "جار التحميل...",
+        staff_error: "البريد الإلكتروني أو كلمة المرور غير صحيحة",
+        patient_success: "تم الولوج بنجاح",
+        patient_error: "المرجع أو رقم الهاتف غير صحيح",
       },
 
-      // ================= APPOINTMENT FORM =================
       appointment_form: {
-        title: "حجز موعد جديد",
-        nom: "الاسم العائلي",
-        prenom: "الاسم الشخصي",
-        phone: "رقم الهاتف",
+        title: "حجز موعد",
+        nom: "النسب",
+        prenom: "الاسم",
+        phone: "الهاتف",
         email: "البريد الإلكتروني",
         sexe: "الجنس",
-        select_sexe: "-- اختر الجنس --",
+        select_sexe: "-- اختر --",
         male: "ذكر",
         female: "أنثى",
         birth_date: "تاريخ الازدياد",
-        cin: "رقم بطاقة التعريف الوطنية",
-        desired_date: "التاريخ المطلوب للموعد",
+        cin: "رقم البطاقة الوطنية",
+        desired_date: "التاريخ المطلوب",
         btn_next: "التالي (التحقق من البريد الإلكتروني)",
-        btn_login_patient: "تسجيل الدخول (فضاء المريض)"
+        btn_login_patient: "الدخول إلى فضاء المريض",
+        send_error: "حدث خطأ أثناء إرسال الرمز",
+        success: "تم تسجيل موعدك بنجاح!",
       },
 
-      // ================= VERIFICATION =================
       verification: {
         msg_sent: "تم إرسال رمز التحقق إلى",
         enter_code: "أدخل الرمز المكون من 4 أرقام:",
         btn_confirm: "تأكيد الموعد",
-        btn_loading: "جارٍ التحقق...",
-        btn_back: "الرجوع / تعديل المعلومات",
-        sent: "جارٍ إرسال الرمز..."
+        btn_loading: "جار التحقق...",
+        btn_back: "رجوع / تعديل المعلومات",
+        sent: "جار إرسال الرمز...",
       },
 
-      // ================= PROFILE =================
       profile: {
         back: "رجوع",
-        uploading: "جارٍ الرفع...",
+        uploading: "جار الرفع...",
         change_photo: "اضغط لتغيير الصورة",
         my_profile: "ملفي الشخصي",
         email: "البريد الإلكتروني",
         password: "كلمة المرور",
         edit_profile: "تعديل الملف الشخصي",
         patients: "مرضى",
-        patient_desc: "عمليات التسجيل التي قمت بها",
-        avatar_success: "تم تحديث الصورة بنجاح",
-        avatar_error: "خطأ أثناء تحديث الصورة",
-        error_loading: "خطأ أثناء تحميل الملف الشخصي"
+        patient_desc: "التسجيلات التي قمت بها",
+        validated_analyses: "التحاليل المصادق عليها",
+        pathological_alerts: "التنبيهات المرضية",
+        avatar_success: "تم تحديث الصورة بنجاح!",
+        avatar_error: "حدث خطأ أثناء تحديث الصورة",
+        error_loading: "حدث خطأ أثناء تحميل الملف الشخصي",
       },
 
-      // ================= SETTINGS =================
       settings: {
         back: "رجوع",
         my_profile: "ملفي الشخصي",
@@ -379,99 +595,277 @@ profile: {
         new_password: "كلمة المرور الجديدة",
         confirm_password: "تأكيد كلمة المرور الجديدة",
         update_password: "تحديث كلمة المرور",
-
-        profile_updated: "تم تحديث المعلومات بنجاح!",
+        profile_updated: "تم تحديث المعلومات!",
         profile_update_error: "حدث خطأ أثناء التحديث",
         password_not_match: "كلمتا المرور غير متطابقتين!",
         password_updated: "تم تغيير كلمة المرور بنجاح!",
-        old_password_incorrect: "خطأ: كلمة المرور القديمة غير صحيحة"
+        old_password_incorrect: "خطأ: كلمة المرور القديمة غير صحيحة",
       },
 
-      // ================= DASHBOARD BIOLOGISTE =================
       biologiste: {
         sidebar: {
           myAnalyses: "تحاليلـي",
           validation: "التحقق",
           history: "السجل",
-          logout: "تسجيل الخروج"
+          logout: "تسجيل الخروج",
         },
-
         header: {
-          title: "فضاء أخصائي التحاليل"
+          title: "فضاء أخصائي التحاليل",
         },
-
-        loading: "جارٍ التحميل...",
+        loading: "جار التحميل...",
         noAnalysis: "لا توجد تحاليل قيد المعالجة.",
         noValidation: "لا توجد تحاليل قيد التحقق.",
         noHistory: "لا يوجد سجل.",
-
+        graphTitle: "عرض الرسم البياني",
         table: {
           reference: "المرجع",
           patient: "المريض",
           exam: "الفحص",
           status: "الحالة",
           actions: "الإجراءات",
-          results: "النتائج"
+          results: "النتائج",
         },
-
         buttons: {
           enter: "إدخال",
-          approve: "الموافقة",
+          approve: "المصادقة",
           view: "عرض",
           modify: "تعديل",
           cancel: "إلغاء",
-          save: "حفظ"
+          save: "حفظ",
         },
-
         toast: {
-          newAnalysis: "تمت إضافة {{count}} تحليل(ات) جديد(ة)!",
+          newAnalysis: "تمت إضافة {{count}} تحليل جديد!",
           logoutSuccess: "تم تسجيل الخروج بنجاح!",
           resultsSaved: "تم إدخال النتائج! في انتظار التحقق.",
-          approveSuccess: "تمت الموافقة على الفحص!",
+          approveSuccess: "تمت المصادقة على الفحص!",
           rejectSuccess: "تمت إعادة الفحص للتعديل",
-          saveError: "خطأ أثناء الحفظ",
-          approveError: "خطأ أثناء الموافقة",
-          modifyError: "خطأ أثناء التعديل"
+          saveError: "حدث خطأ أثناء الحفظ",
+          approveError: "حدث خطأ أثناء المصادقة",
+          modifyError: "حدث خطأ أثناء التعديل",
         },
-
         confirm: {
-          rejectExam: "هل تريد إعادة هذا الفحص للتعديل؟"
+          rejectExam: "هل تريد إعادة هذا الفحص إلى مرحلة الإدخال للتعديل؟",
         },
-
         modal: {
           title: "إدخال النتائج",
           age: "العمر",
           years: "سنة",
-          male: "👨",
-          female: "👩",
+          sex: "الجنس",
+          male: "ذكر",
+          female: "أنثى",
           normalRange: "المعدل الطبيعي",
           valuePlaceholder: "القيمة",
+          valueWithUnit: "القيمة ({{unit}})",
+          noUnit: "قيمة",
           pathological: "غير طبيعي",
-          medicalComment: "تعليق طبي..."
-        }
+          medicalComment: "تعليق طبي...",
+        },
       },
-      // ================= PROFILE =================
-profile: {
-  back: "رجوع",
-  uploading: "جارٍ الرفع...",
-  change_photo: "اضغط لتغيير الصورة",
-  my_profile: "ملفي الشخصي",
 
-  email: "البريد الإلكتروني",
-  password: "كلمة المرور",
+      adminDashboard: {
+        sidebar: {
+          dashboard: "لوحة التحكم",
+          patients: "المرضى",
+          analyses: "التحاليل",
+          staff: "تدبير الموظفين",
+          logout: "تسجيل الخروج",
+        },
+        headerTitle: "فضاء المدير",
+        welcomeTitle: "مرحبا بكم في Helix Lab",
+        welcomeSubtitle: "النظام جاهز. هذه خلاصة النشاط.",
+        totalPatients: "مجموع المرضى",
+        validatedAnalyses: "التحاليل المصادق عليها",
+        inProgress: "قيد المعالجة",
+        analysesEvolution: "تطور التحاليل المصادق عليها",
+        analysesDistribution: "توزيع التحاليل",
+        logoutSuccess: "تم تسجيل الخروج بنجاح!",
+      },
 
-  edit_profile: "تعديل الملف الشخصي",
+      patientsManagement: {
+        title: "تدبير المرضى",
+        addPatient: "إضافة مريض",
+        searchPlaceholder: "البحث بالاسم أو رقم البطاقة...",
+        loading: "جار تحميل المرضى...",
+        empty: "لا يوجد أي مريض مسجل",
+        noSearchResult: "لم يتم العثور على أي مريض حسب البحث",
+        fullName: "الاسم الكامل",
+        phone: "الهاتف",
+        registrationDate: "تاريخ التسجيل",
+        editTitle: "تعديل المريض",
+        addTitle: "إضافة مريض جديد",
+        firstName: "الاسم",
+        lastName: "النسب",
+        birthDate: "تاريخ الازدياد",
+        male: "ذكر",
+        female: "أنثى",
+        submitSaving: "جار الحفظ...",
+        saveSuccess: "تمت إضافة المريض بنجاح",
+        updateSuccess: "تم تحديث المريض بنجاح",
+        loadError: "حدث خطأ أثناء تحميل المرضى",
+        saveError: "حدث خطأ أثناء حفظ المريض",
+        deleteConfirm: "هل أنت متأكد من حذف هذا المريض؟",
+        deleteSuccess: "تم حذف المريض بنجاح",
+        deleteError: "حدث خطأ أثناء حذف المريض",
+      },
 
-  validated_analyses: "التحاليل المصادق عليها",
-  pathological_alerts: "التنبيهات المرضية",
+      analysesManagement: {
+        title: "تدبير التحاليل",
+        newAnalysis: "تحليل جديد",
+        searchPlaceholder: "البحث بالمريض أو المرجع...",
+        loading: "جار تحميل التحاليل...",
+        empty: "لا يوجد أي تحليل مسجل",
+        noSearchResult: "لم يتم العثور على أي تحليل حسب البحث",
+        creationDate: "تاريخ الإنشاء",
+        modalTitle: "إنشاء تحليل جديد",
+        patientRequired: "المريض *",
+        selectPatient: "-- اختر المريض --",
+        analysisType: "نوع التحليل",
+        selectType: "-- اختر النوع --",
+        createRunning: "جار الإنشاء...",
+        createAnalysis: "إنشاء التحليل",
+        enterResult: "إدخال النتيجة",
+        patientLabel: "المريض:",
+        resultPlaceholder: "مثال: 1.20 g/L",
+        resultSaved: "تم حفظ النتيجة!",
+        pdfDownloaded: "تم تحميل ملف PDF بنجاح",
+        pdfTitle: "عرض PDF",
+        resultTitle: "إدخال النتائج",
+        deleteConfirm: "هل أنت متأكد من حذف هذا التحليل؟",
+        deleteSuccess: "تم حذف التحليل بنجاح",
+        loadError: "حدث خطأ أثناء تحميل التحاليل",
+        patientLoadError: "حدث خطأ أثناء تحميل المرضى",
+        selectPatientAndType: "يرجى اختيار المريض ونوع التحليل",
+        createSuccess: "تم إنشاء التحليل بنجاح",
+        createError: "حدث خطأ أثناء إنشاء التحليل",
+        saveResultError: "حدث خطأ أثناء الحفظ",
+        pdfError: "حدث خطأ أثناء إنشاء ملف PDF",
+        deleteError: "حدث خطأ أثناء حذف التحليل",
+      },
 
-  avatar_success: "تم تحديث الصورة بنجاح",
-  avatar_error: "خطأ أثناء تحديث الصورة",
+      staff: {
+        title: "تدبير الموظفين",
+        subtitle: "تدبير حسابات أخصائيي التحاليل والمكلفين بالسحب في المختبر",
+        addButton: "إضافة موظف",
+        loading: "جار التحميل...",
+        empty: "لم يتم العثور على أي عضو من الموظفين.",
+        fullName: "الاسم الكامل",
+        email: "البريد الإلكتروني",
+        role: "الدور",
+        actions: "الإجراءات",
+        newAccount: "حساب موظف جديد",
+        emailAddress: "البريد الإلكتروني",
+        password: "كلمة المرور",
+        roleAssigned: "الدور المخصص",
+        createAccount: "إنشاء الحساب",
+        passwordPlaceholder: "6 أحرف على الأقل",
+        namePlaceholder: "مثال: أنس",
+        emailPlaceholder: "مثال: anas@helixlab.com",
+        biologiste: "أخصائي التحاليل",
+        preleveur: "المكلف بالسحب",
+        loadError: "حدث خطأ أثناء تحميل الموظفين",
+        addSuccess: "تمت إضافة عضو الموظفين!",
+        addError: "حدث خطأ أثناء الإضافة",
+        deleteConfirm: "هل تريد فعلا حذف هذا المستخدم؟",
+        deleteSuccess: "تم حذف المستخدم!",
+        deleteError: "حدث خطأ أثناء الحذف",
+      },
 
-  error_loading: "خطأ أثناء تحميل الملف الشخصي"
-},
-    }
-  }
+      resultModal: {
+        title: "تفاصيل النتيجة",
+        subtitle: "تحليل كامل مع عرض بصري",
+        reference: "المرجع:",
+        patient: "المريض",
+        analysis: "التحليل",
+        normalValues: "القيم الطبيعية",
+        resultStatus: "حالة النتيجة",
+        normal: "طبيعي",
+        low: "منخفض",
+        high: "مرتفع",
+        measuredValue: "القيمة المقاسة",
+        medicalComment: "تعليق طبي",
+        visualization: "العرض البصري",
+        close: "إغلاق",
+      },
+
+      mesResultats: {
+        title: "تحاليلـي الطبية",
+        subtitleLogin: "سجل الدخول للاطلاع على نتائجك",
+        subtitle: "اطلع وحمل نتائج التحاليل المصادق عليها",
+        authRequired: "المصادقة مطلوبة",
+        authError: "يجب تسجيل الدخول للاطلاع على النتائج. لم يتم العثور على الرمز في localStorage.",
+        authDefault: "يجب تسجيل الدخول للاطلاع على النتائج.",
+        loginButton: "الذهاب إلى صفحة تسجيل الدخول",
+        fullName: "الاسم الكامل",
+        accessDate: "تاريخ الولوج",
+        noResultsTitle: "لا توجد تحاليل متاحة",
+        noResultsText: "لا توجد لديك بعد نتائج تحاليل مصادق عليها.",
+        resultsTitle: "نتائج تحاليلك",
+        patientLabel: "المريض:",
+        analysisType: "نوع التحليل",
+        action: "الإجراء",
+        downloadTitle: "تحميل تقرير PDF",
+        tipTitle: "ملاحظة:",
+        tipText: "اضغط على زر PDF لتحميل تقرير مهني لتحاليلك مع جميع التفاصيل.",
+        pdfSuccess: "تم تحميل تقرير PDF بنجاح!",
+        pdfError: "حدث خطأ أثناء إنشاء تقرير PDF",
+      },
+
+      dashboardPatient: {
+        title: "فضاء المريض",
+        description: "أدخل الرمز الموجود في تذكرتك للاطلاع على نتائجك.",
+        consult: "استشارة نتائجي",
+        help: "في حالة وجود مشكل، يرجى الاتصال بكتابة المختبر.",
+        fillFields: "يرجى ملء جميع الحقول",
+        accessSuccess: "تم السماح بالولوج!",
+        incorrect: "المعلومات غير صحيحة",
+      },
+
+      patientResults: {
+        title: "مرحبا بك في فضاء النتائج",
+        analysisId: "معرف التحليل:",
+      },
+
+      notFound: {
+        title: "عذرا! الصفحة غير موجودة",
+        message: "عذرا، الصفحة {{path}} غير موجودة أو تم نقلها.",
+        backLogin: "العودة إلى صفحة تسجيل الدخول",
+      },
+
+      adminProfile: {
+        title: "إعدادات حساب المدير",
+        subtitle: "قم بتدبير معلوماتك الشخصية وأمان الولوج.",
+        personalInfo: "المعلومات الشخصية",
+        fullName: "الاسم الكامل",
+        email: "البريد الإلكتروني",
+        save: "حفظ",
+        security: "أمان الحساب",
+        oldPassword: "كلمة المرور القديمة",
+        newPassword: "كلمة المرور الجديدة",
+        confirmPassword: "تأكيد كلمة المرور الجديدة",
+        changePassword: "تغيير كلمة المرور",
+        updateSuccess: "تم تحديث المعلومات!",
+        updateError: "حدث خطأ أثناء التحديث",
+        passwordMismatch: "كلمتا المرور غير متطابقتين",
+        passwordSuccess: "تم تغيير كلمة المرور!",
+        passwordError: "خطأ في كلمة المرور",
+      },
+
+      preleveur: {
+        profile: "ملفي الشخصي",
+        settings: "الإعدادات",
+        patientDeleted: "تم حذف المريض!",
+        chooseAnalysis: "يرجى اختيار نوع التحليل!",
+        examSaved: "تم تسجيل الفحص الجديد!",
+        patientUpdated: "تم تعديل المريض!",
+        patientExamSaved: "تم تسجيل المريض والفحص!",
+        saveError: "حدث خطأ أثناء الحفظ",
+        examValidated: "تم تأكيد الفحص!",
+        examCancelled: "تم إلغاء الفحص!",
+        updateError: "حدث خطأ أثناء التحديث",
+        examCreated: "تم إنشاء الفحص بنجاح!",
+      },
+    },
+  },
 };
 
 i18n
@@ -479,10 +873,19 @@ i18n
   .use(initReactI18next)
   .init({
     resources,
-    fallbackLng: 'fr',
+    fallbackLng: "fr",
     interpolation: {
-      escapeValue: false
-    }
+      escapeValue: false,
+    },
   });
+
+const updateDocumentDirection = (language) => {
+  if (typeof document !== "undefined") {
+    document.body.dir = language?.startsWith("ar") ? "rtl" : "ltr";
+  }
+};
+
+updateDocumentDirection(i18n.language);
+i18n.on("languageChanged", updateDocumentDirection);
 
 export default i18n;

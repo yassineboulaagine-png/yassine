@@ -75,7 +75,7 @@ const PrendreRendezVous = () => {
                 setStep(2); 
             }
         } catch (err) {
-            toast.error(err.response?.data?.message || "Erreur lors de l'envoi du code");
+            toast.error(err.response?.data?.message || t('appointment_form.send_error'));
         } finally {
             setLoading(false);
         }
@@ -92,7 +92,7 @@ const PrendreRendezVous = () => {
             });
 
             if (response.data.statut === 'success' || response.data.status === 'success') {
-                toast.success("Votre rendez-vous a été enregistré avec succès !");
+                toast.success(t('appointment_form.success'));
                 // رجع الفورم خاوية ونوض ناضي
                 setFormData({ 
                     nom: '', prenom: '', telephone: '', email: '', 
@@ -138,7 +138,7 @@ const PrendreRendezVous = () => {
                     <div style={{ marginBottom: '15px' }}>
                         <label>{t('appointment_form.sexe')}</label>
                         <select name="sexe" value={formData.sexe} onChange={handleChange} required style={inputStyle}>
-                            <option value="">-- {t('appointment_form.select_sexe')} --</option>
+                            <option value="">{t('appointment_form.select_sexe')}</option>
                             <option value="M">{t('appointment_form.male')}</option>
                             <option value="F">{t('appointment_form.female')}</option>
                         </select>
@@ -161,7 +161,7 @@ const PrendreRendezVous = () => {
                     </div>
                     
                     <button type="submit" disabled={loading} style={btnStyle}>
-                        {loading ? 'Envoi du code...' : t('appointment_form.btn_next')}
+                        {loading ? t('verification.sent') : t('appointment_form.btn_next')}
                     </button>
 
                     <div style={{ marginTop: '15px', textAlign: 'center' }}>

@@ -3,9 +3,11 @@ import { ShieldCheck, ArrowLeft, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import axios from 'axios';
+import { useTranslation } from 'react-i18next';
 
 const SettingsBiologiste = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const userData = JSON.parse(localStorage.getItem("user") || "{}");
   
   const [profile, setProfile] = useState({
@@ -34,17 +36,17 @@ const SettingsBiologiste = () => {
         // Kan-keep-iw dakchi li kan f localStorage (b7al plain_password) o n-zidou 3lih jdid
         const updatedUser = { ...userData, ...profile };
         localStorage.setItem("user", JSON.stringify(updatedUser));
-        toast.success("Informations mises à jour !");
+        toast.success(t('settings.profile_updated'));
       }
     } catch (error) {
-      toast.error("Erreur lors de la mise à jour");
+      toast.error(t('settings.profile_update_error'));
     }
   };
 
   const handleChangePassword = async (e) => {
     e.preventDefault();
     if (passwords.newPassword !== passwords.confirmPassword) {
-      toast.error("Les mots de passe ne correspondent pas !");
+      toast.error(t('settings.password_not_match'));
       return;
     }
     try {
@@ -63,12 +65,12 @@ const SettingsBiologiste = () => {
         const updatedUser = { ...userData, plain_password: passwords.newPassword };
         localStorage.setItem("user", JSON.stringify(updatedUser));
         
-        toast.success("Mot de passe changé avec succès !");
+        toast.success(t('settings.password_updated'));
         setPasswords({ oldPassword: "", newPassword: "", confirmPassword: "" });
       }
     } catch (error) {
       // Ila kan error 400 (Bad Request) wala 405, ghadi i-t-afficha l-message dial l-backend
-      const errorMsg = error.response?.data?.message || "Erreur : l'ancien mot de passe est incorrect";
+      const errorMsg = error.response?.data?.message || t('settings.old_password_incorrect');
       toast.error(errorMsg);
     }
   };
@@ -76,18 +78,18 @@ const SettingsBiologiste = () => {
   return (
     <div style={{ padding: '30px', maxWidth: '500px', margin: '40px auto' }}>
       <button onClick={() => navigate(-1)} style={backBtnStyle}>
-        <ArrowLeft size={18} /> Retour
+        <ArrowLeft size={18} /> {t('settings.back')}
       </button>
 
       <div style={cardStyle}>
         <div style={{ textAlign: 'center', marginBottom: '25px' }}>
           <div style={iconBox}><User size={32} color="#10b981" /></div>
-          <h2 style={titleStyle}>Mon Profil</h2>
+          <h2 style={titleStyle}>{t('settings.my_profile')}</h2>
         </div>
 
         <form onSubmit={handleUpdateProfile} style={{ marginBottom: '30px' }}>
           <div style={inputGroup}>
-            <label style={labelStyle}>Nom complet</label>
+            <label style={labelStyle}>{t('settings.full_name')}</label>
             <input 
               type="text" 
               value={profile.nom_complet}
@@ -96,7 +98,7 @@ const SettingsBiologiste = () => {
             />
           </div>
           <div style={inputGroup}>
-            <label style={labelStyle}>Email Address</label>
+            <label style={labelStyle}>{t('settings.email')}</label>
             <input 
               type="email" 
               value={profile.email}
@@ -104,19 +106,19 @@ const SettingsBiologiste = () => {
               style={inputStyle}
             />
           </div>
-          <button type="submit" style={saveBtnStyle}>Enregistrer les modifications</button>
+          <button type="submit" style={saveBtnStyle}>{t('settings.save_changes')}</button>
         </form>
 
         <div style={divider}></div>
 
         <div style={{ textAlign: 'center', marginBottom: '25px', marginTop: '20px' }}>
           <div style={iconBox}><ShieldCheck size={32} color="#10b981" /></div>
-          <h2 style={titleStyle}>Sécurité</h2>
+          <h2 style={titleStyle}>{t('settings.security')}</h2>
         </div>
 
         <form onSubmit={handleChangePassword}>
           <div style={inputGroup}>
-            <label style={labelStyle}>Ancien mot de passe</label>
+            <label style={labelStyle}>{t('settings.old_password')}</label>
             <input 
               type="password" required 
               value={passwords.oldPassword}
@@ -125,7 +127,7 @@ const SettingsBiologiste = () => {
             />
           </div>
           <div style={inputGroup}>
-            <label style={labelStyle}>Nouveau mot de passe</label>
+            <label style={labelStyle}>{t('settings.new_password')}</label>
             <input 
               type="password" required 
               value={passwords.newPassword}
@@ -134,7 +136,7 @@ const SettingsBiologiste = () => {
             />
           </div>
           <div style={inputGroup}>
-            <label style={labelStyle}>Confirmer le nouveau</label>
+            <label style={labelStyle}>{t('settings.confirm_password')}</label>
             <input 
               type="password" required 
               value={passwords.confirmPassword}
@@ -143,7 +145,7 @@ const SettingsBiologiste = () => {
             />
           </div>
           <button type="submit" style={{ ...saveBtnStyle, background: '#1e293b' }}>
-            Mettre à jour le mot de passe
+            {t('settings.update_password')}
           </button>
         </form>
       </div>

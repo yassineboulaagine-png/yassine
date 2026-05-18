@@ -2,8 +2,10 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Download, AlertCircle, User, Calendar, FileText, Loader } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 const MesResultats = () => {
+  const { t, i18n } = useTranslation();
   const [patient, setPatient] = useState(null);
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -34,7 +36,7 @@ const MesResultats = () => {
     
     if (!validToken) {
       console.log("❌ No valid token found");
-      setError("Vous devez être connecté pour voir vos résultats. Token non trouvé dans localStorage.");
+      setError(t("mesResultats.authError"));
       setLoading(false);
       return;
     }
@@ -112,10 +114,10 @@ const MesResultats = () => {
       window.URL.revokeObjectURL(url);
   
       console.log("✅ PDF downloaded successfully!");
-      toast.success("Rapport PDF téléchargé avec succès!");
+      toast.success(t("mesResultats.pdfSuccess"));
     } catch (error) {
       console.error("❌ Error generating PDF:", error);
-      toast.error("Erreur lors de la génération du rapport PDF");
+      toast.error(t("mesResultats.pdfError"));
     } finally {
       setGeneratingPDF(false);
     }
@@ -335,7 +337,7 @@ const MesResultats = () => {
       <div style={styles.container}>
         <div style={styles.wrapper}>
           <div style={styles.header}>
-            <h1 style={styles.title}>Mes Analyses Médicales</h1>
+            <h1 style={styles.title}>{t("mesResultats.title")}</h1>
           </div>
           <div style={styles.spinner}>
             <Loader style={{ animation: "spin 1s linear infinite" }} size={48} color="#4f46e5" />
@@ -354,21 +356,21 @@ const MesResultats = () => {
       <div style={styles.container}>
         <div style={styles.wrapper}>
           <div style={styles.header}>
-            <h1 style={styles.title}>Mes Analyses Médicales</h1>
-            <p style={styles.subtitle}>Connectez-vous pour consulter vos résultats</p>
+            <h1 style={styles.title}>{t("mesResultats.title")}</h1>
+            <p style={styles.subtitle}>{t("mesResultats.subtitleLogin")}</p>
           </div>
           <div style={styles.errorBox}>
             <AlertCircle size={20} style={{ color: "#dc2626", marginTop: "2px" }} />
             <div>
-              <div style={styles.errorTitle}>Authentification requise</div>
-              <div style={styles.errorText}>{error || "Vous devez être connecté pour voir vos résultats."}</div>
+              <div style={styles.errorTitle}>{t("mesResultats.authRequired")}</div>
+              <div style={styles.errorText}>{error || t("mesResultats.authDefault")}</div>
               <button
                 style={styles.loginButton}
                 onClick={handleLoginClick}
                 onMouseEnter={(e) => (e.target.style.background = "#4338ca")}
                 onMouseLeave={(e) => (e.target.style.background = "#4f46e5")}
               >
-                Aller à la page de connexion
+                {t("mesResultats.loginButton")}
               </button>
             </div>
           </div>
@@ -382,8 +384,8 @@ const MesResultats = () => {
       <div style={styles.wrapper}>
         {/* Header */}
         <div style={styles.header}>
-          <h1 style={styles.title}>Mes Analyses Médicales</h1>
-          <p style={styles.subtitle}>Consultez et téléchargez vos résultats d'analyses validées</p>
+          <h1 style={styles.title}>{t("mesResultats.title")}</h1>
+          <p style={styles.subtitle}>{t("mesResultats.subtitle")}</p>
         </div>
 
         {/* Patient Info Card */}
@@ -394,15 +396,15 @@ const MesResultats = () => {
                 <User size={28} color="#4f46e5" />
               </div>
               <div style={styles.patientInfo}>
-                <div style={styles.patientName}>{(`${patient?.nom || ""} ${patient?.prenom || ""}`.trim() || "Patient")}</div>
+                <div style={styles.patientName}>{(`${patient?.nom || ""} ${patient?.prenom || ""}`.trim() || t("common.patient"))}</div>
                 <div style={styles.infoGrid}>
                   <div style={styles.infoItem}>
-                    <div style={styles.infoLabel}>Nom Complet</div>
+                    <div style={styles.infoLabel}>{t("mesResultats.fullName")}</div>
                     <div style={styles.infoValue}>{(`${patient?.nom || ""} ${patient?.prenom || ""}`.trim() || "-")}</div>
                   </div>
                   <div style={styles.infoItem}>
-                    <div style={styles.infoLabel}>Date d'accès</div>
-                    <div style={styles.infoValue}>{new Date().toLocaleDateString("fr-FR")}</div>
+                    <div style={styles.infoLabel}>{t("mesResultats.accessDate")}</div>
+                    <div style={styles.infoValue}>{new Date().toLocaleDateString(i18n.language?.startsWith("ar") ? "ar-MA" : "fr-FR")}</div>
                   </div>
                 </div>
               </div>
@@ -417,8 +419,8 @@ const MesResultats = () => {
               <div style={styles.emptyIcon}>
                 <FileText size={32} color="#9ca3af" />
               </div>
-              <h3 style={styles.emptyTitle}>Aucune analyse disponible</h3>
-              <p style={styles.emptyText}>Vous n'avez pas encore de résultats d'analyses validées.</p>
+              <h3 style={styles.emptyTitle}>{t("mesResultats.noResultsTitle")}</h3>
+              <p style={styles.emptyText}>{t("mesResultats.noResultsText")}</p>
             </div>
           </div>
         ) : (
@@ -426,18 +428,18 @@ const MesResultats = () => {
           <>
             <div style={styles.card}>
               <div style={{ marginBottom: "16px" }}>
-                <h2 style={{ fontSize: "16px", fontWeight: "600", color: "#111827", marginBottom: "4px" }}>Vos Résultats d'Analyses</h2>
-                <p style={{ fontSize: "13px", color: "#6b7280" }}>Patient: <strong>{`${patient?.nom || ""} ${patient?.prenom || ""}`.trim() || "-"}</strong></p>
+                <h2 style={{ fontSize: "16px", fontWeight: "600", color: "#111827", marginBottom: "4px" }}>{t("mesResultats.resultsTitle")}</h2>
+                <p style={{ fontSize: "13px", color: "#6b7280" }}>{t("mesResultats.patientLabel")} <strong>{`${patient?.nom || ""} ${patient?.prenom || ""}`.trim() || "-"}</strong></p>
               </div>
               <div style={{ overflowX: "auto" }}>
                 <table style={styles.table}>
                   <thead style={styles.thead}>
                     <tr>
-                      <th style={styles.th}>Référence</th>
-                      <th style={styles.th}>Type d'Analyse</th>
-                      <th style={styles.th}>Date</th>
-                      <th style={styles.th}>Statut</th>
-                      <th style={{ ...styles.th, textAlign: "right" }}>Action</th>
+                      <th style={styles.th}>{t("common.reference")}</th>
+                      <th style={styles.th}>{t("mesResultats.analysisType")}</th>
+                      <th style={styles.th}>{t("common.date")}</th>
+                      <th style={styles.th}>{t("common.status")}</th>
+                      <th style={{ ...styles.th, textAlign: "right" }}>{t("mesResultats.action")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -450,11 +452,11 @@ const MesResultats = () => {
                         <td style={styles.td}>
                           <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                             <Calendar size={14} color="#9ca3af" />
-                            {examen?.date_examen ? new Date(examen.date_examen).toLocaleDateString("fr-FR") : "-"}
+                            {examen?.date_examen ? new Date(examen.date_examen).toLocaleDateString(i18n.language?.startsWith("ar") ? "ar-MA" : "fr-FR") : "-"}
                           </div>
                         </td>
                         <td style={styles.td}>
-                          <span style={styles.statusBadge}>{examen?.statut ? examen.statut.replace('_', ' ') : "-"}</span>
+                          <span style={styles.statusBadge}>{examen?.statut ? t(`status.${examen.statut}`, examen.statut.replace("_", " ")) : "-"}</span>
                         </td>
                         <td style={{ ...styles.td, textAlign: "right" }}>
                           <button
@@ -470,7 +472,7 @@ const MesResultats = () => {
                             onMouseLeave={(e) => {
                               if (!generatingPDF) e.target.style.background = "#4f46e5";
                             }}
-                            title="Télécharger le rapport PDF"
+                            title={t("mesResultats.downloadTitle")}
                           >
                             {generatingPDF ? (
                               <>
@@ -494,7 +496,7 @@ const MesResultats = () => {
 
             {/* Tip Box */}
             <div style={styles.tipBox}>
-              💡 <strong>Astuce:</strong> Cliquez sur le bouton "PDF" pour télécharger un rapport professionnel de vos analyses avec tous les détails.
+              <strong>{t("mesResultats.tipTitle")}</strong> {t("mesResultats.tipText")}
             </div>
           </>
         )}

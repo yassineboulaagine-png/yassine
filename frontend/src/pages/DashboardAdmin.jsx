@@ -17,10 +17,18 @@ import AdminProfileSettings from "./AdminProfileSettings";
 import { Toaster } from "react-hot-toast";
 import StaffManagement from "./StaffManagement";
 import { ShieldAlert } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 const DashboardAdmin = () => {
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
   const [activeTab, setActiveTab] = useState("dashboard");
+
+  const changeLanguage = (e) => {
+    const selectedLanguage = e.target.value;
+    i18n.changeLanguage(selectedLanguage);
+    document.body.dir = selectedLanguage === "ar" ? "rtl" : "ltr";
+  };
 
   // 📊 الـ State فين غانحطو الإحصائيات الحقيقية
   const [stats, setStats] = useState({
@@ -55,15 +63,15 @@ const DashboardAdmin = () => {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-    toast.success("Déconnexion réussie !");
+    toast.success(t("adminDashboard.logoutSuccess"));
     navigate("/login");
   };
 
   // 🎨 ألوان الـ Pie Chart (أخضر للـ Validées، ليموني للـ En cours)
   const COLORS = ['#16a34a', '#ea580c'];
   const pieData = [
-    { name: 'valide', value: stats.cards.analyses_validees },
-    { name: 'en_cours', value: stats.cards.en_cours },
+    { name: t("status.validee"), value: stats.cards.analyses_validees },
+    { name: t("status.en_cours"), value: stats.cards.en_cours },
   ];
 
   return (
@@ -81,34 +89,34 @@ const DashboardAdmin = () => {
             className={`hl-nav-btn ${activeTab === 'dashboard' ? 'active' : ''}`}
             onClick={() => setActiveTab('dashboard')}
           >
-            <LayoutDashboard size={20} /> Tableau de bord
+            <LayoutDashboard size={20} /> {t("adminDashboard.sidebar.dashboard")}
           </button>
           
           <button 
             className={`hl-nav-btn ${activeTab === 'patients' ? 'active' : ''}`}
             onClick={() => setActiveTab('patients')}
           >
-            <Users size={20} /> Patients
+            <Users size={20} /> {t("adminDashboard.sidebar.patients")}
           </button>
           
           <button 
             className={`hl-nav-btn ${activeTab === 'analyses' ? 'active' : ''}`}
             onClick={() => setActiveTab('analyses')}
           >
-            <TestTube2 size={20} /> Analyses
+            <TestTube2 size={20} /> {t("adminDashboard.sidebar.analyses")}
           </button>
 
           <button 
         className={`hl-nav-btn ${activeTab === 'staff' ? 'active' : ''}`}
           onClick={() => setActiveTab('staff')}
         >
-           <ShieldAlert size={20} /> Gestion Staff
+           <ShieldAlert size={20} /> {t("adminDashboard.sidebar.staff")}
         </button>
         </nav>
 
         <div className="hl-logout-section">
           <Button variant="ghost" className="w-full justify-start gap-3 text-red-400" onClick={handleLogout}>
-            <LogOut size={20} /> Déconnexion
+            <LogOut size={20} /> {t("adminDashboard.sidebar.logout")}
           </Button>
         </div>
       </aside>
@@ -116,13 +124,29 @@ const DashboardAdmin = () => {
       {/* Main Content */}
       <main className="hl-main">
         <header className="hl-header">
-          <h2>Espace Administrateur</h2>
-          <div className="hl-user-info" onClick={() => setActiveTab('profile')} style={{ cursor: 'pointer' }}>
-            <div className="hl-user-text">
-              <p className="hl-user-name">{user.name || user.prenom}</p>
-              <p className="hl-user-role">{user.role}</p>
+          <h2>{t("adminDashboard.headerTitle")}</h2>
+          <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
+            <select
+              onChange={changeLanguage}
+              value={i18n.language?.startsWith("ar") ? "ar" : "fr"}
+              style={{
+                padding: "8px",
+                borderRadius: "8px",
+                border: "1px solid #cbd5e1",
+                backgroundColor: "#fff",
+                cursor: "pointer",
+              }}
+            >
+              <option value="fr">FR</option>
+              <option value="ar">AR</option>
+            </select>
+            <div className="hl-user-info" onClick={() => setActiveTab('profile')} style={{ cursor: 'pointer' }}>
+              <div className="hl-user-text">
+                <p className="hl-user-name">{user.name || user.prenom}</p>
+                <p className="hl-user-role">{user.role}</p>
+              </div>
+              <UserCircle size={32} color="#94a3b8" />
             </div>
-            <UserCircle size={32} color="#94a3b8" />
           </div>
         </header>
 
@@ -130,28 +154,28 @@ const DashboardAdmin = () => {
           {activeTab === 'dashboard' && (
             <div className="hl-welcome-card fade-in" style={{ background: 'transparent', boxShadow: 'none', padding: 0 }}>
               <div style={{ background: '#white', padding: '24px', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', backgroundColor: '#fff', marginBottom: '24px' }}>
-                <h3 style={{ fontSize: '20px', fontWeight: '700', color: '#1e293b' }}>Bienvenue sur Helix Lab 🔬</h3>
-                <p style={{ color: '#64748b', marginTop: '4px' }}>Le système est prêt. Voici la synthèse de l'activité.</p>
+                <h3 style={{ fontSize: '20px', fontWeight: '700', color: '#1e293b' }}>{t("adminDashboard.welcomeTitle")}</h3>
+                <p style={{ color: '#64748b', marginTop: '4px' }}>{t("adminDashboard.welcomeSubtitle")}</p>
               </div>
 
               {/* 1. الـ Cards الإحصائية الديناميكية من الـ DB */}
               <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px', marginTop: '20px' }}>
                 <div style={{ background: '#eff6ff', padding: '20px', borderRadius: '10px', borderLeft: '4px solid #2563eb' }}>
-                  <p style={{ color: '#1e40af', fontWeight: 'bold' }}>Total Patients</p>
+                  <p style={{ color: '#1e40af', fontWeight: 'bold' }}>{t("adminDashboard.totalPatients")}</p>
                   <span style={{ fontSize: '28px', fontWeight: '800', color: '#1e293b' }}>
                     {loading ? '...' : stats.cards.total_patients}
                   </span>
                 </div>
                 
                 <div style={{ background: '#f0fdf4', padding: '20px', borderRadius: '10px', borderLeft: '4px solid #16a34a' }}>
-                  <p style={{ color: '#166534', fontWeight: 'bold' }}>Analyses Validées</p>
+                  <p style={{ color: '#166534', fontWeight: 'bold' }}>{t("adminDashboard.validatedAnalyses")}</p>
                   <span style={{ fontSize: '28px', fontWeight: '800', color: '#1e293b' }}>
                     {loading ? '...' : stats.cards.analyses_validees}
                   </span>
                 </div>
                 
                 <div style={{ background: '#fff7ed', padding: '20px', borderRadius: '10px', borderLeft: '4px solid #ea580c' }}>
-                  <p style={{ color: '#9a3412', fontWeight: 'bold' }}>En cours</p>
+                  <p style={{ color: '#9a3412', fontWeight: 'bold' }}>{t("adminDashboard.inProgress")}</p>
                   <span style={{ fontSize: '28px', fontWeight: '800', color: '#1e293b' }}>
                     {loading ? '...' : stats.cards.en_cours}
                   </span>
@@ -164,7 +188,7 @@ const DashboardAdmin = () => {
                   
                   {/* Histogramme (الأعمدة) */}
                   <div style={{ background: '#fff', padding: '20px', borderRadius: '12px', border: '1px solid #f1f5f9' }}>
-                    <h4 style={{ fontSize: '15px', fontWeight: '700', color: '#334155', marginBottom: '16px' }}>📊 Évolution des Analyses Validées</h4>
+                    <h4 style={{ fontSize: '15px', fontWeight: '700', color: '#334155', marginBottom: '16px' }}>{t("adminDashboard.analysesEvolution")}</h4>
                     <div style={{ width: '100%', height: 260 }}>
                       <ResponsiveContainer>
                         <BarChart data={stats.graph}>
@@ -180,7 +204,7 @@ const DashboardAdmin = () => {
 
                   {/* Secteur (الدائري) */}
                   <div style={{ background: '#fff', padding: '20px', borderRadius: '12px', border: '1px solid #f1f5f9' }}>
-                    <h4 style={{ fontSize: '15px', fontWeight: '700', color: '#334155', marginBottom: '16px' }}>🍩 Répartition des Analyses</h4>
+                    <h4 style={{ fontSize: '15px', fontWeight: '700', color: '#334155', marginBottom: '16px' }}>{t("adminDashboard.analysesDistribution")}</h4>
                     <div style={{ width: '100%', height: 260 }}>
                       <ResponsiveContainer>
                         <PieChart>

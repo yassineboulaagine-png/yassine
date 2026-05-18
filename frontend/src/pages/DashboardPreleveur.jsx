@@ -53,6 +53,10 @@ const DashboardPreleveur = () => {
     }
   };
 
+  const formatStatus = (status) => t(`status.${status}`, status);
+  const formatSexe = (sexe) =>
+    sexe === "M" ? t("appointment_form.male") : t("appointment_form.female");
+
   const [newPatient, setNewPatient] = useState({
     nom: "",
     prenom: "",
@@ -135,7 +139,7 @@ const DashboardPreleveur = () => {
       // ===== NEW EXAM =====
       if (isNewExam && currentPatientId) {
         if (!selectedExamen) {
-          toast.error("Veuillez choisir un type d'analyse !");
+          toast.error(t("preleveur.chooseAnalysis"));
           return;
         }
 
@@ -157,7 +161,7 @@ const DashboardPreleveur = () => {
 
         if (ref) setGeneratedCode(ref);
 
-        toast.success("Nouvel examen enregistré !");
+        toast.success(t("preleveur.examSaved"));
 
         fetchAnalysesLyoum();
 
@@ -172,7 +176,7 @@ const DashboardPreleveur = () => {
           headers: { Authorization: `Bearer ${token}` }
         });
 
-        toast.success("Patient modifié !");
+        toast.success(t("preleveur.patientUpdated"));
 
         fetchPatients(searchTerm);
 
@@ -209,7 +213,7 @@ const DashboardPreleveur = () => {
         if (ref) setGeneratedCode(ref);
       }
 
-      toast.success("Patient et examen enregistrés !");
+      toast.success(t("preleveur.patientExamSaved"));
 
       fetchPatients(searchTerm);
 
@@ -218,7 +222,7 @@ const DashboardPreleveur = () => {
       console.error(error);
 
       toast.error(
-        error.response?.data?.message || "Erreur d'enregistrement"
+        error.response?.data?.message || t("preleveur.saveError")
       );
     }
   };
@@ -243,15 +247,15 @@ const DashboardPreleveur = () => {
 
       toast.success(
         newStatus === "valide"
-          ? "Examen validé !"
-          : "Examen annulé !"
+          ? t("preleveur.examValidated")
+          : t("preleveur.examCancelled")
       );
 
       fetchAnalysesLyoum();
     } catch (error) {
       toast.error(
         error.response?.data?.message ||
-          "Erreur lors de la mise à jour"
+          t("preleveur.updateError")
       );
     }
   };
@@ -391,14 +395,14 @@ const DashboardPreleveur = () => {
                     className="dropdown-item"
                     onClick={() => navigate("/profil-preleveur")}
                   >
-                    <User size={16} /> Mon Profil
+                    <User size={16} /> {t("preleveur.profile")}
                   </button>
 
                   <button
                     className="dropdown-item"
                     onClick={() => navigate("/settings-preleveur")}
                   >
-                    <Settings size={16} /> Paramètres
+                    <Settings size={16} /> {t("preleveur.settings")}
                   </button>
 
                   <hr />
@@ -410,7 +414,7 @@ const DashboardPreleveur = () => {
                       navigate("/login");
                     }}
                   >
-                    <LogOut size={16} /> Déconnexion
+                    <LogOut size={16} /> {t("sidebar.logout")}
                   </button>
                 </div>
               )}
@@ -486,9 +490,7 @@ const DashboardPreleveur = () => {
                         </td>
 
                         <td>
-                          {p.sexe === "M"
-                            ? "👨 Masculin"
-                            : "👩 Féminin"}
+                          {formatSexe(p.sexe)}
                         </td>
 
                         <td>{p.cin}</td>
@@ -540,7 +542,7 @@ const DashboardPreleveur = () => {
                                 );
 
                                 toast.success(
-                                  "Patient supprimé !"
+                                  t("preleveur.patientDeleted")
                                 );
 
                                 fetchPatients(searchTerm);
@@ -613,7 +615,7 @@ const DashboardPreleveur = () => {
                           <span
                             className={`status-badge ${ana.statut}`}
                           >
-                            {ana.statut}
+                            {formatStatus(ana.statut)}
                           </span>
                         </td>
 
@@ -875,7 +877,7 @@ const DashboardPreleveur = () => {
                 />
 
                 <h4>
-                  Examen créé avec succès !
+                  {t("preleveur.examCreated")}
                 </h4>
 
                 <h1

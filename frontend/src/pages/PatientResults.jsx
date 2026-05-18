@@ -1,16 +1,18 @@
-import React from 'react';
+import React from "react";
+import { useTranslation } from "react-i18next";
 
 const PatientResults = () => {
-    // هادا هو الـ ID اللي خزننا فـ handleSearch
-    const examId = localStorage.getItem("patient_exam_id");
+  const { t } = useTranslation();
+  const examId = localStorage.getItem("patient_exam_id");
 
-    return (
-        <div className="p-10">
-            <h1>Bienvenue dans votre espace résultats</h1>
-            <p>ID de votre analyse : <strong>{examId}</strong></p>
-            {/* هنا من بعد غانجبدو المعلومات من ligne_examens */}
-        </div>
-    );
+  return (
+    <div className="p-10">
+      <h1>{t("patientResults.title")}</h1>
+      <p>
+        {t("patientResults.analysisId")} <strong>{examId}</strong>
+      </p>
+    </div>
+  );
 };
 
 export default PatientResults;

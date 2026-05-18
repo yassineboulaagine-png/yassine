@@ -6,11 +6,12 @@ import { toast } from "sonner";
 import axios from "axios";
 import ResultDetailsModal from "@/components/ResultDetailsModal";
 import "./Dashboard.css";
-import { t } from "i18next";
+import { useTranslation } from "react-i18next";
 
 
 const DashboardBiologiste = () => {
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
   const [activeTab, setActiveTab] = useState("analyses");
   const [analysesLyoum, setAnalysesLyoum] = useState([]);
   const [examenValidation, setExamenValidation] = useState([]);
@@ -24,6 +25,16 @@ const DashboardBiologiste = () => {
   const [biologiste, setBiologiste] = useState(null);
   const [showGraphModal, setShowGraphModal] = useState(false);
   const [selectedGraphExamen, setSelectedGraphExamen] = useState(null);
+
+  const changeLanguage = (e) => {
+    const selectedLanguage = e.target.value;
+    i18n.changeLanguage(selectedLanguage);
+    document.body.dir = selectedLanguage === "ar" ? "rtl" : "ltr";
+  };
+
+  const formatStatus = (status) => t(`status.${status}`, status);
+  const formatSexe = (sexe) =>
+    sexe === "M" ? t("biologiste.modal.male") : t("biologiste.modal.female");
 
   useEffect(() => {
   const fetchBiologiste = async () => {
@@ -96,7 +107,7 @@ const DashboardBiologiste = () => {
       
       // Toast notification if new exams arrived
       if (!isInitial && response.data.length > previousLength) {
-        toast.success(`${response.data.length - previousLength} nouvelle(s) analyse(s)!`);
+        toast.success(t("biologiste.toast.newAnalysis", { count: response.data.length - previousLength }));
       }
       
       setAnalysesLyoum(response.data);
@@ -153,7 +164,7 @@ const DashboardBiologiste = () => {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-    toast.success("Déconnexion réussie !");
+    toast.success(t("biologiste.toast.logoutSuccess"));
     navigate("/login");
   };
 
@@ -198,13 +209,13 @@ const DashboardBiologiste = () => {
         }
       );
       console.log("Success response:", response.data);
-      toast.success("Résultats saisis! en_cours de validation.");
+      toast.success(t("biologiste.toast.resultsSaved"));
       closeSaisieModal();
       fetchAnalysesLyoum(false);
       fetchValidation();
     } catch (error) {
       console.error("Error response:", error.response?.data);
-      toast.error(error.response?.data?.message || "Erreur lors de la sauvegarde");
+      toast.error(error.response?.data?.message || t("biologiste.toast.saveError"));
     }
   };
 
@@ -219,16 +230,16 @@ const DashboardBiologiste = () => {
           }
         }
       );
-      toast.success("Examen approuvé!");
+      toast.success(t("biologiste.toast.approveSuccess"));
       fetchValidation();
       fetchHistorique();
     } catch (error) {
-      toast.error(error.response?.data?.message || "Erreur lors de l'approbation");
+      toast.error(error.response?.data?.message || t("biologiste.toast.approveError"));
     }
   };
 
   const handleReject = async (id) => {
-  if (window.confirm("Voulez-vous renvoyer cet examen à la saisie pour modification ?")) {
+  if (window.confirm(t("biologiste.confirm.rejectExam"))) {
     try {
       // Kat-sift l-statut 'en_cours' bach i-welli i-bane f "Mes Analyses"
       await axios.put(
@@ -243,10 +254,10 @@ const DashboardBiologiste = () => {
       
       // Update local state bach i-t-7eyed mn l-Validation
       setExamenValidation(examenValidation.filter(ana => ana.id !== id));
-      toast.info("Examen renvoyé pour modification");
+      toast.info(t("biologiste.toast.rejectSuccess"));
     } catch (error) {
       console.error("Erreur lors du rejet:", error);
-      toast.error("Erreur lors de la modification");
+      toast.error(t("biologiste.toast.modifyError"));
     }
   }
 };
@@ -273,34 +284,49 @@ const DashboardBiologiste = () => {
             className={`hl-nav-btn ${activeTab === 'analyses' ? 'active' : ''}`}
             onClick={() => setActiveTab('analyses')}
           >
-            <Microscope size={20} /> Mes Analyses
+            <Microscope size={20} /> {t("biologiste.sidebar.myAnalyses")}
           </button>
           
           <button 
             className={`hl-nav-btn ${activeTab === 'validation' ? 'active' : ''}`}
             onClick={() => setActiveTab('validation')}
           >
-            <CheckCircle size={20} /> Validation
+            <CheckCircle size={20} /> {t("biologiste.sidebar.validation")}
           </button>
           
           <button 
             className={`hl-nav-btn ${activeTab === 'historique' ? 'active' : ''}`}
             onClick={() => setActiveTab('historique')}
           >
-            <ClipboardList size={20} /> Historique
+            <ClipboardList size={20} /> {t("biologiste.sidebar.history")}
           </button>
         </nav>
         
         <div className="hl-logout-section">
           <Button variant="ghost" className="w-full justify-start gap-3 text-red-300 hover:bg-red-500/10" onClick={handleLogout}>
-            <LogOut size={20} /> Déconnexion
+            <LogOut size={20} /> {t("biologiste.sidebar.logout")}
           </Button>
         </div>
       </aside>
 
       <main className="hl-main">
         <header className="hl-header">
-          <h2>Espace Biologiste</h2>
+          <h2>{t("biologiste.header.title")}</h2>
+          <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
+            <select
+              onChange={changeLanguage}
+              value={i18n.language?.startsWith("ar") ? "ar" : "fr"}
+              style={{
+                padding: "8px",
+                borderRadius: "8px",
+                border: "1px solid #cbd5e1",
+                backgroundColor: "#fff",
+                cursor: "pointer",
+              }}
+            >
+              <option value="fr">FR</option>
+              <option value="ar">AR</option>
+            </select>
           <div className="hl-user-info">
             <div className="hl-user-text">
              <p className="hl-user-name">
@@ -325,6 +351,7 @@ const DashboardBiologiste = () => {
   onClick={() => navigate("/settings-biologiste")}
 />
           </div>
+          </div>
         </header>
 
         <div className="hl-content-body">
@@ -332,18 +359,18 @@ const DashboardBiologiste = () => {
           {activeTab === 'analyses' && (
             <div className="hl-table-container">
               {analysesLoading ? (
-                <div style={{padding: '40px', textAlign: 'center', color: '#94a3b8'}}><p>Chargement...</p></div>
+                <div style={{padding: '40px', textAlign: 'center', color: '#94a3b8'}}><p>{t("biologiste.loading")}</p></div>
               ) : analysesLyoum.length === 0 ? (
-                <div style={{padding: '40px', textAlign: 'center', color: '#94a3b8'}}><p>Aucune analyse en_cours.</p></div>
+                <div style={{padding: '40px', textAlign: 'center', color: '#94a3b8'}}><p>{t("biologiste.noAnalysis")}</p></div>
               ) : (
                 <table className="hl-table">
                   <thead>
                     <tr>
-                      <th>Référence</th>
-                      <th>Patient</th>
-                      <th>Examen</th>
-                      <th>Statut</th>
-                      <th>Actions</th>
+                      <th>{t("biologiste.table.reference")}</th>
+                      <th>{t("biologiste.table.patient")}</th>
+                      <th>{t("biologiste.table.exam")}</th>
+                      <th>{t("biologiste.table.status")}</th>
+                      <th>{t("biologiste.table.actions")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -353,12 +380,12 @@ const DashboardBiologiste = () => {
                         <td>{ana.patient?.nom} {ana.patient?.prenom}</td>
                         <td>
                           {ana.lignes && ana.lignes.length > 0 
-                            ? ana.lignes.map((l, i) => <div key={i}>{l.analyse?.designation || "Examen"}</div>) 
+                            ? ana.lignes.map((l, i) => <div key={i}>{l.analyse?.designation || t("biologiste.table.exam")}</div>) 
                             : ana.type_analyse?.libelle || "N/A"}
                         </td>
-                        <td><span className={`status-badge ${ana.statut}`}>{ana.statut}</span></td>
+                        <td><span className={`status-badge ${ana.statut}`}>{formatStatus(ana.statut)}</span></td>
                         <td>
-                          <button className="btn-valider" onClick={() => openSaisieModal(ana)}>Saisir</button>
+                          <button className="btn-valider" onClick={() => openSaisieModal(ana)}>{t("biologiste.buttons.enter")}</button>
                         </td>
                       </tr>
 
@@ -373,16 +400,16 @@ const DashboardBiologiste = () => {
           {activeTab === 'validation' && (
             <div className="hl-table-container">
               {examenValidation.length === 0 ? (
-                <div style={{padding: '40px', textAlign: 'center', color: '#94a3b8'}}><p>Aucune analyse en_cours de validation.</p></div>
+                <div style={{padding: '40px', textAlign: 'center', color: '#94a3b8'}}><p>{t("biologiste.noValidation")}</p></div>
               ) : (
                 <table className="hl-table">
                   <thead>
                     <tr>
-                      <th>Référence</th>
-                      <th>Patient</th>
-                      <th>Examen</th>
-                      <th>Résultats</th>
-                      <th>Actions</th>
+                      <th>{t("biologiste.table.reference")}</th>
+                      <th>{t("biologiste.table.patient")}</th>
+                      <th>{t("biologiste.table.exam")}</th>
+                      <th>{t("biologiste.table.results")}</th>
+                      <th>{t("biologiste.table.actions")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -401,11 +428,11 @@ const DashboardBiologiste = () => {
                             : "N/A"}
                         </td>
                         <td>
-                          <button className="btn-valider" onClick={() => handleFinalApprove(ana.id)}>Approuver</button>
+                          <button className="btn-valider" onClick={() => handleFinalApprove(ana.id)}>{t("biologiste.buttons.approve")}</button>
                           <button 
                             className="eye-icon-btn"
                             onClick={() => openGraphModal(ana)}
-                            title="Voir le graphique"
+                            title={t("biologiste.graphTitle")}
                             style={{ 
                               backgroundColor: '#3b82f6', 
                               color: 'white', 
@@ -420,7 +447,7 @@ const DashboardBiologiste = () => {
                               gap: '4px'
                             }}
                           >
-                            <Eye size={16} /> Voir
+                            <Eye size={16} /> {t("biologiste.buttons.view")}
                           </button>
                           <button 
     onClick={() => handleReject(ana.id)} 
@@ -435,7 +462,7 @@ const DashboardBiologiste = () => {
       marginLeft: '8px'
     }}
   >
-    Modifier
+    {t("biologiste.buttons.modify")}
   </button>
                         </td>
                       </tr>
@@ -449,17 +476,17 @@ const DashboardBiologiste = () => {
           {activeTab === 'historique' && (
             <div className="hl-table-container">
               {examenHistorique.length === 0 ? (
-                <div style={{padding: '40px', textAlign: 'center', color: '#94a3b8'}}><p>Aucun historique.</p></div>
+                <div style={{padding: '40px', textAlign: 'center', color: '#94a3b8'}}><p>{t("biologiste.noHistory")}</p></div>
               ) : (
                 <table className="hl-table">
                   <thead>
                     <tr>
-                      <th>Référence</th>
-                      <th>Patient</th>
-                      <th>Examen</th>
-                      <th>Résultats</th>
-                      <th>Statut</th>
-                      <th>Actions</th>
+                      <th>{t("biologiste.table.reference")}</th>
+                      <th>{t("biologiste.table.patient")}</th>
+                      <th>{t("biologiste.table.exam")}</th>
+                      <th>{t("biologiste.table.results")}</th>
+                      <th>{t("biologiste.table.status")}</th>
+                      <th>{t("biologiste.table.actions")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -477,12 +504,12 @@ const DashboardBiologiste = () => {
                             ? ana.lignes.map((l, i) => <div key={i} style={{fontSize: '0.9em'}}>{l.valeur_resultat || "-"}</div>) 
                             : "N/A"}
                         </td>
-                        <td><span className={`status-badge ${ana.statut}`}>{ana.statut}</span></td>
+                        <td><span className={`status-badge ${ana.statut}`}>{formatStatus(ana.statut)}</span></td>
                         <td>
                           <button 
                             className="eye-icon-btn"
                             onClick={() => openGraphModal(ana)}
-                            title="Voir le graphique"
+                            title={t("biologiste.graphTitle")}
                             style={{ 
                               backgroundColor: '#3b82f6', 
                               color: 'white', 
@@ -496,7 +523,7 @@ const DashboardBiologiste = () => {
                               gap: '4px'
                             }}
                           >
-                            <Eye size={16} /> Voir
+                            <Eye size={16} /> {t("biologiste.buttons.view")}
                           </button>
                         </td>
                       </tr>
@@ -514,7 +541,7 @@ const DashboardBiologiste = () => {
   <div className="modal-overlay">
     <div className="modal-content" style={{ maxWidth: '600px', borderRadius: '15px' }}>
       <div className="modal-header">
-        <h3 style={{ fontWeight: '700' }}>Saisie des Résultats</h3>
+        <h3 style={{ fontWeight: '700' }}>{t("biologiste.modal.title")}</h3>
         <button onClick={closeSaisieModal} className="close-x"><X size={22} /></button>
       </div>
 
@@ -523,7 +550,7 @@ const DashboardBiologiste = () => {
         <div style={{ backgroundColor: '#f0fdf4', padding: '15px', borderRadius: '10px', marginBottom: '20px', borderLeft: '5px solid #22c55e' }}>
           <p style={{ margin: 0 }}><strong>{selectedExamen.patient?.nom} {selectedExamen.patient?.prenom}</strong></p>
           <p style={{ fontSize: '0.85em', color: '#64748b', margin: '5px 0 0 0' }}>
-            Âge: {calculateAge(selectedExamen.patient?.date_naissance)} ans | Sexe: {selectedExamen.patient?.sexe === 'M' ? '👨' : '👩'}
+            {t("biologiste.modal.age")}: {calculateAge(selectedExamen.patient?.date_naissance)} {t("biologiste.modal.years")} | {t("biologiste.modal.sex")}: {formatSexe(selectedExamen.patient?.sexe)}
           </p>
         </div>
 
@@ -542,7 +569,7 @@ const DashboardBiologiste = () => {
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', alignItems: 'center' }}>
                   <label style={{ fontWeight: '600', color: '#1e1b4b' }}>{ana.designation}</label>
                   <span style={{ fontSize: '11px', backgroundColor: '#f8fafc', padding: '4px 8px', borderRadius: '4px', color: '#64748b', border: '1px solid #e2e8f0' }}>
-                    Norme: {ana.norme_min} - {ana.norme_max} {ana.unite_mesure}
+                    {t("biologiste.modal.normalRange")}: {ana.norme_min} - {ana.norme_max} {ana.unite_mesure}
                   </span>
                 </div>
                 
@@ -551,7 +578,7 @@ const DashboardBiologiste = () => {
                     <input
                       type="number"
                       step="0.01"
-                     placeholder={`Valeur (${ana.unite_mesure || 'sisair valeur'})`}
+                     placeholder={t("biologiste.modal.valueWithUnit", { unit: ana.unite_mesure || t("biologiste.modal.noUnit") })}
                       value={currentVal}
                       onChange={(e) => setResults({
                         ...results,
@@ -569,19 +596,19 @@ const DashboardBiologiste = () => {
                       }}
                     />
                     <span style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', fontSize: '0.85em', fontWeight: '500' }}>
-                      {ana.unite_mesure||'sisair valeur'}
+                      {ana.unite_mesure || t("biologiste.modal.noUnit")}
                     </span>
                   </div>
 
                   {isPatho && (
                     <div style={{ color: '#ef4444', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: '700', fontSize: '0.75em', whiteSpace: 'nowrap' }}>
-                      <AlertCircle size={16} /> <span>PATHOLOGIQUE</span>
+                      <AlertCircle size={16} /> <span>{t("biologiste.modal.pathological")}</span>
                     </div>
                   )}
                 </div>
 
                 <textarea
-                  placeholder={t(biologiste.modal.medicalComment)}
+                  placeholder={t("biologiste.modal.medicalComment")}
                   value={results[ligne.id]?.commentaire || ''}
                   onChange={(e) => setResults({
                     ...results,
@@ -604,14 +631,14 @@ const DashboardBiologiste = () => {
         </div>
 
        <div className="modal-footer" style={{ marginTop: '20px', display: 'flex', gap: '10px' }}>
-                <button type="button" className="btn-cancel" onClick={closeSaisieModal} style={{ flex: 1 }}>Annuler</button>
+                <button type="button" className="btn-cancel" onClick={closeSaisieModal} style={{ flex: 1 }}>{t("biologiste.buttons.cancel")}</button>
                 <button 
                   type="button" 
                   className="btn-save" 
                   onClick={handleSaveResults} 
                   style={{ flex: 1, backgroundColor: '#4f46e5' }}
                 >
-                  Enregistrer
+                  {t("biologiste.buttons.save")}
                 </button>
               </div>
             </div>
