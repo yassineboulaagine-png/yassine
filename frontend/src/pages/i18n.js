@@ -336,6 +336,13 @@ const resources = {
         deleteConfirm: "Voulez-vous vraiment supprimer cet utilisateur ?",
         deleteSuccess: "Utilisateur supprimé !",
         deleteError: "Erreur lors de la suppression",
+        changePassword: "Changer le mot de passe",
+        newPassword: "Nouveau mot de passe",
+        confirmPassword: "Confirmer le mot de passe",
+        savePassword: "Enregistrer",
+        passwordMismatch: "Les mots de passe ne correspondent pas",
+        passwordUpdated: "Mot de passe modifié !",
+        passwordUpdateError: "Erreur lors du changement du mot de passe",
       },
 
       resultModal: {
@@ -768,6 +775,13 @@ const resources = {
         deleteConfirm: "هل تريد فعلا حذف هذا المستخدم؟",
         deleteSuccess: "تم حذف المستخدم!",
         deleteError: "حدث خطأ أثناء الحذف",
+        changePassword: "تغيير كلمة المرور",
+        newPassword: "كلمة المرور الجديدة",
+        confirmPassword: "تأكيد كلمة المرور",
+        savePassword: "حفظ",
+        passwordMismatch: "كلمتا المرور غير متطابقتين",
+        passwordUpdated: "تم تغيير كلمة المرور!",
+        passwordUpdateError: "حدث خطأ أثناء تغيير كلمة المرور",
       },
 
       resultModal: {

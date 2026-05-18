@@ -61,4 +61,17 @@ class StaffController extends Controller
 
         return response()->json(['message' => 'Utilisateur supprimé avec succès'], 200);
     }
+
+    public function updatePassword(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'password' => 'required|string|min:6|confirmed',
+        ]);
+
+        $user = User::whereIn('role', ['biologiste', 'preleveur'])->findOrFail($id);
+        $user->password = Hash::make($validated['password']);
+        $user->save();
+
+        return response()->json(['message' => 'Mot de passe modifie avec succes'], 200);
+    }
 }

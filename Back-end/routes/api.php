@@ -87,6 +87,7 @@ Route::middleware('auth:sanctum')->group(function () {
     //stuuf
     Route::get('/admin/staff', [StaffController::class, 'index']);
     Route::post('/admin/staff', [StaffController::class, 'store']);
+    Route::put('/admin/staff/{id}/password', [StaffController::class, 'updatePassword']);
     Route::delete('/admin/staff/{id}', [StaffController::class, 'destroy']);
 
     // --- Profile ---
