@@ -11,6 +11,25 @@ use Illuminate\Support\Facades\Storage;
 
 class AuthController extends Controller
 {
+    private function avatarUrl(?string $avatar): ?string
+    {
+        if (!$avatar) {
+            return null;
+        }
+
+        $storagePath = 'avatars/' . $avatar;
+
+        if (Storage::disk('public')->exists($storagePath)) {
+            return Storage::disk('public')->url($storagePath);
+        }
+
+        if (File::exists(public_path($storagePath))) {
+            return asset($storagePath);
+        }
+
+        return Storage::disk('public')->url($storagePath);
+    }
+
     public function login(Request $request) {
         // 1. Validation بسيطة ومنطقية
         $fields = $request->validate([
@@ -61,22 +80,41 @@ class AuthController extends Controller
         // Upload new avatar if provided
         if ($request->hasFile('avatar')) {
             try {
-                // Ensure avatars directory exists
-                $avatarDir = public_path('avatars');
-                if (!File::isDirectory($avatarDir)) {
-                    File::makeDirectory($avatarDir, 0755, true, true);
+                $avatarDir = 'avatars';
+                $disk = Storage::disk('public');
+
+                if (!$disk->exists($avatarDir)) {
+                    $disk->makeDirectory($avatarDir);
+                }
+
+                if (!$disk->exists($avatarDir)) {
+                    throw new \RuntimeException('Impossible de créer le dossier de stockage des avatars.');
                 }
 
                 // Delete old avatar if exists
-                if ($user->avatar && File::exists(public_path('avatars/' . $user->avatar))) {
-                    File::delete(public_path('avatars/' . $user->avatar));
+                if ($user->avatar) {
+                    $oldStoragePath = $avatarDir . '/' . $user->avatar;
+
+                    if ($disk->exists($oldStoragePath)) {
+                        $disk->delete($oldStoragePath);
+                    }
+
+                    $oldPublicPath = public_path('avatars/' . $user->avatar);
+                    if (File::exists($oldPublicPath) && File::isWritable(dirname($oldPublicPath))) {
+                        File::delete($oldPublicPath);
+                    }
                 }
 
                 // Generate unique filename with user ID and timestamp
-                $imageName = 'avatar_' . $user->id . '_' . time() . '.' . $request->avatar->extension();
+                $file = $request->file('avatar');
+                $extension = $file->getClientOriginalExtension() ?: $file->extension() ?: 'jpg';
+                $imageName = 'avatar_' . $user->id . '_' . time() . '.' . strtolower($extension);
                 
-                // Move file to avatars directory
-                $request->avatar->move(public_path('avatars'), $imageName);
+                // Store file in Laravel public storage: storage/app/public/avatars
+                $storedPath = $file->storeAs($avatarDir, $imageName, 'public');
+                if (!$storedPath) {
+                    throw new \RuntimeException('Impossible d\'enregistrer le fichier avatar.');
+                }
                 
                 // Update database with new avatar filename
                 $user->avatar = $imageName;
@@ -101,7 +139,7 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Profil mis à jour avec succès!',
             'user'    => $user,
-            'avatar_url' => $user->avatar ? asset('avatars/' . $user->avatar) : null,
+            'avatar_url' => $this->avatarUrl($user->avatar),
         ], 200);
     }
 
@@ -110,7 +148,7 @@ class AuthController extends Controller
         
         return response()->json([
             'user' => $user,
-            'avatar_url' => $user->avatar ? asset('avatars/' . $user->avatar) : null,
+            'avatar_url' => $this->avatarUrl($user->avatar),
         ], 200);
     }
 }

@@ -35,6 +35,14 @@ const DashboardBiologiste = () => {
   const formatStatus = (status) => t(`status.${status}`, status);
   const formatSexe = (sexe) =>
     sexe === "M" ? t("biologiste.modal.male") : t("biologiste.modal.female");
+  const cleanDisplayValue = (value) => {
+    if (value === null || value === undefined) return "";
+
+    const text = String(value).trim();
+    const normalized = text.toLowerCase();
+
+    return normalized === "nan" || normalized === "null" || normalized === "undefined" ? "" : text;
+  };
 
   useEffect(() => {
   const fetchBiologiste = async () => {
@@ -432,7 +440,7 @@ const DashboardBiologiste = () => {
                           <button 
                             className="eye-icon-btn"
                             onClick={() => openGraphModal(ana)}
-                            title={t("biologiste.graphTitle")}
+                            title={t("resultModal.title")}
                             style={{ 
                               backgroundColor: '#3b82f6', 
                               color: 'white', 
@@ -509,7 +517,7 @@ const DashboardBiologiste = () => {
                           <button 
                             className="eye-icon-btn"
                             onClick={() => openGraphModal(ana)}
-                            title={t("biologiste.graphTitle")}
+                            title={t("resultModal.title")}
                             style={{ 
                               backgroundColor: '#3b82f6', 
                               color: 'white', 
@@ -559,6 +567,9 @@ const DashboardBiologiste = () => {
           {selectedExamen.lignes?.map((ligne) => {
             const ana = ligne.analyse; // Data mn image_3e90db.png
             const currentVal = results[ligne.id]?.valeur || '';
+            const unitLabel = cleanDisplayValue(ana?.unite_mesure);
+            const normeMin = cleanDisplayValue(ana?.norme_min);
+            const normeMax = cleanDisplayValue(ana?.norme_max);
             
             // Logic dyal l-Alerte Pathologique
             const valNum = parseFloat(currentVal);
@@ -569,7 +580,7 @@ const DashboardBiologiste = () => {
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', alignItems: 'center' }}>
                   <label style={{ fontWeight: '600', color: '#1e1b4b' }}>{ana.designation}</label>
                   <span style={{ fontSize: '11px', backgroundColor: '#f8fafc', padding: '4px 8px', borderRadius: '4px', color: '#64748b', border: '1px solid #e2e8f0' }}>
-                    {t("biologiste.modal.normalRange")}: {ana.norme_min} - {ana.norme_max} {ana.unite_mesure}
+                    {t("biologiste.modal.normalRange")}: {normeMin} - {normeMax}{unitLabel ? ` ${unitLabel}` : ""}
                   </span>
                 </div>
                 
@@ -578,7 +589,7 @@ const DashboardBiologiste = () => {
                     <input
                       type="number"
                       step="0.01"
-                     placeholder={t("biologiste.modal.valueWithUnit", { unit: ana.unite_mesure || t("biologiste.modal.noUnit") })}
+                     placeholder={unitLabel ? t("biologiste.modal.valueWithUnit", { unit: unitLabel }) : t("biologiste.modal.valuePlaceholder")}
                       value={currentVal}
                       onChange={(e) => setResults({
                         ...results,
@@ -596,7 +607,7 @@ const DashboardBiologiste = () => {
                       }}
                     />
                     <span style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', fontSize: '0.85em', fontWeight: '500' }}>
-                      {ana.unite_mesure || t("biologiste.modal.noUnit")}
+                      {unitLabel}
                     </span>
                   </div>
 
@@ -646,7 +657,7 @@ const DashboardBiologiste = () => {
         </div>
       )}
 
-      {/* Result Details Modal with Gauge */}
+      {/* Result Details Modal */}
       <ResultDetailsModal 
         isOpen={showGraphModal} 
         onClose={closeGraphModal} 

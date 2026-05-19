@@ -173,6 +173,28 @@ const AnalysesManagement = () => {
     }
   };
 
+  const handleExportXML = async (patientId) => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/patients/export-xml/${patientId}`, {
+        ...getAxiosConfig(),
+        responseType: "blob",
+      });
+
+      const blob = new Blob([response.data], { type: "application/xml" });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "patient.xml";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error exporting XML:", error);
+      toast.error("Erreur lors de l'export XML");
+    }
+  };
+
   const handleDeleteAnalyse = async (id) => {
     if (window.confirm(t("analysesManagement.deleteConfirm"))) {
       try {
@@ -325,6 +347,33 @@ const AnalysesManagement = () => {
                       >
                         <FileText size={18} />
                       </button>
+                      {(examen.statut === "termine" || examen.statut === "valide") && (
+                        <a
+                          href={`http://Projet_PFF.test/api/patients/export-xml/${examen.patient_id}`}
+                          download="patient.xml"
+                          onClick={(event) => {
+                            event.preventDefault();
+                            handleExportXML(examen.patient_id);
+                          }}
+                          title="Exporter XML"
+                          style={{
+                            backgroundColor: "#2563eb",
+                            color: "#ffffff",
+                            padding: "8px 10px",
+                            borderRadius: "6px",
+                            fontSize: "12px",
+                            fontWeight: "700",
+                            textDecoration: "none",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            minWidth: "42px",
+                            height: "36px",
+                          }}
+                        >
+                          XML
+                        </a>
+                      )}
                       <button
                         className="action-btn delete-btn"
                         onClick={() => handleDeleteAnalyse(examen.id)}

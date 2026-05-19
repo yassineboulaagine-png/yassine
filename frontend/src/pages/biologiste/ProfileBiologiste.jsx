@@ -35,6 +35,12 @@ const ProfileBiologiste = () => {
   const [isHovered, setIsHovered] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  const getProfileUser = (data) => data.user || data;
+  const getAvatarUrl = (data) => {
+    const profileUser = getProfileUser(data);
+    return data.avatar_url || (profileUser.avatar ? `http://projet_pff.test/storage/avatars/${profileUser.avatar}` : null);
+  };
+
   // Fetch profile
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -42,7 +48,7 @@ const ProfileBiologiste = () => {
         const token = localStorage.getItem("token");
 
         const response = await axios.get(
-          "http://projet_pff.test/api/user/profile",
+          "http://projet_pff.test/api/profile/get",
           {
             headers: {
               Authorization: `Bearer ${token}`
@@ -50,13 +56,8 @@ const ProfileBiologiste = () => {
           }
         );
 
-        setUser(response.data);
-
-        if (response.data.avatar) {
-          setAvatarUrl(
-            `http://localhost:8000/avatars/${response.data.avatar}`
-          );
-        }
+        setUser(getProfileUser(response.data));
+        setAvatarUrl(getAvatarUrl(response.data));
 
       } catch (error) {
         console.error("Error fetching user profile:", error);
@@ -140,7 +141,7 @@ const ProfileBiologiste = () => {
       );
 
       setUser(response.data.user);
-      setAvatarUrl(response.data.avatar_url);
+      setAvatarUrl(getAvatarUrl(response.data));
 
       localStorage.setItem(
         "user",

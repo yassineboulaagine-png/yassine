@@ -31,6 +31,12 @@ const Profile = () => {
   const [isHovered, setIsHovered] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  const getProfileUser = (data) => data.user || data;
+  const getAvatarUrl = (data) => {
+    const profileUser = getProfileUser(data);
+    return data.avatar_url || (profileUser.avatar ? `http://projet_pff.test/storage/avatars/${profileUser.avatar}` : null);
+  };
+
   // Fetch user profile data
   useEffect(() => {
 
@@ -41,26 +47,21 @@ const Profile = () => {
         const token = localStorage.getItem("token");
 
         const response = await axios.get(
-          "http://projet_pff.test/api/user/profile",
+          "http://projet_pff.test/api/profile/get",
           {
             headers: { Authorization: `Bearer ${token}` }
           }
         );
 
-        setUser(response.data);
-
-        // Avatar
-        if (response.data.avatar) {
-          setAvatarUrl(
-            `http://localhost:8000/avatars/${response.data.avatar}`
-          );
-        }
+        const profileUser = getProfileUser(response.data);
+        setUser(profileUser);
+        setAvatarUrl(getAvatarUrl(response.data));
 
         // Patients count
         try {
 
           const patientCountResponse = await axios.get(
-            `http://projet_pff.test/api/patients/user-patient-count/${response.data.id}`,
+            `http://projet_pff.test/api/patients/user-patient-count/${profileUser.id}`,
             {
               headers: { Authorization: `Bearer ${token}` }
             }
@@ -94,14 +95,16 @@ const Profile = () => {
         const token = localStorage.getItem("token");
 
         const userResponse = await axios.get(
-          "http://projet_pff.test/api/user/profile",
+          "http://projet_pff.test/api/profile/get",
           {
             headers: { Authorization: `Bearer ${token}` }
           }
         );
 
+        const profileUser = getProfileUser(userResponse.data);
+
         const patientCountResponse = await axios.get(
-          `http://projet_pff.test/api/patients/user-patient-count/${userResponse.data.id}`,
+          `http://projet_pff.test/api/patients/user-patient-count/${profileUser.id}`,
           {
             headers: { Authorization: `Bearer ${token}` }
           }
@@ -170,7 +173,7 @@ const Profile = () => {
       );
 
       setUser(response.data.user);
-      setAvatarUrl(response.data.avatar_url);
+      setAvatarUrl(getAvatarUrl(response.data));
 
       localStorage.setItem(
         "user",

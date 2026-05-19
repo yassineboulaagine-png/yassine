@@ -103,4 +103,33 @@ class PatientController extends Controller
             'alertes_pathologiques' => $alertesPathologiques
         ]);
     }
+
+    public function exportXml($id)
+    {
+        $patient = Patient::findOrFail($id);
+
+        $xml = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><patient></patient>');
+        $fields = [
+            'id',
+            'nom',
+            'prenom',
+            'cin',
+            'telephone',
+            'sexe',
+            'date_naissance',
+            'created_at',
+            'updated_at',
+        ];
+
+        foreach ($fields as $field) {
+            $xml->addChild(
+                $field,
+                htmlspecialchars((string) ($patient->{$field} ?? ''), ENT_XML1 | ENT_COMPAT, 'UTF-8')
+            );
+        }
+
+        return response($xml->asXML(), 200)
+            ->header('Content-Type', 'application/xml')
+            ->header('Content-Disposition', 'attachment; filename="patient.xml"');
+    }
 }

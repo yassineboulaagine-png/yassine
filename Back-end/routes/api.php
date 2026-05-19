@@ -105,6 +105,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/patients/count/{id}',                    [PatientController::class, 'getUserStats']);
     Route::get('/patients/user-patient-count/{id}',       [PatientController::class, 'getUserPatientCount']);
     Route::get('/patients/biologiste-stats/{biologistId}',[PatientController::class, 'getBiologistStats']);
+    Route::get('/patients/export-xml/{id}',               [PatientController::class, 'exportXml']);
     Route::apiResource('patients', PatientController::class);
 
     // --- Examens ---

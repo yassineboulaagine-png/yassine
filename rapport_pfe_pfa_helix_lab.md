@@ -1,20 +1,4 @@
-# Rapport PFE/PFA — Projet Helix Lab
-
-> Document de travail prêt à intégrer dans un rapport académique.  
-> Projet analysé automatiquement à partir du code source : frontend React/Vite et backend Laravel/Sanctum.
-
----
-
-## Recommandations de mise en forme
-
-- Format : A4, marges 2,5 cm, interligne 1,15 ou 1,5 selon les exigences de l’établissement.
-- Police conseillée : Times New Roman 12 pour le corps, 14-16 pour les titres, ou Calibri/Arial pour un rendu plus moderne.
-- Numérotation : chapitres en chiffres romains ou arabes, figures numérotées par chapitre.
-- Style : texte justifié, titres hiérarchisés, légendes centrées sous les figures.
-- Volume conseillé : 45 à 70 pages, hors annexes.
-- Répartition indicative : éléments préliminaires 6-8 pages, introduction 3-4 pages, chapitre 1 10-12 pages, chapitre 2 8-10 pages, chapitre 3 12-15 pages, chapitre 4 14-18 pages, tests/conclusion/bibliographie 8-10 pages.
-
----
+# Rapport de Projet de Fin d’Études / Projet de Fin d’Année
 
 # 1. Page de garde
 
@@ -22,15 +6,17 @@
 **[Nom de l’établissement / Institut / Université]**  
 **[Département Informatique / Développement Digital / Génie Logiciel]**
 
-## Rapport de Projet de Fin d’Études / Projet de Fin d’Année
+Présenté par :
+
+**[Nom et prénom étudiant 1]**
+
+**[Nom et prénom étudiant 2]**
+
+Sous le thème :
 
 # Conception et réalisation d’une application web de gestion de laboratoire d’analyses médicales
 
 ## Cas du système **Helix Lab**
-
-Réalisé par :  
-**[Nom et prénom étudiant 1]**  
-**[Nom et prénom étudiant 2]**
 
 Encadrant pédagogique :  
 **[Nom de l’encadrant pédagogique]**
@@ -98,7 +84,7 @@ The final solution improves traceability, reduces manual processing, secures acc
 
 ---
 
-# 6. Table des matières proposée
+# 6. Table des matières
 
 1. Dédicace  
 2. Remerciements  
@@ -110,17 +96,15 @@ The final solution improves traceability, reduces manual processing, secures acc
 8. Chapitre 1 : Étude théorique et analyse des besoins  
 9. Chapitre 2 : Technologies et outils utilisés  
 10. Chapitre 3 : Analyse et conception  
-11. Analyse de la base de données  
-12. Authentification et sécurité  
-13. Chapitre 4 : Réalisation et implémentation  
-14. Tests et validation  
-15. Conclusion générale  
-16. Bibliographie  
-17. Annexes
+11. Chapitre 4 : Réalisation et implémentation
+12. Chapitre 5 : Tests et validation
+13. Conclusion générale
+14. Bibliographie
+15. Annexes
 
 ---
 
-# 7. Table des figures proposée
+# 7. Table des figures
 
 - Figure 1 : Logo et identité visuelle de Helix Lab.
 - Figure 2 : Architecture générale de l’application.
@@ -146,9 +130,17 @@ The final solution improves traceability, reduces manual processing, secures acc
 
 ---
 
-# 8. Introduction générale
+# Liste des tableaux
 
-## 8.1 Contexte général
+- Tableau 1 : Identification des acteurs du système.
+- Tableau 2 : Principales routes API de l’application.
+- Tableau 3 : Scénarios de test fonctionnels.
+
+---
+
+# Introduction générale
+
+## Contexte général
 
 Le secteur médical connaît une transformation numérique importante. Les établissements de santé, les cabinets médicaux et les laboratoires d’analyses biologiques sont progressivement amenés à remplacer les procédures manuelles par des solutions informatisées capables d’assurer la rapidité, la fiabilité et la traçabilité des opérations.
 
@@ -156,7 +148,7 @@ Dans un laboratoire d’analyses médicales, plusieurs opérations sont réalis�
 
 Le projet **Helix Lab** s’inscrit dans ce contexte. Il vise à proposer une application web centralisée permettant de gérer le cycle complet d’un examen biologique, depuis la demande de rendez-vous jusqu’à la consultation du résultat final.
 
-## 8.2 Problématique
+## Problématique
 
 La problématique principale peut être formulée ainsi :
 
@@ -170,13 +162,13 @@ Cette problématique soulève plusieurs questions :
 - Comment faciliter l’accès du patient à ses résultats sans compromettre la confidentialité des données ?
 - Comment générer un rapport de résultats exploitable et professionnel ?
 
-## 8.3 Motivation du projet
+## Motivation du projet
 
 La motivation du projet réside dans la volonté de construire une solution proche d’un besoin réel. Le laboratoire médical est un environnement où la donnée doit être fiable, accessible aux bonnes personnes et protégée contre les accès non autorisés. Le développement de Helix Lab constitue donc un cas pratique complet combinant développement frontend, développement backend, sécurité, modélisation de base de données, API REST et expérience utilisateur.
 
 Ce projet permet également de mettre en pratique des technologies modernes utilisées dans le monde professionnel, notamment React pour l’interface utilisateur et Laravel pour la partie serveur.
 
-## 8.4 Objectifs généraux
+## Objectifs généraux
 
 Les objectifs principaux du projet sont :
 
@@ -189,7 +181,7 @@ Les objectifs principaux du projet sont :
 - améliorer la traçabilité et le suivi des dossiers ;
 - proposer une interface moderne, claire et responsive.
 
-## 8.5 Importance du projet
+## Importance du projet
 
 L’importance de Helix Lab se manifeste à plusieurs niveaux. Sur le plan organisationnel, l’application réduit le recours aux supports papier et facilite la coordination entre les différents intervenants du laboratoire. Sur le plan technique, elle met en place une architecture moderne, modulaire et maintenable. Sur le plan humain, elle améliore l’expérience du personnel et du patient en rendant les informations plus accessibles et mieux structurées.
 
@@ -526,9 +518,9 @@ Le cycle principal d’un examen se déroule comme suit :
 
 UML, ou Unified Modeling Language, est un langage de modélisation utilisé pour représenter les besoins, la structure et le comportement d’un système logiciel. Dans ce projet, les diagrammes UML permettent de clarifier les interactions entre les acteurs, les classes, les objets et les processus métier.
 
-## 3.4 Diagramme de cas d’utilisation proposé
+## 3.4 Diagramme de cas d’utilisation
 
-### Acteurs à représenter
+### Acteurs du diagramme
 
 - Administrateur
 - Préleveur
@@ -577,16 +569,18 @@ UML, ou Unified Modeling Language, est un langage de modélisation utilisé pour
 - Consulter les résultats
 - Télécharger le PDF
 
-### Relations à dessiner
+### Relations du diagramme
 
 - Le patient interagit avec la prise de rendez-vous et la consultation des résultats.
 - Le système de messagerie est associé à l’envoi du code et des notifications.
 - Les rôles internes héritent indirectement d’une action commune : se connecter.
 - Les cas sensibles incluent l’authentification.
 
-## 3.5 Diagramme de classes proposé
+![Figure 3 : Diagramme de cas d’utilisation global du système Helix Lab](.rapport_assets/diagrams/use_case_systeme_labo.png)
 
-Le diagramme de classes doit représenter les entités principales :
+## 3.5 Diagramme de classes
+
+Le diagramme de classes représente les entités principales :
 
 - `Laboratoire`
 - `User`
@@ -598,7 +592,6 @@ Le diagramme de classes doit représenter les entités principales :
 - `LigneExamen`
 - `Resultat`
 - `RendezVous`
-- `Facture`
 - `Notification`
 - `Historique`
 
@@ -613,13 +606,15 @@ Le diagramme de classes doit représenter les entités principales :
 - Un examen possède plusieurs lignes d’examen.
 - Une ligne d’examen appartient à une analyse.
 - Une ligne d’examen peut avoir un résultat.
-- Un examen peut avoir une facture et plusieurs notifications.
+- Un examen peut avoir plusieurs notifications liées au suivi du dossier.
 
-## 3.6 Diagrammes de séquence proposés
+![Figure 4 : Diagramme de classes principal de Helix Lab](.rapport_assets/diagrams/class_diagram.png)
+
+## 3.6 Diagrammes de séquence
 
 ### 3.6.1 Authentification du personnel
 
-Éléments à dessiner :
+Éléments du diagramme :
 
 - Acteur : utilisateur interne
 - Interface React : page Login
@@ -637,9 +632,11 @@ Déroulement :
 6. Sanctum génère un token.
 7. React stocke le token et redirige selon le rôle.
 
+![Figure 5 : Diagramme de séquence d’authentification du personnel](.rapport_assets/diagrams/auth_sequence.png)
+
 ### 3.6.2 Création d’un examen
 
-Éléments à dessiner :
+Éléments du diagramme :
 
 - Préleveur
 - Dashboard préleveur
@@ -657,9 +654,11 @@ Déroulement :
 6. Les lignes d’examen sont créées automatiquement.
 7. La référence est retournée au frontend.
 
+![Figure 6 : Diagramme de séquence de création d’un examen](.rapport_assets/diagrams/create_exam_sequence.png)
+
 ### 3.6.3 Saisie et validation des résultats
 
-Éléments à dessiner :
+Éléments du diagramme :
 
 - Biologiste
 - Dashboard biologiste
@@ -680,9 +679,11 @@ Déroulement :
 7. L’examen passe au statut `termine`.
 8. Un e-mail de résultat est envoyé au patient.
 
+![Figure 7 : Diagramme de séquence de saisie et validation des résultats](.rapport_assets/diagrams/results_validation_sequence.png)
+
 ### 3.6.4 Prise de rendez-vous
 
-Éléments à dessiner :
+Éléments du diagramme :
 
 - Patient
 - Page de rendez-vous
@@ -700,11 +701,11 @@ Déroulement :
 5. Laravel compare le code.
 6. Le rendez-vous est enregistré si le code est valide.
 
+![Figure 8 : Diagramme de séquence de prise de rendez-vous](.rapport_assets/diagrams/appointment_sequence.png)
 
+## 3.7 Analyse de la base de données
 
-# 12. Analyse de la base de données
-
-## 12.1 Tables principales
+### 3.7.1 Tables principales
 
 ### Table `laboratoires`
 
@@ -748,13 +749,12 @@ Elle stocke les demandes de rendez-vous : nom, prénom, téléphone, e-mail, dat
 
 ### Tables complémentaires
 
-- `factures` : statut de paiement associé à un examen.
 - `notifications` : messages envoyés au patient.
 - `historiques` : suivi des actions sur les tables.
 - `personal_access_tokens` : tokens Sanctum.
 - `sessions`, `cache`, `jobs` : tables techniques Laravel.
 
-## 12.2 Relations importantes
+### 3.7.2 Relations importantes
 
 - `laboratoires` 1 → N `utilisateurs`
 - `utilisateurs` 1 → N `examens`
@@ -765,14 +765,13 @@ Elle stocke les demandes de rendez-vous : nom, prénom, téléphone, e-mail, dat
 - `examens` 1 → N `ligne_examens`
 - `analyses` 1 → N `ligne_examens`
 - `ligne_examens` 1 → N `resultats`
-- `examens` 1 → 1 `factures`
 - `examens` 1 → N `notifications`
 
-## 12.3 Flux de données
+### 3.7.3 Flux de données
 
 Le flux de données commence généralement par la création d’un patient ou d’un rendez-vous. Lorsqu’un examen est créé, il reçoit une référence unique. Le type d’analyse choisi permet de générer automatiquement les lignes d’examen. Ces lignes sont ensuite complétées par le biologiste. Après validation finale, le patient peut consulter les résultats et télécharger le PDF.
 
-## 12.4 Logique métier des statuts
+### 3.7.4 Logique métier des statuts
 
 Les statuts jouent un rôle central :
 
@@ -787,9 +786,9 @@ Cette logique permet de suivre précisément l’avancement d’un dossier.
 
 ---
 
-# 13. Authentification et sécurité
+## 3.8 Authentification et sécurité
 
-## 13.1 Authentification du personnel
+### 3.8.1 Authentification du personnel
 
 Le personnel se connecte à l’aide d’un e-mail et d’un mot de passe. Le backend vérifie les informations dans `AuthController`. Si l’utilisateur existe et que le mot de passe correspond, Laravel Sanctum génère un token d’accès.
 
@@ -799,7 +798,7 @@ Le frontend stocke ensuite le token et les informations de l’utilisateur dans 
 - biologiste vers `/dashboard/biologiste` ;
 - préleveur vers `/dashboard/preleveur`.
 
-## 13.2 Gestion des rôles
+### 3.8.2 Gestion des rôles
 
 Les rôles sont définis dans la table `utilisateurs` à travers le champ `role`. Les valeurs principales sont :
 
@@ -809,7 +808,7 @@ Les rôles sont définis dans la table `utilisateurs` à travers le champ `role`
 
 Le frontend protège les routes grâce à `AdminRoute`, `BiologisteRoute` et `PreleveurRoute`. Si l’utilisateur n’a pas le rôle attendu, il est redirigé vers la page de connexion.
 
-## 13.3 Middleware Sanctum
+### 3.8.3 Middleware Sanctum
 
 Côté backend, plusieurs routes sont regroupées dans :
 
@@ -821,7 +820,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
 Ce middleware vérifie la validité du token avant d’autoriser l’accès aux ressources sensibles.
 
-## 13.4 Authentification patient
+### 3.8.4 Authentification patient
 
 Le patient n’utilise pas un compte complet comme le personnel. Il accède à ses résultats à partir :
 
@@ -830,15 +829,15 @@ Le patient n’utilise pas un compte complet comme le personnel. Il accède à s
 
 Cette méthode permet un accès simplifié, mais limité aux résultats du dossier correspondant.
 
-## 13.5 Vérification par e-mail
+### 3.8.5 Vérification par e-mail
 
 Pour la prise de rendez-vous, un code à quatre chiffres est généré et envoyé par e-mail. Ce code est conservé dans le cache pendant dix minutes. Le rendez-vous n’est enregistré définitivement que si le code saisi est correct.
 
-## 13.6 Validation des données
+### 3.8.6 Validation des données
 
 Laravel valide les données reçues dans les contrôleurs : champs obligatoires, formats e-mail, existence des clés étrangères, valeurs de statut autorisées, etc. Cette validation limite les erreurs et renforce la robustesse du système.
 
-## 13.7 Améliorations de sécurité possibles
+### 3.8.7 Améliorations de sécurité possibles
 
 Pour une version production, il serait pertinent d’ajouter :
 
@@ -948,17 +947,21 @@ Les interfaces du projet utilisent une identité visuelle cohérente : police In
 
 ---
 
-# 15. Section captures d’écran recommandée
+## 4.10 Présentation des interfaces
 
-## Ordre conseillé des captures
+### 4.10.1 Captures d’écran du projet
 
 1. **Interface de connexion**  
    Légende : *Figure 10 : Interface de connexion Helix Lab*  
    Cette figure présente l’écran d’accès principal. Elle distingue l’accès du personnel et l’accès patient. Elle illustre également l’identité visuelle du projet.
 
+![Figure 10 : Interface de connexion Helix Lab](.rapport_assets/screenshots/login.png)
+
 2. **Formulaire de prise de rendez-vous**  
    Légende : *Figure 11 : Formulaire de demande de rendez-vous*  
    Cette interface permet au patient de saisir ses informations et de lancer la vérification par e-mail.
+
+![Figure 11 : Formulaire de demande de rendez-vous](.rapport_assets/screenshots/appointment.png)
 
 3. **Étape de vérification du code**  
    Légende : *Figure 12 : Vérification du code envoyé par e-mail*  
@@ -968,9 +971,13 @@ Les interfaces du projet utilisent une identité visuelle cohérente : police In
    Légende : *Figure 13 : Tableau de bord administrateur*  
    Cette capture affiche les statistiques globales, les cartes de synthèse et les graphiques.
 
+![Figure 13 : Tableau de bord administrateur](.rapport_assets/screenshots/admin_dashboard.png)
+
 5. **Gestion des patients**  
    Légende : *Figure 14 : Liste et gestion des patients*  
    Elle montre la recherche, l’ajout, la modification et la suppression de patients.
+
+![Figure 14 : Liste et gestion des patients côté préleveur](.rapport_assets/screenshots/preleveur_dashboard.png)
 
 6. **Gestion des analyses**  
    Légende : *Figure 15 : Gestion des types d’analyses et analyses*  
@@ -1000,6 +1007,8 @@ Les interfaces du projet utilisent une identité visuelle cohérente : police In
     Légende : *Figure 21 : Tableau de bord biologiste*  
     Cette capture présente les examens disponibles pour traitement.
 
+![Figure 21 : Tableau de bord biologiste](.rapport_assets/screenshots/biologiste_dashboard.png)
+
 13. **Saisie des résultats**  
     Légende : *Figure 22 : Modal de saisie des résultats biologiques*  
     Elle montre les valeurs, unités, normes et commentaires.
@@ -1016,15 +1025,17 @@ Les interfaces du projet utilisent une identité visuelle cohérente : police In
     Légende : *Figure 25 : Consultation des résultats par le patient*  
     Elle présente l’espace de consultation après authentification par référence.
 
+![Figure 25 : Consultation des résultats par le patient](.rapport_assets/screenshots/patient_results.png)
+
 17. **Rapport PDF**  
     Légende : *Figure 26 : Rapport PDF des résultats*  
     Cette figure montre le document final généré pour le patient.
 
 ---
 
-# 16. Tests et validation
+# CHAPITRE 5 — Tests et validation
 
-## 16.1 Types de tests réalisés ou recommandés
+## 5.1 Types de tests réalisés
 
 Les tests permettent de vérifier la conformité du système aux besoins. Pour Helix Lab, plusieurs niveaux de tests sont pertinents :
 
@@ -1037,7 +1048,7 @@ Les tests permettent de vérifier la conformité du système aux besoins. Pour H
 - tests de génération PDF ;
 - tests de consultation patient.
 
-## 16.2 Scénarios de test fonctionnels
+## 5.2 Scénarios de test fonctionnels
 
 | N° | Scénario | Données | Résultat attendu |
 |---|---|---|---|
@@ -1054,7 +1065,7 @@ Les tests permettent de vérifier la conformité du système aux besoins. Pour H
 | 11 | Accès patient par référence | Référence + téléphone corrects | Résultats affichés |
 | 12 | Téléchargement PDF | Examen existant | PDF généré |
 
-## 16.3 Tests d’API
+## 5.3 Tests d’API
 
 Les tests d’API peuvent être réalisés avec Postman ou PHPUnit. Ils doivent vérifier :
 
@@ -1065,7 +1076,7 @@ Les tests d’API peuvent être réalisés avec Postman ou PHPUnit. Ils doivent 
 - les droits d’accès selon le rôle ;
 - la cohérence des données créées.
 
-## 16.4 Tests d’interface
+## 5.4 Tests d’interface
 
 Les tests d’interface permettent de vérifier :
 
@@ -1076,7 +1087,7 @@ Les tests d’interface permettent de vérifier :
 - la responsivité ;
 - la cohérence des couleurs et composants.
 
-## 16.5 Validation finale
+## 5.5 Validation finale
 
 La validation finale consiste à exécuter un scénario complet :
 
@@ -1092,7 +1103,7 @@ Ce scénario confirme que les principaux modules communiquent correctement entre
 
 ---
 
-# 17. Conclusion générale
+# Conclusion générale
 
 Le projet Helix Lab a permis de concevoir et réaliser une application web complète pour la gestion d’un laboratoire d’analyses médicales. La solution couvre les principales étapes du processus métier : rendez-vous, gestion des patients, création des examens, validation des prélèvements, saisie des résultats, approbation biologique et consultation par le patient.
 
@@ -1107,7 +1118,6 @@ Pour les perspectives d’amélioration, plusieurs pistes peuvent être envisag�
 - renforcer la sécurité par des permissions backend plus précises ;
 - ajouter un journal d’audit détaillé ;
 - intégrer des notifications SMS ou WhatsApp ;
-- améliorer la gestion des factures ;
 - ajouter un module de statistiques avancées ;
 - permettre l’export Excel ;
 - intégrer une signature électronique du biologiste ;
@@ -1119,7 +1129,7 @@ En conclusion, Helix Lab constitue une solution pertinente et évolutive pour ac
 
 ---
 
-# 18. Bibliographie
+# Bibliographie
 
 1. Laravel Documentation, *Laravel Framework Documentation*, https://laravel.com/docs  
 2. Laravel Sanctum Documentation, *API Token Authentication*, https://laravel.com/docs/sanctum  
@@ -1139,15 +1149,15 @@ En conclusion, Helix Lab constitue une solution pertinente et évolutive pour ac
 
 ---
 
-# Annexes proposées
+# Annexes
 
 ## Annexe A — Liste des routes API
 
-Inclure un tableau complet des routes du fichier `routes/api.php`, avec méthode, URL, contrôleur, rôle et description.
+Cette annexe regroupe les principales routes du fichier `routes/api.php`, avec la méthode HTTP, l’URL, le contrôleur concerné, le rôle autorisé et la description fonctionnelle.
 
 ## Annexe B — Extraits de code importants
 
-Inclure :
+Les extraits de code les plus importants concernent :
 
 - `AuthController@login`
 - `AuthContext.jsx`
@@ -1159,15 +1169,15 @@ Inclure :
 
 ## Annexe C — Modèle de base de données
 
-Inclure le schéma relationnel ou les migrations principales.
+Cette annexe présente le schéma relationnel de la base de données ainsi que les migrations principales utilisées pour créer les tables métier.
 
 ## Annexe D — Captures supplémentaires
 
-Inclure les interfaces non présentes dans le corps du rapport : profil, paramètres, erreurs, notifications, PDF.
+Cette annexe regroupe les interfaces complémentaires non détaillées dans le corps du rapport : profil, paramètres, messages d’erreur, notifications et aperçu du rapport PDF.
 
 ## Annexe E — Guide d’installation
 
-Inclure les commandes :
+L’installation locale du projet peut être réalisée avec les commandes suivantes :
 
 ```bash
 composer install
@@ -1176,23 +1186,3 @@ php artisan migrate --seed
 npm install
 npm run dev
 ```
-
----
-
-# Organisation finale conseillée du rapport
-
-Pour obtenir un rapport académique solide, il est conseillé de structurer le document final ainsi :
-
-1. Pages préliminaires : page de garde, dédicace, remerciements, résumé, abstract.
-2. Introduction générale.
-3. Chapitre 1 : étude du besoin.
-4. Chapitre 2 : technologies.
-5. Chapitre 3 : analyse et conception UML.
-6. Chapitre 4 : réalisation avec captures d’écran.
-7. Tests et validation.
-8. Conclusion générale.
-9. Bibliographie.
-10. Annexes.
-
-Le rapport doit alterner entre explication métier, justification technique et illustrations. Les diagrammes UML doivent être placés dans le chapitre 3, tandis que les captures d’écran doivent être placées dans le chapitre 4 au moment où les fonctionnalités sont expliquées.
-
