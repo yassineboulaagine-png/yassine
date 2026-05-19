@@ -22,10 +22,7 @@
                 ⏰ <strong>Heure du rendez-vous :</strong> {{ $rendezVous->heure_rendez_vous ?? 'Veuillez vous présenter le matin' }}
             </p>
         @endif
-        <p>Pour consulter vos résultats et télécharger votre rapport PDF, connectez-vous à votre <strong>Espace Patient</strong> en utilisant le code d'accès suivant :</p>
-<h2 style="color: #4f46e5; background: #f3f4f6; padding: 10px; display: inline-block; border-radius: 5px; letter-spacing: 2px;">
-    {{ $rendezVous->code_acces }}
-</h2>
+       
 
         <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 30px 0;">
         <p style="font-size: 12px; color: #9ca3af; text-align: center;">Merci pour votre confiance,<br>L'équipe Helix Lab</p>

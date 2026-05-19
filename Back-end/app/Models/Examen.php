@@ -79,10 +79,8 @@ class Examen extends Model
         return $this->hasMany(LigneExamen::class, 'examen_id');
     }
 
-    public function facture()
-    {
-        return $this->hasOne(Facture::class);
-    }
+    
+    
 
     public function resultats()
     {
