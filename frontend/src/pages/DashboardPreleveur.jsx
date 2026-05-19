@@ -21,6 +21,7 @@ const API_BASE = "http://projet_pff.test/api";
 const API_URL = `${API_BASE}/patients`;
 const EXAMEN_URL = `${API_BASE}/examens`;
 const TODAY_URL = `${API_BASE}/examens-today`;
+const RENDEZ_VOUS_URL = `${API_BASE}/rendezvous`;
 
 const DashboardPreleveur = () => {
   const navigate = useNavigate();
@@ -38,6 +39,7 @@ const DashboardPreleveur = () => {
   const [analysesLyoum, setAnalysesLyoum] = useState([]);
   const [analysesLoading, setAnalysesLoading] = useState(true);
   const [currentPatientId, setCurrentPatientId] = useState(null);
+  const [pendingRendezVousCount, setPendingRendezVousCount] = useState(0);
 
   const { t, i18n } = useTranslation();
 
@@ -56,6 +58,12 @@ const DashboardPreleveur = () => {
   const formatStatus = (status) => t(`status.${status}`, status);
   const formatSexe = (sexe) =>
     sexe === "M" ? t("appointment_form.male") : t("appointment_form.female");
+  const countPendingRendezVous = (items = []) =>
+    items.filter((rdv) => !rdv.statut || rdv.statut === "en_cours").length;
+
+  const updatePendingRendezVousCount = (items = []) => {
+    setPendingRendezVousCount(countPendingRendezVous(items));
+  };
 
   const [newPatient, setNewPatient] = useState({
     nom: "",
@@ -114,6 +122,25 @@ const DashboardPreleveur = () => {
     }
   };
 
+  const fetchPendingRendezVousCount = async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      if (!token) return;
+
+      const response = await axios.get(RENDEZ_VOUS_URL, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json"
+        }
+      });
+
+      updatePendingRendezVousCount(Array.isArray(response.data) ? response.data : []);
+    } catch (error) {
+      console.error("Error fetching rendez-vous count:", error);
+    }
+  };
+
   // ================= EFFECTS =================
   useEffect(() => {
     const delay = setTimeout(() => fetchPatients(searchTerm), 400);
@@ -125,6 +152,14 @@ const DashboardPreleveur = () => {
     fetchAnalysesLyoum(true);
 
     const interval = setInterval(() => fetchAnalysesLyoum(false), 4000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    fetchPendingRendezVousCount();
+
+    const interval = setInterval(fetchPendingRendezVousCount, 4000);
 
     return () => clearInterval(interval);
   }, []);
@@ -336,7 +371,14 @@ const DashboardPreleveur = () => {
             onClick={() => setActiveTab("rendezvous")}
           >
             <Calendar size={20} />{" "}
-            {t("sidebar.appointments_management")}
+            <span className="hl-nav-label">
+              {t("sidebar.appointments_management")}
+            </span>
+            {pendingRendezVousCount > 0 && (
+              <span className="hl-nav-notification-badge">
+                {pendingRendezVousCount}
+              </span>
+            )}
           </button>
         </nav>
 
@@ -667,7 +709,7 @@ const DashboardPreleveur = () => {
                 padding: "20px"
               }}
             >
-              <DashboardRendezVous />
+              <DashboardRendezVous onRendezVousLoaded={updatePendingRendezVousCount} />
             </div>
           )}
         </div>

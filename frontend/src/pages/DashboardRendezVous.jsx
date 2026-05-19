@@ -3,7 +3,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useTranslation } from 'react-i18next';
 
-const DashboardRendezVous = () => {
+const DashboardRendezVous = ({ onRendezVousLoaded }) => {
 
     const { t } = useTranslation();
 
@@ -27,7 +27,9 @@ const DashboardRendezVous = () => {
         })
         .then(res => {
             console.log("هاااا هي الداتا لّي جات من الباك:", res.data);
-            setRendezVous(res.data);
+            const rendezVousData = Array.isArray(res.data) ? res.data : [];
+            setRendezVous(rendezVousData);
+            onRendezVousLoaded?.(rendezVousData);
         })
         .catch(err => {
             console.error("Erreur de récupération:", err);

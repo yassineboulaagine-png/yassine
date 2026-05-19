@@ -13,11 +13,113 @@ use App\Mail\ResultatExamenMail;
 use App\Models\LigneExamen;
 use App\Models\Analyse;
 use App\Models\Patient;
+use App\Models\Notification;
+use App\Models\RendezVous;
 
 
 
 class ExamenController extends Controller
 {
+    private function notificationStatusValue(bool $wasSent): string
+    {
+        $accentedE = chr(195) . chr(169);
+
+        return $wasSent ? 'envoy' . $accentedE : $accentedE . 'chec';
+    }
+
+    private function logExamEmailNotification(Examen $examen, string $message, bool $wasSent): void
+    {
+        try {
+            Notification::create([
+                'message' => substr($message, 0, 250),
+                'canal' => 'email',
+                'statut' => $this->notificationStatusValue($wasSent),
+                'date_envoi' => now(),
+                'examen_id' => $examen->id,
+            ]);
+        } catch (\Throwable $e) {
+            \Log::warning('Unable to log email notification', [
+                'examen_id' => $examen->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    private function sendExamEmailAndTrack(Examen $examen, $mailable, string $successMessage, string $failureMessage): void
+    {
+        $examen->loadMissing('patient');
+        $recipientEmail = $this->resolveExamRecipientEmail($examen);
+
+        if (!$recipientEmail) {
+            $this->logExamEmailNotification($examen, $failureMessage . ': patient sans email', false);
+            return;
+        }
+
+        try {
+            Mail::to($recipientEmail)->send($mailable);
+
+            $this->logExamEmailNotification(
+                $examen,
+                $successMessage . ': ' . $recipientEmail,
+                true
+            );
+        } catch (\Throwable $e) {
+            \Log::error('Exam email send failed', [
+                'examen_id' => $examen->id,
+                'patient_email' => $recipientEmail,
+                'error' => $e->getMessage(),
+            ]);
+
+            $this->logExamEmailNotification(
+                $examen,
+                $failureMessage . ': ' . $e->getMessage(),
+                false
+            );
+        }
+    }
+
+    private function resolveExamRecipientEmail(Examen $examen): ?string
+    {
+        $patient = $examen->patient;
+
+        if (!$patient) {
+            return null;
+        }
+
+        if (!empty($patient->email)) {
+            return $patient->email;
+        }
+
+        if (empty($patient->cin) && empty($patient->telephone)) {
+            return null;
+        }
+
+        $rendezVousQuery = RendezVous::query()
+            ->whereNotNull('email')
+            ->where('email', '<>', '');
+
+        $rendezVousQuery->where(function ($query) use ($patient) {
+            if (!empty($patient->cin)) {
+                $query->where('cin', $patient->cin);
+            }
+
+            if (!empty($patient->telephone)) {
+                $query->orWhere('telephone', $patient->telephone);
+            }
+        });
+
+        $rendezVous = $rendezVousQuery->latest()->first();
+
+        if (!$rendezVous) {
+            return null;
+        }
+
+        $patient->email = $rendezVous->email;
+        $patient->save();
+
+        return $rendezVous->email;
+    }
+
     /**
      * Liste complète des examens avec toutes les relations
      */
@@ -218,10 +320,12 @@ $examens = Examen::with(['patient', 'type_analyse'])->whereDate('created_at', no
                 'statut' => 'en_validation' // نغيروها لـ 'en_validation' باش البايولوجيست يشوفها فـ Pending Validation ويعطيها Validation نهائية
             ]);
 
-            $examen->load('patient');
-            if ($examen->patient && $examen->patient->email) {
-                Mail::to($examen->patient->email)->send(new \App\Mail\VerificationCodeMail($examen->reference));
-            }
+            $this->sendExamEmailAndTrack(
+                $examen,
+                new \App\Mail\VerificationCodeMail($examen->reference),
+                'Email reference examen envoye au patient',
+                'Echec email reference examen'
+            );
 
             \Log::info('✨ storeResults SUCCESS: Status strictly updated to valide');
 
@@ -252,10 +356,12 @@ $examens = Examen::with(['patient', 'type_analyse'])->whereDate('created_at', no
             'biologiste_id' => auth()->id() // FIX: était auth()->$id()
         ]);
 
-        $examen->load('patient');
-        if ($examen->patient && $examen->patient->email) {
-            \Illuminate\Support\Facades\Mail::to($examen->patient->email)->send(new \App\Mail\VerificationCodeMail($examen->reference));
-        }
+        $this->sendExamEmailAndTrack(
+            $examen,
+            new \App\Mail\VerificationCodeMail($examen->reference),
+            'Email reference examen envoye au patient',
+            'Echec email reference examen'
+        );
 
         return response()->json([
             'success' => true,
@@ -311,11 +417,12 @@ $examens = Examen::with(['patient', 'type_analyse'])->whereDate('created_at', no
             'biologiste_id' => auth()->id()
         ]);
 
-        $examen->load('patient');
-
-        if ($examen->patient && $examen->patient->email) {
-            Mail::to($examen->patient->email)->send(new ResultatExamenMail($examen));
-        }
+        $this->sendExamEmailAndTrack(
+            $examen,
+            new ResultatExamenMail($examen),
+            'Email resultats examen envoye au patient',
+            'Echec email resultats examen'
+        );
 
         return response()->json([
             'success' => true,
@@ -369,14 +476,24 @@ $examens = Examen::with(['patient', 'type_analyse'])->whereDate('created_at', no
         // 2. 🔥 الـ نـوتـيـفـيـكـاسـيـون الأوتوماتيكية:
         // كيتأكد بلي الـ statut رجع "valide" والمريض عنده إيميل
         if ($statutInput === 'valide') {
-    if ($examen->patient && $examen->patient->email) {
+    if ($examen->patient) {
         // 🚀 هادي لّي زِدنا: كادّوز الـ reference (الـ كود) الصّحيح نِيت لّي تْـسِيفا ف الـ Base
-        Mail::to($examen->patient->email)->send(new \App\Mail\VerificationCodeMail($examen->reference));
+        $this->sendExamEmailAndTrack(
+            $examen,
+            new \App\Mail\VerificationCodeMail($examen->reference),
+            'Email reference examen envoye au patient',
+            'Echec email reference examen'
+        );
     }
 } elseif ($statutInput === 'termine') {
-    if ($examen->patient && $examen->patient->email) {
+    if ($examen->patient) {
         // هادي كادّوز المايل د النتائج ف الـلّخر ملي الـ بيولوجيست كايْفِينِي التحليلة
-        Mail::to($examen->patient->email)->send(new \App\Mail\ResultatExamenMail($examen));
+        $this->sendExamEmailAndTrack(
+            $examen,
+            new \App\Mail\ResultatExamenMail($examen),
+            'Email resultats examen envoye au patient',
+            'Echec email resultats examen'
+        );
     }
 }
 
