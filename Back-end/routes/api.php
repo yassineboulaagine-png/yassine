@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\BiologisteController;
 use App\Http\Controllers\Api\MedecinController;
 use App\Http\Controllers\Api\AnalyseController;
 use App\Http\Controllers\Api\PatientAuthController;
+use App\Http\Controllers\Api\LigneExamenController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\Api\RendezVousController;
@@ -113,6 +114,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/examens/my-results',         [ExamenController::class, 'getMyResults']);
     Route::get('/examens',                    [ExamenController::class, 'index']);
     Route::post('/examens',                   [ExamenController::class, 'store']);
+
+    // --- Ligne examens validation history ---
+    Route::post('/ligne-examens/{ligneExamen}/approuver', [LigneExamenController::class, 'approuverLigneExamen']);
+    Route::get('/ligne-examens/{ligneExamen}/historique-validations', [LigneExamenController::class, 'getValidationHistory']);
 
     // Routes avec {id} — après les routes fixes
     Route::post('/examens/{id}/resultats',    [ExamenController::class, 'storeResults']);

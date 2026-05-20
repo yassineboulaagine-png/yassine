@@ -15,6 +15,7 @@ use App\Models\Analyse;
 use App\Models\Patient;
 use App\Models\Notification;
 use App\Models\RendezVous;
+use App\Models\Resultat;
 
 
 
@@ -388,7 +389,7 @@ $examens = Examen::with(['patient', 'type_analyse'])->whereDate('created_at', no
      */
     public function getPendingValidation()
     {
-        return Examen::with(['patient', 'lignes.analyse.typeAnalyse'])
+        return Examen::with(['patient', 'lignes.analyse.typeAnalyse', 'lignes.resultats'])
             ->where('statut', 'en_validation')
             ->latest()
             ->get();
@@ -399,7 +400,7 @@ $examens = Examen::with(['patient', 'type_analyse'])->whereDate('created_at', no
      */
     public function getHistorique()
     {
-        return Examen::with(['patient', 'lignes.analyse.typeAnalyse'])
+        return Examen::with(['patient', 'lignes.analyse.typeAnalyse', 'lignes.resultats'])
             ->where('statut', 'termine')
             ->latest()
             ->get();
@@ -408,14 +409,40 @@ $examens = Examen::with(['patient', 'type_analyse'])->whereDate('created_at', no
     /**
      * Approbation finale d'un examen (Par le Biologiste)
      */
-    public function finalApprove($id)
+    public function finalApprove(Request $request, $id)
     {
-        $examen = Examen::findOrFail($id);
-
-        $examen->update([
-            'statut' => 'termine',
-            'biologiste_id' => auth()->id()
+        $validated = $request->validate([
+            'conclusion' => 'nullable|string|max:1000',
+            'conclusions' => 'nullable|array',
+            'conclusions.*' => 'nullable|string|max:1000',
         ]);
+
+        $examen = Examen::with('lignes')->findOrFail($id);
+        $validatedAt = now();
+
+        DB::transaction(function () use ($examen, $validated, $validatedAt) {
+            $examen->update([
+                'statut' => 'termine',
+                'biologiste_id' => auth()->id()
+            ]);
+
+            $defaultConclusion = trim($validated['conclusion'] ?? '');
+            if ($defaultConclusion === '') {
+                $defaultConclusion = 'Resultat valide';
+            }
+
+            $lineConclusions = $validated['conclusions'] ?? [];
+
+            foreach ($examen->lignes as $ligne) {
+                $conclusion = trim((string) ($lineConclusions[$ligne->id] ?? $defaultConclusion));
+
+                Resultat::create([
+                    'ligne_examen_id' => $ligne->id,
+                    'conclusion' => $conclusion === '' ? $defaultConclusion : $conclusion,
+                    'date_validation' => $validatedAt,
+                ]);
+            }
+        });
 
         $this->sendExamEmailAndTrack(
             $examen,
@@ -426,7 +453,8 @@ $examens = Examen::with(['patient', 'type_analyse'])->whereDate('created_at', no
 
         return response()->json([
             'success' => true,
-            'message' => 'Examen validé et terminé!'
+            'message' => 'Examen valide et termine!',
+            'data' => $examen->load(['patient', 'lignes.analyse.typeAnalyse', 'lignes.resultats'])
         ]);
     }
     /**

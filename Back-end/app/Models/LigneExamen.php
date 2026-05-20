@@ -43,7 +43,7 @@ class LigneExamen extends Model
     // Wast app/Models/LigneExamen.php
     public function resultats()
     {
-    // HasOne hit ay t7lila (Ligne) 3ndha natija (Conclusion) wehda
-    return $this->hasOne(Resultat::class, 'ligne_examen_id');
+        return $this->hasMany(Resultat::class, 'ligne_examen_id')
+            ->latest('date_validation');
     }
 }

@@ -15,11 +15,20 @@ class Resultat extends Model
         'ligne_examen_id'
     ];
 
+    protected $casts = [
+        'date_validation' => 'datetime',
+    ];
+
     /**
      * Relation: Natija kat-ntami l-LigneExamen wehda
      */
-    public function ligne()
+    public function ligneExamen()
     {
         return $this->belongsTo(LigneExamen::class, 'ligne_examen_id');
+    }
+
+    public function ligne()
+    {
+        return $this->ligneExamen();
     }
 }
