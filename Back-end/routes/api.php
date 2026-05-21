@@ -127,6 +127,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/examens/{id}/resultat',    [ExamenController::class, 'updateResult']);
     Route::put('/examens/{id}/reject',        [ExamenController::class, 'reject']);
     Route::put('/examens/{id}',               [ExamenController::class, 'update']);
+    Route::delete('/examens/{id}',            [ExamenController::class, 'destroy']);
 
     // --- Medecins & Analyses (Write) ---
     Route::post('/medecins',        [MedecinController::class, 'store']);

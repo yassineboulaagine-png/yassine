@@ -385,6 +385,50 @@ $examens = Examen::with(['patient', 'type_analyse'])->whereDate('created_at', no
     }
 
     /**
+     * Supprimer un examen et ses donnees dependantes.
+     */
+    public function destroy($id)
+    {
+        $examen = Examen::find($id);
+
+        if (!$examen) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Examen non trouve.'
+            ], 404);
+        }
+
+        try {
+            DB::transaction(function () use ($examen) {
+                $ligneIds = $examen->lignes()->pluck('id');
+
+                if ($ligneIds->isNotEmpty()) {
+                    Resultat::whereIn('ligne_examen_id', $ligneIds)->delete();
+                }
+
+                $examen->lignes()->delete();
+                Notification::where('examen_id', $examen->id)->delete();
+                $examen->delete();
+            });
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Examen supprime avec succes.'
+            ]);
+        } catch (\Throwable $e) {
+            \Log::error('Error deleting examen', [
+                'examen_id' => $id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la suppression de l examen.'
+            ], 500);
+        }
+    }
+
+    /**
      * Examens en attente de validation
      */
     public function getPendingValidation()

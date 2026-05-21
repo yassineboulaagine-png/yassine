@@ -561,7 +561,7 @@ const DashboardPreleveur = () => {
                           >
                             {t("patients.new_exam")}
                           </button>
-
+{/* 
                           <button
                             className="btn-delete"
                             style={{ marginLeft: "8px" }}
@@ -592,7 +592,7 @@ const DashboardPreleveur = () => {
                             }}
                           >
                             {t("common.delete")}
-                          </button>
+                          </button> */}
                         </td>
                       </tr>
                     ))}
