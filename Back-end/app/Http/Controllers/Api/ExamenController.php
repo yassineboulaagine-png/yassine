@@ -654,17 +654,27 @@ $examens = Examen::with(['patient', 'type_analyse'])->whereDate('created_at', no
     {
         try {
             // 1. جلب البيانات مع العلاقات كاملين
-            $examen = Examen::with(['lignes.analyse', 'patient', 'type_analyse'])
+            $examen = Examen::with([
+                'lignes.analyse',
+                'patient',
+                'type_analyse',
+                'medecin',
+                'utilisateur.laboratoire',
+            ])
                 ->findOrFail($id);
 
             $patient = $examen->patient;
             $lignes  = $examen->lignes;
+            $medecin = $examen->medecin;
+            $laboratoire = $examen->utilisateur?->laboratoire;
 
             // 2. توليد الـ PDF ف الـ الـ ذاكرة (Memory)
             $pdf = \PDF::loadView('resultats', [
                 'examen'  => $examen,
                 'patient' => $patient,
-                'lignes'  => $lignes
+                'lignes'  => $lignes,
+                'medecin' => $medecin,
+                'laboratoire' => $laboratoire,
             ]);
             
             $pdf->setPaper('A4', 'portrait');

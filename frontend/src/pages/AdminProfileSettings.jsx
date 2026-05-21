@@ -1,7 +1,7 @@
 import React, { useState,useEffect } from 'react';
 import { User, Lock, Save, ShieldCheck } from 'lucide-react';
 import axios from 'axios';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 
 const AdminProfileSettings = ({ userData, setUserData }) => {

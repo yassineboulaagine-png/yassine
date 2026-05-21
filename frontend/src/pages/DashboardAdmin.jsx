@@ -14,7 +14,6 @@ import PatientsManagement from "./PatientsManagement";
 import AnalysesManagement from "./AnalysesManagement";
 import "./Dashboard.css";
 import AdminProfileSettings from "./AdminProfileSettings";
-import { Toaster } from "react-hot-toast";
 import StaffManagement from "./StaffManagement";
 import { ShieldAlert } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -76,8 +75,6 @@ const DashboardAdmin = () => {
 
   return (
     <div className="hl-dashboard-container">
-      <Toaster position="top-right" richColors />
-      
       {/* Sidebar */}
       <aside className="hl-sidebar admin">
         <div className="hl-sidebar-header">

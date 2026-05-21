@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 
 const DashboardRendezVous = ({ onRendezVousLoaded }) => {
@@ -62,7 +62,7 @@ const DashboardRendezVous = ({ onRendezVousLoaded }) => {
         const heureFixee = heures[id] || '';
 
         if (statutAct === 'valide' && !heureFixee) {
-            toast.warn(t('rendezvous.choose_hour'));
+            toast.warning(t('rendezvous.choose_hour'));
             return;
         }
 
@@ -101,7 +101,7 @@ const DashboardRendezVous = ({ onRendezVousLoaded }) => {
         e.preventDefault();
 
         if (!selectedTypeAnalyse) {
-            toast.warn(t('rendezvous.select_analysis'));
+            toast.warning(t('rendezvous.select_analysis'));
             return;
         }
 

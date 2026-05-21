@@ -75,7 +75,7 @@ const resources = {
       },
 
       rendezvous: {
-        title: "Dashboard - Gestion des rendez-vous",
+        title: "rendez-vous Management",
         patient: "Patient",
         contact: "Contact",
         requested_date: "Date demandée",
@@ -514,7 +514,7 @@ const resources = {
       },
 
       rendezvous: {
-        title: "لوحة التحكم - تدبير المواعيد",
+        title: "  تدبير المواعيد",
         patient: "المريض",
         contact: "معلومات الاتصال",
         requested_date: "التاريخ المطلوب",

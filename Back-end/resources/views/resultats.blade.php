@@ -337,6 +337,22 @@
         $birthDate = ($patient->date_naissance ?? null)
             ? \Carbon\Carbon::parse($patient->date_naissance)->format('d/m/Y')
             : 'N/A';
+        $formatDoctor = function ($value) {
+            $name = trim((string) ($value ?? ''));
+
+            if ($name === '') {
+                return 'N/A';
+            }
+
+            $name = trim(preg_replace('/^Dr\.?(?=\s|$)/i', '', $name));
+
+            return 'Dr. ' . $name;
+        };
+        $labName = $laboratoire->nom ?? 'N/A';
+        $labDirector = $formatDoctor($laboratoire->docteur_responsable ?? null);
+        $labAddress = $laboratoire->adresse ?? 'N/A';
+        $medecinName = trim(($medecin->nom ?? '') . ' ' . ($medecin->prenom ?? ''));
+        $medecinFullName = $formatDoctor($medecinName);
         $ligneCollection = $lignes instanceof \Illuminate\Support\Collection ? $lignes : collect($lignes ?? []);
         $generatedAt = now()->format('d/m/Y H:i');
         $logoPath = public_path('images/helix-lab-logo.svg');
@@ -409,6 +425,32 @@
                 <div class="info-row">
                     <span class="info-label">Statut</span>
                     <span class="status-badge {{ $statusClass }}">{{ $statusLabel }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-columns">
+            <div class="info-card">
+                <h2 class="section-title">Informations Laboratoire</h2>
+                <div class="info-row">
+                    <span class="info-label">Nom</span>
+                    <span class="info-value">{{ $labName }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Dir</span>
+                    <span class="info-value">{{ $labDirector }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Adresse</span>
+                    <span class="info-value">{{ $labAddress }}</span>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <h2 class="section-title">Informations Medecin</h2>
+                <div class="info-row">
+                    <span class="info-label">Nom complet</span>
+                    <span class="info-value">{{ $medecinFullName }}</span>
                 </div>
             </div>
         </div>

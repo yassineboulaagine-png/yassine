@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Microscope, CheckCircle, ClipboardList, LogOut, UserCircle, X, AlertCircle, Settings, Eye } from "lucide-react";
+import { Microscope, CheckCircle, ClipboardList, LogOut, UserCircle, X, AlertCircle, Settings, Eye, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import axios from "axios";
@@ -16,6 +16,7 @@ const DashboardBiologiste = () => {
   const [analysesLyoum, setAnalysesLyoum] = useState([]);
   const [examenValidation, setExamenValidation] = useState([]);
   const [examenHistorique, setExamenHistorique] = useState([]);
+  const [historiqueSearchTerm, setHistoriqueSearchTerm] = useState("");
   const [analysesLoading, setAnalysesLoading] = useState(true);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [previousLength, setPreviousLength] = useState(0);
@@ -43,6 +44,12 @@ const DashboardBiologiste = () => {
 
     return normalized === "nan" || normalized === "null" || normalized === "undefined" ? "" : text;
   };
+  const normalizeSearchText = (value) =>
+    String(value ?? "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .trim();
 
   useEffect(() => {
   const fetchBiologiste = async () => {
@@ -280,6 +287,19 @@ const DashboardBiologiste = () => {
     setSelectedGraphExamen(null);
   };
 
+  const historiqueSearchValue = normalizeSearchText(historiqueSearchTerm);
+  const filteredHistorique = historiqueSearchValue
+    ? examenHistorique.filter((ana) => {
+        const nom = normalizeSearchText(ana.patient?.nom);
+        const prenom = normalizeSearchText(ana.patient?.prenom);
+
+        return (
+          `${nom} ${prenom}`.includes(historiqueSearchValue) ||
+          `${prenom} ${nom}`.includes(historiqueSearchValue)
+        );
+      })
+    : examenHistorique;
+
   return (
     <div className="hl-dashboard-container">
       {/* Sidebar - اللون الأخضر كيكون بـ كلاس biologiste */}
@@ -482,9 +502,29 @@ const DashboardBiologiste = () => {
           )}
 
           {activeTab === 'historique' && (
-            <div className="hl-table-container">
+            <>
+              <div className="hl-history-toolbar">
+                <div className="search-wrapper hl-history-search">
+                  <div className="search-input-container">
+                    <Search className="hl-search-icon" size={18} />
+                    <input
+                      className="hl-search-input"
+                      type="text"
+                      placeholder="Rechercher par nom ou prenom..."
+                      value={historiqueSearchTerm}
+                      onChange={(e) => setHistoriqueSearchTerm(e.target.value)}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="hl-table-container">
               {examenHistorique.length === 0 ? (
                 <div style={{padding: '40px', textAlign: 'center', color: '#94a3b8'}}><p>{t("biologiste.noHistory")}</p></div>
+              ) : filteredHistorique.length === 0 ? (
+                <div style={{padding: '40px', textAlign: 'center', color: '#94a3b8'}}>
+                  <p>Aucun patient trouve pour cette recherche.</p>
+                </div>
               ) : (
                 <table className="hl-table">
                   <thead>
@@ -498,7 +538,7 @@ const DashboardBiologiste = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {examenHistorique.map((ana) => (
+                    {filteredHistorique.map((ana) => (
                       <tr key={ana.id}>
                         <td className="font-bold">{ana.reference}</td>
                         <td>{ana.patient?.nom} {ana.patient?.prenom}</td>
@@ -539,7 +579,8 @@ const DashboardBiologiste = () => {
                   </tbody>
                 </table>
               )}
-            </div>
+              </div>
+            </>
           )}
         </div>
       </main>
