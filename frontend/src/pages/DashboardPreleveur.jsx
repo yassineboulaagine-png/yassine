@@ -550,21 +550,21 @@ const DashboardPreleveur = () => {
                   <tbody>
                     {patients.map((p, index) => (
                       <tr key={p.id}>
-                        <td className="font-bold">
+                        <td className="font-bold" data-label={t("patients.name_prenom")}>
                           {p.nom} {p.prenom}
                         </td>
 
-                        <td>
+                        <td data-label={t("patients.sexe")}>
                           {formatSexe(p.sexe)}
                         </td>
 
-                        <td>{p.cin}</td>
+                        <td data-label={t("patients.cin")}>{p.cin}</td>
 
-                        <td>{p.telephone}</td>
+                        <td data-label={t("patients.phone")}>{p.telephone}</td>
 
-                        <td>{p.date_naissance}</td>
+                        <td data-label={t("patients.birth_date")}>{p.date_naissance}</td>
 
-                        <td>
+                        <td data-label={t("common.actions")}>
                           <button
                             className="btn-modifier"
                             onClick={() => {
@@ -663,20 +663,20 @@ const DashboardPreleveur = () => {
                   <tbody>
                     {analysesLyoum.map((ana) => (
                       <tr key={ana.id}>
-                        <td className="font-bold">
+                        <td className="font-bold" data-label={t("analyses.reference")}>
                           {ana.reference}
                         </td>
 
-                        <td>
+                        <td data-label={t("analyses.patient")}>
                           {ana.patient?.nom}{" "}
                           {ana.patient?.prenom}
                         </td>
 
-                        <td>
+                        <td data-label={t("analyses.exam")}>
                           {ana.type_analyse?.libelle || "N/A"}
                         </td>
 
-                        <td>
+                        <td data-label={t("common.status")}>
                           <span
                             className={`status-badge ${ana.statut}`}
                           >
@@ -684,7 +684,7 @@ const DashboardPreleveur = () => {
                           </span>
                         </td>
 
-                        <td>
+                        <td data-label={t("common.actions")}>
                           <button
                             className="btn-valider"
                             onClick={() =>

@@ -426,15 +426,15 @@ const DashboardBiologiste = () => {
                   <tbody>
                     {analysesLyoum.map((ana) => (
                       <tr key={ana.id}>
-                        <td className="font-bold">{ana.reference}</td>
-                        <td>{ana.patient?.nom} {ana.patient?.prenom}</td>
-                        <td>
+                        <td className="font-bold" data-label={t("biologiste.table.reference")}>{ana.reference}</td>
+                        <td data-label={t("biologiste.table.patient")}>{ana.patient?.nom} {ana.patient?.prenom}</td>
+                        <td data-label={t("biologiste.table.exam")}>
                           {ana.lignes && ana.lignes.length > 0 
                             ? ana.lignes.map((l, i) => <div key={i}>{l.analyse?.designation || t("biologiste.table.exam")}</div>) 
                             : ana.type_analyse?.libelle || "N/A"}
                         </td>
-                        <td><span className={`status-badge ${ana.statut}`}>{formatStatus(ana.statut)}</span></td>
-                        <td>
+                        <td data-label={t("biologiste.table.status")}><span className={`status-badge ${ana.statut}`}>{formatStatus(ana.statut)}</span></td>
+                        <td data-label={t("biologiste.table.actions")}>
                           <button className="btn-valider" onClick={() => openSaisieModal(ana)}>{t("biologiste.buttons.enter")}</button>
                         </td>
                       </tr>
@@ -465,19 +465,19 @@ const DashboardBiologiste = () => {
                   <tbody>
                     {examenValidation.map((ana) => (
                       <tr key={ana.id}>
-                        <td className="font-bold">{ana.reference}</td>
-                        <td>{ana.patient?.nom} {ana.patient?.prenom}</td>
-                        <td>
+                        <td className="font-bold" data-label={t("biologiste.table.reference")}>{ana.reference}</td>
+                        <td data-label={t("biologiste.table.patient")}>{ana.patient?.nom} {ana.patient?.prenom}</td>
+                        <td data-label={t("biologiste.table.exam")}>
                           {ana.lignes && ana.lignes.length > 0 
                             ? ana.lignes.map((l, i) => <div key={i}>{l.analyse?.designation}</div>) 
                             : ana.type_analyse?.libelle || "N/A"}
                         </td>
-                        <td>
+                        <td data-label={t("biologiste.table.results")}>
                           {ana.lignes && ana.lignes.length > 0 
                             ? ana.lignes.map((l, i) => <div key={i} style={{fontSize: '0.9em'}}>{l.valeur_resultat || "-"}</div>) 
                             : "N/A"}
                         </td>
-                        <td>
+                        <td data-label={t("biologiste.table.actions")}>
                           <button className="btn-valider" onClick={() => handleFinalApprove(ana.id)}>{t("biologiste.buttons.approve")}</button>
                           <button 
                             className="eye-icon-btn"
@@ -562,20 +562,20 @@ const DashboardBiologiste = () => {
                   <tbody>
                     {filteredHistorique.map((ana) => (
                       <tr key={ana.id}>
-                        <td className="font-bold">{ana.reference}</td>
-                        <td>{ana.patient?.nom} {ana.patient?.prenom}</td>
-                        <td>
+                        <td className="font-bold" data-label={t("biologiste.table.reference")}>{ana.reference}</td>
+                        <td data-label={t("biologiste.table.patient")}>{ana.patient?.nom} {ana.patient?.prenom}</td>
+                        <td data-label={t("biologiste.table.exam")}>
                           {ana.lignes && ana.lignes.length > 0 
                             ? ana.lignes.map((l, i) => <div key={i}>{l.analyse?.designation}</div>) 
                             : ana.type_analyse?.libelle || "N/A"}
                         </td>
-                        <td>
+                        <td data-label={t("biologiste.table.results")}>
                           {ana.lignes && ana.lignes.length > 0 
                             ? ana.lignes.map((l, i) => <div key={i} style={{fontSize: '0.9em'}}>{l.valeur_resultat || "-"}</div>) 
                             : "N/A"}
                         </td>
-                        <td><span className={`status-badge ${ana.statut}`}>{formatStatus(ana.statut)}</span></td>
-                        <td>
+                        <td data-label={t("biologiste.table.status")}><span className={`status-badge ${ana.statut}`}>{formatStatus(ana.statut)}</span></td>
+                        <td data-label={t("biologiste.table.actions")}>
                           <button 
                             className="eye-icon-btn"
                             onClick={() => openGraphModal(ana)}

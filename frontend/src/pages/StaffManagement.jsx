@@ -142,13 +142,13 @@ const StaffManagement = () => {
       </div>
 
       {/* Table Section */}
-      <div style={{ background: '#fff', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', overflow: 'hidden' }}>
+      <div className="hl-table-container" style={{ background: '#fff', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', overflow: 'hidden' }}>
         {loading ? (
           <div style={{ padding: '24px', textAlign: 'center', color: '#64748b' }}>{t("staff.loading")}</div>
         ) : staff.length === 0 ? (
           <div style={{ padding: '24px', textAlign: 'center', color: '#64748b' }}>{t("staff.empty")}</div>
         ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', direction: 'ltr' }}>
+          <table className="hl-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', direction: 'ltr' }}>
             <thead>
               <tr style={{ background: '#f8fafc', borderBottom: '1px solid #f1f5f9', color: '#64748b', fontSize: '13px', fontWeight: '600' }}>
                 <th style={{ padding: '14px 20px' }}>{t("staff.fullName")}</th>
@@ -160,9 +160,9 @@ const StaffManagement = () => {
             <tbody style={{ fontSize: '14px', color: '#334155' }}>
               {staff.map((member) => (
                 <tr key={member.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                  <td style={{ padding: '14px 20px', fontWeight: '600', color: '#1e293b' }}>{member.nom_complet}</td>
-                  <td style={{ padding: '14px 20px', color: '#64748b' }}>{member.email}</td>
-                  <td style={{ padding: '14px 20px' }}>
+                  <td data-label={t("staff.fullName")} style={{ padding: '14px 20px', fontWeight: '600', color: '#1e293b' }}>{member.nom_complet}</td>
+                  <td data-label={t("staff.email")} style={{ padding: '14px 20px', color: '#64748b' }}>{member.email}</td>
+                  <td data-label={t("staff.role")} style={{ padding: '14px 20px' }}>
                     <span style={{ 
                       padding: '4px 10px', 
                       borderRadius: '9999px', 
@@ -175,7 +175,7 @@ const StaffManagement = () => {
                       {t(`staff.${member.role}`, member.role).toUpperCase()}
                     </span>
                   </td>
-                  <td style={{ padding: '14px 20px', textAlign: 'center' }}>
+                  <td data-label={t("staff.actions")} style={{ padding: '14px 20px', textAlign: 'center' }}>
                     <button
                       onClick={() => openPasswordModal(member)}
                       title={t("staff.changePassword", "Changer le mot de passe")}

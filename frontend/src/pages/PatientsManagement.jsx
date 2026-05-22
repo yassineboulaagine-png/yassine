@@ -221,13 +221,13 @@ const PatientsManagement = () => {
             <tbody>
               {filteredPatients.map((patient) => (
                 <tr key={patient.id}>
-                  <td className="patient-name">
+                  <td className="patient-name" data-label={t("patientsManagement.fullName")}>
                     <span className="name-badge">{patient.prenom} {patient.nom}</span>
                   </td>
-                  <td>{patient.cin}</td>
-                  <td>{patient.telephone}</td>
-                  <td>{formatDate(patient.created_at || patient.date_inscription)}</td>
-                  <td>
+                  <td data-label="CIN">{patient.cin}</td>
+                  <td data-label={t("patientsManagement.phone")}>{patient.telephone}</td>
+                  <td data-label={t("patientsManagement.registrationDate")}>{formatDate(patient.created_at || patient.date_inscription)}</td>
+                  <td data-label={t("common.actions")}>
                     <div className="actions-cell">
                       <button
                         className="action-btn edit-btn"

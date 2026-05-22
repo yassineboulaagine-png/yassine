@@ -78,7 +78,10 @@ const AnalysesManagement = () => {
   try {
     await axios.patch(
       `${API_BASE_URL}/examens/${selectedExamen.id}/resultat`,
-      { statut: 'termine' },
+      {
+        statut: 'termine',
+        valeur: resultValue,
+      },
       getAxiosConfig()  // ✅ زدنا token
     );
     setIsResultModalOpen(false);
@@ -310,21 +313,21 @@ const AnalysesManagement = () => {
                 
               {filteredExamens.map((examen) => (
                 <tr key={examen.id}>
-                  <td className="reference-cell">
+                  <td className="reference-cell" data-label={t("common.reference")}>
                     <span className="reference-badge">{examen.reference || "-"}</span>
                   </td>
-                  <td>
+                  <td data-label={t("common.patient")}>
                     {examen.patient
                       ? `${examen.patient.prenom} ${examen.patient.nom}`
                       : "-"}
                   </td>
-                  <td>
+                  <td data-label={t("common.status")}>
                     <span className={getStatusBadgeClass(examen.statut)}>
                       {getStatusDisplay(examen.statut)}
                     </span>
                   </td>
-                  <td>{formatDate(examen.created_at)}</td>
-                  <td>
+                  <td data-label={t("analysesManagement.creationDate")}>{formatDate(examen.created_at)}</td>
+                  <td data-label={t("common.actions")}>
                     <div className="actions-cell">
                       {examen.statut === "en_cours" && (
                         <button
