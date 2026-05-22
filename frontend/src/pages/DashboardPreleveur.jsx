@@ -10,7 +10,8 @@ import {
   User,
   Settings,
   Search,
-  Calendar
+  Calendar,
+  Menu
 } from "lucide-react";
 import { toast } from "sonner";
 import "./Dashboard.css";
@@ -34,6 +35,7 @@ const DashboardPreleveur = () => {
   const [editIndex, setEditIndex] = useState(null);
   const [patients, setPatients] = useState([]);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedExamen, setSelectedExamen] = useState("");
   const [analysesLyoum, setAnalysesLyoum] = useState([]);
@@ -63,6 +65,11 @@ const DashboardPreleveur = () => {
 
   const updatePendingRendezVousCount = (items = []) => {
     setPendingRendezVousCount(countPendingRendezVous(items));
+  };
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    setIsSidebarOpen(false);
   };
 
   const [newPatient, setNewPatient] = useState({
@@ -337,7 +344,7 @@ const DashboardPreleveur = () => {
   return (
     <div className="hl-dashboard-container">
       {/* ================= SIDEBAR ================= */}
-      <aside className="hl-sidebar preleveur">
+      <aside className={`hl-sidebar preleveur ${isSidebarOpen ? "open" : ""}`}>
         <div className="hl-sidebar-header">
           <h1 className="hl-logo">
             Helix <span>Lab</span>
@@ -349,7 +356,7 @@ const DashboardPreleveur = () => {
             className={`hl-nav-btn ${
               activeTab === "patients" ? "active" : ""
             }`}
-            onClick={() => setActiveTab("patients")}
+            onClick={() => handleTabChange("patients")}
           >
             <Users size={20} /> {t("sidebar.patients_list")}
           </button>
@@ -358,7 +365,7 @@ const DashboardPreleveur = () => {
             className={`hl-nav-btn ${
               activeTab === "analyses" ? "active" : ""
             }`}
-            onClick={() => setActiveTab("analyses")}
+            onClick={() => handleTabChange("analyses")}
           >
             <ClipboardCheck size={20} />{" "}
             {t("sidebar.today_analyses")}
@@ -368,7 +375,7 @@ const DashboardPreleveur = () => {
             className={`hl-nav-btn ${
               activeTab === "rendezvous" ? "active" : ""
             }`}
-            onClick={() => setActiveTab("rendezvous")}
+            onClick={() => handleTabChange("rendezvous")}
           >
             <Calendar size={20} />{" "}
             <span className="hl-nav-label">
@@ -393,10 +400,26 @@ const DashboardPreleveur = () => {
           </button>
         </div>
       </aside>
+      {isSidebarOpen && (
+        <button
+          type="button"
+          className="hl-sidebar-backdrop"
+          aria-label="Fermer le menu"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
 
       {/* ================= MAIN ================= */}
       <main className="hl-main">
         <header className="hl-header">
+          <button
+            type="button"
+            className="hl-mobile-menu-toggle"
+            aria-label={isSidebarOpen ? "Fermer le menu" : "Ouvrir le menu"}
+            onClick={() => setIsSidebarOpen((open) => !open)}
+          >
+            {isSidebarOpen ? <X size={22} /> : <Menu size={22} />}
+          </button>
           <h2>
             {t("header.space")} {user.role}
           </h2>

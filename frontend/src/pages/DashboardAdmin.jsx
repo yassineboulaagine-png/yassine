@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"; 
 import { useNavigate } from "react-router-dom";
-import { LayoutDashboard, Users, TestTube2, LogOut, UserCircle } from "lucide-react";
+import { LayoutDashboard, Users, TestTube2, LogOut, UserCircle, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import axios from "axios"; // 👈 زدنا axios باش نجيبو الداتا
@@ -22,6 +22,12 @@ const DashboardAdmin = () => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const [activeTab, setActiveTab] = useState("dashboard");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    setIsSidebarOpen(false);
+  };
 
   const changeLanguage = (e) => {
     const selectedLanguage = e.target.value;
@@ -76,7 +82,7 @@ const DashboardAdmin = () => {
   return (
     <div className="hl-dashboard-container">
       {/* Sidebar */}
-      <aside className="hl-sidebar admin">
+      <aside className={`hl-sidebar admin ${isSidebarOpen ? "open" : ""}`}>
         <div className="hl-sidebar-header">
           <h1 className="hl-logo">Helix <span>Lab</span></h1>
         </div>
@@ -84,28 +90,28 @@ const DashboardAdmin = () => {
         <nav className="hl-nav">
           <button 
             className={`hl-nav-btn ${activeTab === 'dashboard' ? 'active' : ''}`}
-            onClick={() => setActiveTab('dashboard')}
+            onClick={() => handleTabChange('dashboard')}
           >
             <LayoutDashboard size={20} /> {t("adminDashboard.sidebar.dashboard")}
           </button>
           
           <button 
             className={`hl-nav-btn ${activeTab === 'patients' ? 'active' : ''}`}
-            onClick={() => setActiveTab('patients')}
+            onClick={() => handleTabChange('patients')}
           >
             <Users size={20} /> {t("adminDashboard.sidebar.patients")}
           </button>
           
           <button 
             className={`hl-nav-btn ${activeTab === 'analyses' ? 'active' : ''}`}
-            onClick={() => setActiveTab('analyses')}
+            onClick={() => handleTabChange('analyses')}
           >
             <TestTube2 size={20} /> {t("adminDashboard.sidebar.analyses")}
           </button>
 
           <button 
         className={`hl-nav-btn ${activeTab === 'staff' ? 'active' : ''}`}
-          onClick={() => setActiveTab('staff')}
+          onClick={() => handleTabChange('staff')}
         >
            <ShieldAlert size={20} /> {t("adminDashboard.sidebar.staff")}
         </button>
@@ -117,10 +123,26 @@ const DashboardAdmin = () => {
           </Button>
         </div>
       </aside>
+      {isSidebarOpen && (
+        <button
+          type="button"
+          className="hl-sidebar-backdrop"
+          aria-label="Fermer le menu"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
 
       {/* Main Content */}
       <main className="hl-main">
         <header className="hl-header">
+          <button
+            type="button"
+            className="hl-mobile-menu-toggle"
+            aria-label={isSidebarOpen ? "Fermer le menu" : "Ouvrir le menu"}
+            onClick={() => setIsSidebarOpen((open) => !open)}
+          >
+            {isSidebarOpen ? <X size={22} /> : <Menu size={22} />}
+          </button>
           <h2>{t("adminDashboard.headerTitle")}</h2>
           <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
             <select

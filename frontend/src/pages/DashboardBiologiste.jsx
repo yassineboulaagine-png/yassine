@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Microscope, CheckCircle, ClipboardList, LogOut, UserCircle, X, AlertCircle, Settings, Eye, Search } from "lucide-react";
+import { Microscope, CheckCircle, ClipboardList, LogOut, UserCircle, X, AlertCircle, Settings, Eye, Search, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import axios from "axios";
@@ -26,6 +26,12 @@ const DashboardBiologiste = () => {
   const [biologiste, setBiologiste] = useState(null);
   const [showGraphModal, setShowGraphModal] = useState(false);
   const [selectedGraphExamen, setSelectedGraphExamen] = useState(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    setIsSidebarOpen(false);
+  };
 
   const changeLanguage = (e) => {
     const selectedLanguage = e.target.value;
@@ -303,28 +309,28 @@ const DashboardBiologiste = () => {
   return (
     <div className="hl-dashboard-container">
       {/* Sidebar - اللون الأخضر كيكون بـ كلاس biologiste */}
-      <aside className="hl-sidebar biologiste">
+      <aside className={`hl-sidebar biologiste ${isSidebarOpen ? "open" : ""}`}>
         <div className="hl-sidebar-header">
           <h1 className="hl-logo">Helix <span>Lab</span></h1>
         </div>
         <nav className="hl-nav">
           <button 
             className={`hl-nav-btn ${activeTab === 'analyses' ? 'active' : ''}`}
-            onClick={() => setActiveTab('analyses')}
+            onClick={() => handleTabChange('analyses')}
           >
             <Microscope size={20} /> {t("biologiste.sidebar.myAnalyses")}
           </button>
           
           <button 
             className={`hl-nav-btn ${activeTab === 'validation' ? 'active' : ''}`}
-            onClick={() => setActiveTab('validation')}
+            onClick={() => handleTabChange('validation')}
           >
             <CheckCircle size={20} /> {t("biologiste.sidebar.validation")}
           </button>
           
           <button 
             className={`hl-nav-btn ${activeTab === 'historique' ? 'active' : ''}`}
-            onClick={() => setActiveTab('historique')}
+            onClick={() => handleTabChange('historique')}
           >
             <ClipboardList size={20} /> {t("biologiste.sidebar.history")}
           </button>
@@ -336,9 +342,25 @@ const DashboardBiologiste = () => {
           </Button>
         </div>
       </aside>
+      {isSidebarOpen && (
+        <button
+          type="button"
+          className="hl-sidebar-backdrop"
+          aria-label="Fermer le menu"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
 
       <main className="hl-main">
         <header className="hl-header">
+          <button
+            type="button"
+            className="hl-mobile-menu-toggle"
+            aria-label={isSidebarOpen ? "Fermer le menu" : "Ouvrir le menu"}
+            onClick={() => setIsSidebarOpen((open) => !open)}
+          >
+            {isSidebarOpen ? <X size={22} /> : <Menu size={22} />}
+          </button>
           <h2>{t("biologiste.header.title")}</h2>
           <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
             <select

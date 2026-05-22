@@ -9,6 +9,7 @@
 /* Sidebar - المنيو الجانبي */
 .hl-sidebar {
   width: 260px;
+  flex: 0 0 260px;
   display: flex;
   flex-direction: column;
   color: white;
@@ -127,6 +128,11 @@
   justify-content: space-between;
   padding: 0 32px;
   box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+}
+
+.hl-mobile-menu-toggle,
+.hl-sidebar-backdrop {
+  display: none;
 }
 
 .hl-header h2 {
@@ -479,6 +485,83 @@ body[dir="rtl"] .hl-table td {
 }
 
 /* --- بوطونة Supprimer (الجديد) --- */
+@media (max-width: 768px) {
+  .hl-dashboard-container {
+    display: block;
+    height: 100dvh;
+    overflow: hidden;
+  }
+
+  .hl-sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 1100;
+    width: min(280px, 82vw);
+    height: 100dvh;
+    transform: translateX(-100%);
+  }
+
+  .hl-sidebar.open {
+    transform: translateX(0);
+  }
+
+  .hl-sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 1090;
+    border: 0;
+    padding: 0;
+    background: rgba(15, 23, 42, 0.45);
+  }
+
+  .hl-main {
+    height: 100dvh;
+    min-width: 0;
+  }
+
+  .hl-header {
+    height: 60px;
+    padding: 0 14px;
+    gap: 10px;
+  }
+
+  .hl-header h2 {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .hl-mobile-menu-toggle {
+    width: 42px;
+    height: 42px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #0f172a;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    cursor: pointer;
+  }
+
+  .hl-content-body {
+    padding: 20px 14px;
+  }
+
+  [dir="rtl"] .hl-sidebar {
+    inset: 0 0 0 auto;
+    transform: translateX(100%);
+  }
+
+  [dir="rtl"] .hl-sidebar.open {
+    transform: translateX(0);
+  }
+}
+
 .btn-delete {
   background-color: #fff1f2; /* أحمر بارد ونقي */
   color: #e11d48; /* لون الكتابة */
