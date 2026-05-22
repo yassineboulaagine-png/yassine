@@ -518,8 +518,23 @@ $examens = Examen::with(['patient', 'type_analyse'])->whereDate('created_at', no
         ]);
 
         try {
-            $ligne = \App\Models\LigneExamen::where('examen_id', $id)->first();
-            if ($ligne) {
+            if ($request->has('resultats') && is_array($request->resultats)) {
+                foreach ($request->resultats as $resultat) {
+                    $ligne = $examen->lignes()->find($resultat['ligne_id'] ?? null);
+
+                    if ($ligne) {
+                        $valeur = $resultat['valeur'] ?? null;
+                        $valeurClean = ($valeur !== null && $valeur !== '') ? (float)str_replace(',', '.', $valeur) : null;
+
+                        $ligne->update([
+                            'valeur_resultat' => $valeurClean,
+                            'commentaire' => $resultat['commentaire'] ?? $ligne->commentaire
+                        ]);
+                    }
+                }
+            } else {
+                $ligne = \App\Models\LigneExamen::where('examen_id', $id)->first();
+                if ($ligne) {
                 $valeurInput = $request->valeur ?? $request->valeur_resultat;
                 if ($valeurInput !== null) {
                     $valeurClean = ($valeurInput !== '') ? (float)str_replace(',', '.', $valeurInput) : null;
@@ -530,6 +545,7 @@ $examens = Examen::with(['patient', 'type_analyse'])->whereDate('created_at', no
                         'valeur_resultat' => $valeurClean,
                         'commentaire' => $request->commentaire ?? $ligne->commentaire
                     ]);
+                }
                 }
             }
 

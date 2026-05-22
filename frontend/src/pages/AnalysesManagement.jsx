@@ -26,6 +26,7 @@ const AnalysesManagement = () => {
   const [isResultModalOpen, setIsResultModalOpen] = useState(false);
   const [selectedExamen, setSelectedExamen] = useState(null);
   const [resultValue, setResultValue] = useState(""); 
+  const [resultValues, setResultValues] = useState({});
 
   const [formData, setFormData] = useState({
     patient_id: "",
@@ -74,18 +75,40 @@ const AnalysesManagement = () => {
     }
   };
 
+  const getExamLines = (examen) => (Array.isArray(examen?.lignes) ? examen.lignes : []);
+
+  const openResultModal = (examen) => {
+    const initialValues = {};
+
+    getExamLines(examen).forEach((ligne) => {
+      initialValues[ligne.id] = ligne.valeur_resultat ?? "";
+    });
+
+    setSelectedExamen(examen);
+    setResultValues(initialValues);
+    setResultValue(examen.valeur || "");
+    setIsResultModalOpen(true);
+  };
+
   const handleSaveResult = async () => {
   try {
+    const resultats = getExamLines(selectedExamen).map((ligne) => ({
+      ligne_id: ligne.id,
+      valeur: resultValues[ligne.id] ?? "",
+    }));
+
     await axios.patch(
       `${API_BASE_URL}/examens/${selectedExamen.id}/resultat`,
       {
         statut: 'termine',
-        valeur: resultValue,
+        valeur: resultats[0]?.valeur ?? resultValue,
+        resultats,
       },
       getAxiosConfig()  // ✅ زدنا token
     );
     setIsResultModalOpen(false);
     setResultValue("");
+    setResultValues({});
     fetchExamens();
     toast.success(t("analysesManagement.resultSaved"));
   } catch (error) {
@@ -333,9 +356,7 @@ const AnalysesManagement = () => {
                         <button
                           className="action-btn edit-btn"
                           onClick={() => {
-                            setSelectedExamen(examen);
-                            setResultValue(examen.valeur || "");
-                            setIsResultModalOpen(true);
+                            openResultModal(examen);
                           }}
                           title={t("analysesManagement.resultTitle")}
                         >
@@ -479,13 +500,35 @@ const AnalysesManagement = () => {
       <p style={{ color: '#666', marginBottom: '16px', fontSize: '14px' }}>
         {t("analysesManagement.patientLabel")} <strong>{selectedExamen?.patient?.prenom} {selectedExamen?.patient?.nom}</strong>
       </p>
-      <input
-        type="text"
-        value={resultValue}
-        onChange={(e) => setResultValue(e.target.value)}
-        placeholder={t("analysesManagement.resultPlaceholder")}
-        style={{ width: '100%', border: '1px solid #ddd', padding: '8px', borderRadius: '6px', marginBottom: '16px' }}
-      />
+      {getExamLines(selectedExamen).length > 0 ? (
+        getExamLines(selectedExamen).map((ligne) => (
+          <div key={ligne.id} style={{ marginBottom: '14px' }}>
+            <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: '#1e293b', marginBottom: '6px' }}>
+              {ligne.analyse?.designation || t("analysesManagement.analysisType")}
+            </label>
+            <input
+              type="text"
+              value={resultValues[ligne.id] ?? ""}
+              onChange={(e) =>
+                setResultValues((prev) => ({
+                  ...prev,
+                  [ligne.id]: e.target.value,
+                }))
+              }
+              placeholder={t("analysesManagement.resultPlaceholder")}
+              style={{ width: '100%', border: '1px solid #ddd', padding: '8px', borderRadius: '6px' }}
+            />
+          </div>
+        ))
+      ) : (
+        <input
+          type="text"
+          value={resultValue}
+          onChange={(e) => setResultValue(e.target.value)}
+          placeholder={t("analysesManagement.resultPlaceholder")}
+          style={{ width: '100%', border: '1px solid #ddd', padding: '8px', borderRadius: '6px', marginBottom: '16px' }}
+        />
+      )}
       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
         <button 
           onClick={() => setIsResultModalOpen(false)}
