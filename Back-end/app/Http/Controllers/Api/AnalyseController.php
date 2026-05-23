@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Analyse;
+use App\Models\TypeAnalyse;
 use Illuminate\Http\Request;
 
 class AnalyseController extends Controller
@@ -14,6 +15,14 @@ class AnalyseController extends Controller
     public function index()
     {
         return response()->json(Analyse::with('typeAnalyse')->get());
+    }
+
+    /**
+     * Get list of available analysis types for appointment/exam creation.
+     */
+    public function types()
+    {
+        return response()->json(TypeAnalyse::orderBy('id')->get());
     }
 
     /**

@@ -15,6 +15,26 @@ const DashboardRendezVous = ({ onRendezVousLoaded }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedRdvId, setSelectedRdvId] = useState(null);
     const [selectedTypeAnalyse, setSelectedTypeAnalyse] = useState('');
+    const typeAnalyseOptions = Array.from(
+        new Map(
+            typesAnalyse
+                .map((item) => {
+                    const type = item.type_analyse || item.typeAnalyse || item;
+                    const typeId = item.type_analyse_id || type?.id;
+
+                    if (!typeId) return null;
+
+                    return [
+                        String(typeId),
+                        {
+                            id: String(typeId),
+                            label: type?.libelle || item.designation || `Type ${typeId}`
+                        }
+                    ];
+                })
+                .filter(Boolean)
+        ).values()
+    );
 
     console.log("واش هاد الـ Component كايتـقـرا أصلاً؟");
 
@@ -40,14 +60,26 @@ const DashboardRendezVous = ({ onRendezVousLoaded }) => {
     const fetchTypesAnalyse = () => {
         const token = localStorage.getItem('token');
 
-        axios.get('http://Projet_PFF.test/api/analyses', {
+        axios.get('http://Projet_PFF.test/api/type-analyses', {
             headers: { Authorization: `Bearer ${token}` }
         })
         .then(res => {
-            setTypesAnalyse(res.data);
+            const data = Array.isArray(res.data) ? res.data : res.data?.data || [];
+            setTypesAnalyse(data);
         })
         .catch(err => {
             console.error("Erreur types d'analyse:", err);
+
+            axios.get('http://Projet_PFF.test/api/analyses', {
+                headers: { Authorization: `Bearer ${token}` }
+            })
+            .then(res => {
+                const data = Array.isArray(res.data) ? res.data : res.data?.data || [];
+                setTypesAnalyse(data);
+            })
+            .catch(error => {
+                console.error("Erreur analyses fallback:", error);
+            });
         });
     };
 
@@ -112,7 +144,7 @@ const DashboardRendezVous = ({ onRendezVousLoaded }) => {
             const response = await axios.post(
                 `http://Projet_PFF.test/api/rendez-vous/${selectedRdvId}/passer-au-labo`,
                 {
-                    type_analyse_id: selectedTypeAnalyse
+                    type_analyse_id: Number(selectedTypeAnalyse)
                 },
                 {
                     headers: { Authorization: `Bearer ${token}` }
@@ -496,14 +528,14 @@ const DashboardRendezVous = ({ onRendezVousLoaded }) => {
                                         {t('common.choose')}
                                     </option>
 
-                                    {typesAnalyse.map(type => (
+                                    {typeAnalyseOptions.map(type => (
 
                                         <option
                                             key={type.id}
                                             value={type.id}
                                         >
 
-                                            {type.designation} ({type.type_analyse?.libelle})
+                                            {type.label}
 
                                         </option>
 

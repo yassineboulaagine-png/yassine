@@ -13,9 +13,12 @@ use App\Mail\ResultatExamenMail;
 use App\Models\LigneExamen;
 use App\Models\Analyse;
 use App\Models\Patient;
+use App\Models\Laboratoire;
+use App\Models\Medecin;
 use App\Models\Notification;
 use App\Models\RendezVous;
 use App\Models\Resultat;
+use App\Models\User;
 
 
 
@@ -217,8 +220,8 @@ $examens = Examen::with(['patient', 'type_analyse'])->whereDate('created_at', no
             $createData = [
                 'patient_id'      => $request->patient_id,
                 'type_analyse_id' => $request->type_analyse_id,
-                'medecin_id'      => $request->medecin_id ?? 1,
-                'utilisateur_id'  => auth()->id(),
+                'medecin_id'      => $request->medecin_id ?: Medecin::query()->value('id'),
+                'utilisateur_id'  => auth()->id() ?: User::query()->value('id'),
                 'statut'          => 'en_cours',
             ];
 
@@ -666,7 +669,7 @@ $examens = Examen::with(['patient', 'type_analyse'])->whereDate('created_at', no
     /**
      * Générer un PDF pour les résultats d'un examen
      */
- public function generatePDF($id)
+ public function generatePDF(Request $request, $id)
     {
         try {
             // 1. جلب البيانات مع العلاقات كاملين
@@ -681,8 +684,11 @@ $examens = Examen::with(['patient', 'type_analyse'])->whereDate('created_at', no
 
             $patient = $examen->patient;
             $lignes  = $examen->lignes;
-            $medecin = $examen->medecin;
-            $laboratoire = $examen->utilisateur?->laboratoire;
+            $medecin = $examen->medecin ?: Medecin::query()->first();
+            $laboratoire = $examen->utilisateur?->laboratoire
+                ?: auth()->user()?->laboratoire
+                ?: Laboratoire::query()->first();
+            $lang = $request->query('lang') === 'ar' ? 'ar' : 'fr';
 
             // 2. توليد الـ PDF ف الـ الـ ذاكرة (Memory)
             $pdf = \PDF::loadView('resultats', [
@@ -691,6 +697,7 @@ $examens = Examen::with(['patient', 'type_analyse'])->whereDate('created_at', no
                 'lignes'  => $lignes,
                 'medecin' => $medecin,
                 'laboratoire' => $laboratoire,
+                'lang' => $lang,
             ]);
             
             $pdf->setPaper('A4', 'portrait');

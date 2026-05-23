@@ -1,5 +1,9 @@
+@php
+    $pdfLang = ($lang ?? request('lang')) === 'ar' ? 'ar' : 'fr';
+    $isArabic = $pdfLang === 'ar';
+@endphp
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="{{ $pdfLang }}" dir="{{ $isArabic ? 'rtl' : 'ltr' }}">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <title>Rapport de Resultats d'Analyses</title>
@@ -19,6 +23,47 @@
             background: #ffffff;
             font-size: 12px;
             line-height: 1.45;
+        }
+
+        body.rtl {
+            direction: rtl;
+            text-align: right;
+        }
+
+        body.rtl .brand-left {
+            float: right;
+        }
+
+        body.rtl .logo-placeholder,
+        body.rtl .logo-image {
+            float: right;
+            margin-right: 0;
+            margin-left: 14px;
+        }
+
+        body.rtl .report-meta {
+            float: left;
+            text-align: left;
+        }
+
+        body.rtl .document-title {
+            border-left: 0;
+            border-right: 5px solid #19b3a6;
+        }
+
+        body.rtl .info-label {
+            float: right;
+        }
+
+        body.rtl .info-value,
+        body.rtl .status-badge {
+            float: left;
+            text-align: left;
+        }
+
+        body.rtl .results-table th,
+        body.rtl .results-table td {
+            text-align: right;
         }
 
         .report {
@@ -114,10 +159,11 @@
         .info-columns {
             width: 100%;
             margin-bottom: 20px;
+            clear: both;
         }
 
         .info-card {
-            width: 48%;
+            width: 45%;
             min-height: 156px;
             float: left;
             padding: 14px;
@@ -314,23 +360,181 @@
         }
     </style>
 </head>
-<body>
+<body class="{{ $isArabic ? 'rtl' : '' }}">
     @php
+        $arabicLetters = [
+            'ء' => ['ﺀ', 'ﺀ', 'ﺀ', 'ﺀ', false],
+            'آ' => ['ﺁ', 'ﺂ', 'ﺁ', 'ﺂ', false],
+            'أ' => ['ﺃ', 'ﺄ', 'ﺃ', 'ﺄ', false],
+            'ؤ' => ['ﺅ', 'ﺆ', 'ﺅ', 'ﺆ', false],
+            'إ' => ['ﺇ', 'ﺈ', 'ﺇ', 'ﺈ', false],
+            'ئ' => ['ﺉ', 'ﺊ', 'ﺋ', 'ﺌ', true],
+            'ا' => ['ﺍ', 'ﺎ', 'ﺍ', 'ﺎ', false],
+            'ب' => ['ﺏ', 'ﺐ', 'ﺑ', 'ﺒ', true],
+            'ة' => ['ﺓ', 'ﺔ', 'ﺓ', 'ﺔ', false],
+            'ت' => ['ﺕ', 'ﺖ', 'ﺗ', 'ﺘ', true],
+            'ث' => ['ﺙ', 'ﺚ', 'ﺛ', 'ﺜ', true],
+            'ج' => ['ﺝ', 'ﺞ', 'ﺟ', 'ﺠ', true],
+            'ح' => ['ﺡ', 'ﺢ', 'ﺣ', 'ﺤ', true],
+            'خ' => ['ﺥ', 'ﺦ', 'ﺧ', 'ﺨ', true],
+            'د' => ['ﺩ', 'ﺪ', 'ﺩ', 'ﺪ', false],
+            'ذ' => ['ﺫ', 'ﺬ', 'ﺫ', 'ﺬ', false],
+            'ر' => ['ﺭ', 'ﺮ', 'ﺭ', 'ﺮ', false],
+            'ز' => ['ﺯ', 'ﺰ', 'ﺯ', 'ﺰ', false],
+            'س' => ['ﺱ', 'ﺲ', 'ﺳ', 'ﺴ', true],
+            'ش' => ['ﺵ', 'ﺶ', 'ﺷ', 'ﺸ', true],
+            'ص' => ['ﺹ', 'ﺺ', 'ﺻ', 'ﺼ', true],
+            'ض' => ['ﺽ', 'ﺾ', 'ﺿ', 'ﻀ', true],
+            'ط' => ['ﻁ', 'ﻂ', 'ﻃ', 'ﻄ', true],
+            'ظ' => ['ﻅ', 'ﻆ', 'ﻇ', 'ﻈ', true],
+            'ع' => ['ﻉ', 'ﻊ', 'ﻋ', 'ﻌ', true],
+            'غ' => ['ﻍ', 'ﻎ', 'ﻏ', 'ﻐ', true],
+            'ف' => ['ﻑ', 'ﻒ', 'ﻓ', 'ﻔ', true],
+            'ق' => ['ﻕ', 'ﻖ', 'ﻗ', 'ﻘ', true],
+            'ك' => ['ﻙ', 'ﻚ', 'ﻛ', 'ﻜ', true],
+            'ل' => ['ﻝ', 'ﻞ', 'ﻟ', 'ﻠ', true],
+            'م' => ['ﻡ', 'ﻢ', 'ﻣ', 'ﻤ', true],
+            'ن' => ['ﻥ', 'ﻦ', 'ﻧ', 'ﻨ', true],
+            'ه' => ['ﻩ', 'ﻪ', 'ﻫ', 'ﻬ', true],
+            'و' => ['ﻭ', 'ﻮ', 'ﻭ', 'ﻮ', false],
+            'ى' => ['ﻯ', 'ﻰ', 'ﻯ', 'ﻰ', false],
+            'ي' => ['ﻱ', 'ﻲ', 'ﻳ', 'ﻴ', true],
+        ];
+
+        $shapeArabic = function ($text) use (&$shapeArabic, $arabicLetters, $isArabic) {
+            $text = (string) $text;
+
+            if (!$isArabic || $text === '') {
+                return $text;
+            }
+
+            $chars = preg_split('//u', $text, -1, PREG_SPLIT_NO_EMPTY);
+            $count = count($chars);
+            $out = '';
+
+            for ($i = 0; $i < $count; $i++) {
+                $char = $chars[$i];
+
+                if (!isset($arabicLetters[$char])) {
+                    $out .= $char;
+                    continue;
+                }
+
+                $prev = $chars[$i - 1] ?? null;
+                $next = $chars[$i + 1] ?? null;
+                $prevCanConnect = $prev !== null && isset($arabicLetters[$prev]) && $arabicLetters[$prev][4];
+                $nextIsArabic = $next !== null && isset($arabicLetters[$next]);
+                $connectPrev = $prevCanConnect;
+                $connectNext = $nextIsArabic && $arabicLetters[$char][4];
+
+                if ($connectPrev && $connectNext) {
+                    $out .= $arabicLetters[$char][3];
+                } elseif ($connectPrev) {
+                    $out .= $arabicLetters[$char][1];
+                } elseif ($connectNext) {
+                    $out .= $arabicLetters[$char][2];
+                } else {
+                    $out .= $arabicLetters[$char][0];
+                }
+            }
+
+            return $out;
+        };
+
+        $txt = fn ($text) => $shapeArabic($text);
+
+        $tr = [
+            'lab_subtitle' => $isArabic ? 'مختبر التحاليل الطبية' : "Laboratoire d'analyses medicales",
+            'medical_report' => $isArabic ? 'تقرير طبي' : 'Rapport medical',
+            'reference' => $isArabic ? 'المرجع' : 'Reference',
+            'generated_at' => $isArabic ? 'تم إنشاؤه في' : 'Genere le',
+            'report_title' => $isArabic ? 'تقرير نتائج التحاليل' : "Rapport de resultats d'analyses",
+            'patient_info' => $isArabic ? 'معلومات المريض' : 'Informations Patient',
+            'exam_info' => $isArabic ? 'معلومات الفحص' : 'Informations Examen',
+            'lab_info' => $isArabic ? 'معلومات المختبر' : 'Informations Laboratoire',
+            'doctor_info' => $isArabic ? 'معلومات الطبيب' : 'Informations Medecin',
+            'full_name' => $isArabic ? 'الاسم الكامل' : 'Nom complet',
+            'sex' => $isArabic ? 'الجنس' : 'Sexe',
+            'birth' => $isArabic ? 'تاريخ الازدياد' : 'Naissance',
+            'phone' => $isArabic ? 'الهاتف' : 'Telephone',
+            'exam_date' => $isArabic ? 'تاريخ الفحص' : 'Date examen',
+            'analysis' => $isArabic ? 'التحليل' : 'Analyse',
+            'status' => $isArabic ? 'الحالة' : 'Statut',
+            'name' => $isArabic ? 'الاسم' : 'Nom',
+            'director' => $isArabic ? 'المدير' : 'Dir',
+            'address' => $isArabic ? 'العنوان' : 'Adresse',
+            'results_title' => $isArabic ? 'نتائج التحاليل' : "Resultats d'analyses",
+            'designation' => $isArabic ? 'اسم التحليل' : "Designation d'analyse",
+            'result' => $isArabic ? 'النتيجة' : 'Resultat',
+            'unit' => $isArabic ? 'الوحدة' : 'Unite',
+            'reference_values' => $isArabic ? 'القيم المرجعية' : 'Valeurs de reference',
+            'pending' => $isArabic ? 'قيد المعالجة' : 'En cours',
+            'results_status' => $isArabic ? 'حالة النتائج:' : 'Statut des resultats:',
+            'pending_validation' => $isArabic ? 'النتائج قيد التحقق.' : 'resultats en cours de validation.',
+            'available' => $isArabic ? 'النتائج مصادق عليها ومتاحة.' : 'resultats valides et disponibles.',
+            'empty' => $isArabic ? 'لا توجد نتائج متاحة لهذا الفحص.' : 'Aucun resultat disponible pour cet examen.',
+            'footer' => $isArabic
+                ? 'تم إنشاء هذا المستند إلكترونيا بواسطة Helix Lab. يجب تفسير النتائج من طرف مهني صحي مع السياق السريري للمريض.'
+                : 'Document genere electroniquement par Helix Lab. Les resultats doivent etre interpretes par un professionnel de sante avec le contexte clinique du patient.',
+            'page' => $isArabic ? 'صفحة 1/1' : 'Page 1/1',
+            'male' => $isArabic ? 'ذكر' : 'Masculin',
+            'female' => $isArabic ? 'أنثى' : 'Feminin',
+            'na' => $isArabic ? 'غير متوفر' : 'N/A',
+        ];
+
+        if ($isArabic) {
+            foreach ($tr as $key => $value) {
+                $tr[$key] = $txt($value);
+            }
+        }
+
         $patientName = trim(($patient->nom ?? '') . ' ' . ($patient->prenom ?? '')) ?: 'N/A';
         $sexValue = $patient->sexe ?? null;
-        $sexLabel = $sexValue === 'M' ? 'Masculin' : ($sexValue === 'F' ? 'Feminin' : 'N/A');
+        $sexLabel = $sexValue === 'M' ? $tr['male'] : ($sexValue === 'F' ? $tr['female'] : $tr['na']);
         $examStatus = $examen->statut ?? 'N/A';
-        $statusLabels = [
-            'en_cours' => 'En cours',
-            'valide' => 'Valide',
-            'en_validation' => 'En validation',
-            'termine' => 'Termine',
-            'rejete' => 'Rejete',
-            'annule' => 'Annule',
-        ];
+        $statusLabels = $isArabic
+            ? [
+                'en_cours' => 'قيد المعالجة',
+                'valide' => 'مصادق عليه',
+                'en_validation' => 'قيد التحقق',
+                'termine' => 'منتهي',
+                'rejete' => 'مرفوض',
+                'annule' => 'ملغى',
+            ]
+            : [
+                'en_cours' => 'En cours',
+                'valide' => 'Valide',
+                'en_validation' => 'En validation',
+                'termine' => 'Termine',
+                'rejete' => 'Rejete',
+                'annule' => 'Annule',
+            ];
+        if ($isArabic) {
+            foreach ($statusLabels as $key => $value) {
+                $statusLabels[$key] = $txt($value);
+            }
+        }
         $statusClass = 'status-' . str_replace('_', '-', $examStatus);
         $statusLabel = $statusLabels[$examStatus] ?? ucfirst(str_replace('_', ' ', $examStatus));
-        $analysisType = $examen->type_analyse?->libelle ?? 'Analyses generales';
+        $translateAnalysis = function ($value) use ($isArabic, $txt) {
+            if (!$isArabic) {
+                return $value;
+            }
+
+            $map = [
+                'Biochimie' => 'الكيمياء الحيوية',
+                'Hématologie' => 'أمراض الدم',
+                'Hematologie' => 'أمراض الدم',
+                'Glycémie' => 'سكر الدم',
+                'Glycemie' => 'سكر الدم',
+                'Hémoglobine' => 'الهيموغلوبين',
+                'Hemoglobine' => 'الهيموغلوبين',
+                'NFS' => 'تعداد الدم الكامل',
+            ];
+
+            return $txt($map[$value] ?? $value);
+        };
+        $analysisType = $translateAnalysis($examen->type_analyse?->libelle ?? ($isArabic ? 'تحاليل عامة' : 'Analyses generales'));
         $examDate = ($examen->date_examen ?? null)
             ? \Carbon\Carbon::parse($examen->date_examen)->format('d/m/Y H:i')
             : 'N/A';
@@ -371,23 +575,23 @@
                 @endif
                 <div>
                     <h1 class="lab-name">Helix Lab</h1>
-                    <p class="lab-subtitle">Laboratoire d'analyses medicales</p>
+                    <p class="lab-subtitle">{{ $tr['lab_subtitle'] }}</p>
                 </div>
             </div>
             <div class="report-meta">
-                <strong>Rapport medical</strong>
-                Reference: {{ $examen->reference ?? 'N/A' }}<br>
-                Genere le: {{ $generatedAt }}
+                <strong>{{ $tr['medical_report'] }}</strong>
+                {{ $tr['reference'] }}: {{ $examen->reference ?? 'N/A' }}<br>
+                {{ $tr['generated_at'] }}: {{ $generatedAt }}
             </div>
         </div>
 
-        <div class="document-title">Rapport de resultats d'analyses</div>
+        <div class="document-title">{{ $tr['report_title'] }}</div>
 
         <div class="info-columns">
             <div class="info-card">
-                <h2 class="section-title">Informations Patient</h2>
+                <h2 class="section-title">{{ $tr['patient_info'] }}</h2>
                 <div class="info-row">
-                    <span class="info-label">Nom complet</span>
+                    <span class="info-label">{{ $tr['full_name'] }}</span>
                     <span class="info-value">{{ $patientName }}</span>
                 </div>
                 <div class="info-row">
@@ -395,35 +599,35 @@
                     <span class="info-value">{{ $patient->cin ?? 'N/A' }}</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-label">Sexe</span>
+                    <span class="info-label">{{ $tr['sex'] }}</span>
                     <span class="info-value">{{ $sexLabel }}</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-label">Naissance</span>
+                    <span class="info-label">{{ $tr['birth'] }}</span>
                     <span class="info-value">{{ $birthDate }}</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-label">Telephone</span>
+                    <span class="info-label">{{ $tr['phone'] }}</span>
                     <span class="info-value">{{ $patient->telephone ?? 'N/A' }}</span>
                 </div>
             </div>
 
             <div class="info-card">
-                <h2 class="section-title">Informations Examen</h2>
+                <h2 class="section-title">{{ $tr['exam_info'] }}</h2>
                 <div class="info-row">
-                    <span class="info-label">Reference</span>
+                    <span class="info-label">{{ $tr['reference'] }}</span>
                     <span class="info-value">{{ $examen->reference ?? 'N/A' }}</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-label">Date examen</span>
+                    <span class="info-label">{{ $tr['exam_date'] }}</span>
                     <span class="info-value">{{ $examDate }}</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-label">Analyse</span>
+                    <span class="info-label">{{ $tr['analysis'] }}</span>
                     <span class="info-value">{{ $analysisType }}</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-label">Statut</span>
+                    <span class="info-label">{{ $tr['status'] }}</span>
                     <span class="status-badge {{ $statusClass }}">{{ $statusLabel }}</span>
                 </div>
             </div>
@@ -431,41 +635,41 @@
 
         <div class="info-columns">
             <div class="info-card">
-                <h2 class="section-title">Informations Laboratoire</h2>
+                <h2 class="section-title">{{ $tr['lab_info'] }}</h2>
                 <div class="info-row">
-                    <span class="info-label">Nom</span>
+                    <span class="info-label">{{ $tr['name'] }}</span>
                     <span class="info-value">{{ $labName }}</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-label">Dir</span>
+                    <span class="info-label">{{ $tr['director'] }}</span>
                     <span class="info-value">{{ $labDirector }}</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-label">Adresse</span>
+                    <span class="info-label">{{ $tr['address'] }}</span>
                     <span class="info-value">{{ $labAddress }}</span>
                 </div>
             </div>
 
             <div class="info-card">
-                <h2 class="section-title">Informations Medecin</h2>
+                <h2 class="section-title">{{ $tr['doctor_info'] }}</h2>
                 <div class="info-row">
-                    <span class="info-label">Nom complet</span>
+                    <span class="info-label">{{ $tr['full_name'] }}</span>
                     <span class="info-value">{{ $medecinFullName }}</span>
                 </div>
             </div>
         </div>
 
         <div class="results-section">
-            <h2 class="results-title">Resultats d'analyses</h2>
+            <h2 class="results-title">{{ $tr['results_title'] }}</h2>
 
             @if($ligneCollection->count() > 0)
                 <table class="results-table">
                     <thead>
                         <tr>
-                            <th class="col-analysis">Designation d'analyse</th>
-                            <th class="col-result">Resultat</th>
-                            <th class="col-unit">Unite</th>
-                            <th class="col-reference">Valeurs de reference</th>
+                            <th class="col-analysis">{{ $tr['designation'] }}</th>
+                            <th class="col-result">{{ $tr['result'] }}</th>
+                            <th class="col-unit">{{ $tr['unit'] }}</th>
+                            <th class="col-reference">{{ $tr['reference_values'] }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -496,14 +700,14 @@
                                 }
                             @endphp
                             <tr>
-                                <td class="col-analysis">{{ $analyse?->designation ?? 'N/A' }}</td>
+                                <td class="col-analysis">{{ $translateAnalysis($analyse?->designation ?? 'N/A') }}</td>
                                 <td class="col-result">
                                     @if($hasValue)
                                         <span class="result-value {{ $isAbnormal ? 'result-abnormal' : '' }}">
                                             {{ $isNumeric ? number_format((float) $value, 2, ',', ' ') : $value }}
                                         </span>
                                     @else
-                                        <span class="pending-value">En cours</span>
+                                        <span class="pending-value">{{ $tr['pending'] }}</span>
                                     @endif
                                 </td>
                                 <td class="col-unit">{{ $analyse?->unite_mesure ?? '-' }}</td>
@@ -514,27 +718,26 @@
                 </table>
 
                 <div class="summary-note">
-                    Statut des resultats:
+                    {{ $tr['results_status'] }}
                     @if($examen->statut === 'en_cours' || $examen->statut === 'en_validation')
-                        resultats en cours de validation.
+                        {{ $tr['pending_validation'] }}
                     @elseif($examen->statut === 'termine' || $examen->statut === 'valide')
-                        resultats valides et disponibles.
+                        {{ $tr['available'] }}
                     @else
-                        examen {{ $statusLabel }}.
+                        {{ $tr['status'] }} {{ $statusLabel }}.
                     @endif
                 </div>
             @else
-                <div class="empty-state">Aucun resultat disponible pour cet examen.</div>
+                <div class="empty-state">{{ $tr['empty'] }}</div>
             @endif
         </div>
 
         <div class="footer">
             <div class="footer-row">
                 <div class="footer-disclaimer">
-                    Document genere electroniquement par Helix Lab. Les resultats doivent etre
-                    interpretes par un professionnel de sante avec le contexte clinique du patient.
+                    {{ $tr['footer'] }}
                 </div>
-                <div class="page-number">Page 1/1</div>
+                <div class="page-number">{{ $tr['page'] }}</div>
             </div>
         </div>
     </div>

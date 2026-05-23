@@ -636,7 +636,13 @@ const DashboardBiologiste = () => {
             
             // Logic dyal l-Alerte Pathologique
             const valNum = parseFloat(currentVal);
-            const isPatho = valNum && (valNum < ana.norme_min || valNum > ana.norme_max);
+            const minNum = parseFloat(ana?.norme_min);
+            const maxNum = parseFloat(ana?.norme_max);
+            const isPatho =
+              Number.isFinite(valNum) &&
+              Number.isFinite(minNum) &&
+              Number.isFinite(maxNum) &&
+              (valNum < minNum || valNum > maxNum);
 
             return (
               <div key={ligne.id} style={{ marginBottom: '25px', paddingBottom: '15px', borderBottom: '1px solid #f1f5f9' }}>

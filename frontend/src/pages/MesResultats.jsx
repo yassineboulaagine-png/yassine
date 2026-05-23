@@ -13,6 +13,14 @@ const MesResultats = () => {
   const [generatingPDF, setGeneratingPDF] = useState(false);
   const [token, setToken] = useState(null);
 
+  const currentLanguage = i18n.language?.startsWith("ar") ? "ar" : "fr";
+
+  const changeLanguage = (e) => {
+    const selectedLanguage = e.target.value;
+    i18n.changeLanguage(selectedLanguage);
+    document.body.dir = selectedLanguage === "ar" ? "rtl" : "ltr";
+  };
+
   useEffect(() => {
     // Get token from localStorage
     const storedToken = localStorage.getItem("token");
@@ -94,6 +102,7 @@ const MesResultats = () => {
         `http://projet_pff.test/api/examens/${examen.id}/pdf`,
         {
           responseType: 'blob', // الكود ديالك القديم النقي
+          params: { lang: currentLanguage },
           headers: {
             'Authorization': `Bearer ${token}`, // 🌟 هادي هي لي كاتحل القفل ديال الـ Auth
             'Accept': 'application/pdf'
@@ -141,6 +150,21 @@ const MesResultats = () => {
     },
     header: {
       marginBottom: "30px",
+    },
+    headerTop: {
+      display: "flex",
+      alignItems: "flex-start",
+      justifyContent: "space-between",
+      gap: "16px",
+    },
+    languageSelect: {
+      padding: "8px 12px",
+      borderRadius: "8px",
+      border: "1px solid #cbd5e1",
+      backgroundColor: "#fff",
+      color: "#111827",
+      fontWeight: "600",
+      cursor: "pointer",
     },
     title: {
       fontSize: "32px",
@@ -385,8 +409,20 @@ const MesResultats = () => {
       <div style={styles.wrapper}>
         {/* Header */}
         <div style={styles.header}>
-          <h1 style={styles.title}>{t("mesResultats.title")}</h1>
-          <p style={styles.subtitle}>{t("mesResultats.subtitle")}</p>
+          <div style={styles.headerTop}>
+            <div>
+              <h1 style={styles.title}>{t("mesResultats.title")}</h1>
+              <p style={styles.subtitle}>{t("mesResultats.subtitle")}</p>
+            </div>
+            <select
+              onChange={changeLanguage}
+              value={currentLanguage}
+              style={styles.languageSelect}
+            >
+              <option value="fr">FR</option>
+              <option value="ar">AR</option>
+            </select>
+          </div>
         </div>
 
         {/* Patient Info Card */}

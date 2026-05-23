@@ -149,7 +149,49 @@ class RendezVousController extends Controller
 
     public function passerAuLabo(Request $request, $id)
     {
-        $analyseId = $request->input('type_analyse_id', $request->input('analyse_id', 1));
+        $request->validate([
+            'type_analyse_id' => 'nullable|integer',
+            'analyse_id' => 'nullable|integer',
+        ]);
+
+        $typeAnalyseId = $request->input('type_analyse_id');
+        $selectedAnalyseId = $request->input('analyse_id');
+
+        if ($selectedAnalyseId) {
+            $selectedAnalyse = \App\Models\Analyse::find($selectedAnalyseId);
+
+            if (!$selectedAnalyse) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Analyse selectionnee introuvable.',
+                ], 422);
+            }
+
+            $typeAnalyseId = $selectedAnalyse->type_analyse_id;
+        } elseif ($typeAnalyseId) {
+            $typeExists = DB::table('type_analyses')->where('id', $typeAnalyseId)->exists();
+
+            if (!$typeExists) {
+                // Backward compatibility: older UI sent analyses.id under type_analyse_id.
+                $selectedAnalyse = \App\Models\Analyse::find($typeAnalyseId);
+
+                if (!$selectedAnalyse) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Type d analyse selectionne introuvable.',
+                    ], 422);
+                }
+
+                $selectedAnalyseId = $selectedAnalyse->id;
+                $typeAnalyseId = $selectedAnalyse->type_analyse_id;
+            }
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => 'Veuillez selectionner un type d analyse.',
+            ], 422);
+        }
+
         $rdv = RendezVous::findOrFail($id);
 
         $patient = Patient::firstOrCreate(
@@ -169,29 +211,27 @@ class RendezVousController extends Controller
             $patient->save();
         }
 
+        $analysesSub = DB::table('analyses')->where('type_analyse_id', $typeAnalyseId)->get();
+
+        if ($analysesSub->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Aucune analyse n est associee a ce type.',
+            ], 422);
+        }
+
         $examen = \App\Models\Examen::create([
             'patient_id' => $patient->id,
-            'type_analyse_id' => $analyseId,
+            'type_analyse_id' => $typeAnalyseId,
+            'medecin_id' => \App\Models\Medecin::query()->value('id'),
+            'utilisateur_id' => auth()->id() ?: \App\Models\User::query()->value('id'),
             'statut' => 'en_cours',
         ]);
 
-        $analysesSub = DB::table('analyses')->where('type_analyse_id', $analyseId)->get();
-
-        if ($analysesSub->count() > 0) {
-            foreach ($analysesSub as $sub) {
-                DB::table('ligne_examens')->insert([
-                    'examen_id' => $examen->id,
-                    'analyse_id' => $sub->id,
-                    'valeur_resultat' => null,
-                    'commentaire' => null,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
-            }
-        } else {
+        foreach ($analysesSub as $sub) {
             DB::table('ligne_examens')->insert([
                 'examen_id' => $examen->id,
-                'analyse_id' => $analyseId,
+                'analyse_id' => $sub->id,
                 'valeur_resultat' => null,
                 'commentaire' => null,
                 'created_at' => now(),
@@ -200,7 +240,7 @@ class RendezVousController extends Controller
         }
 
         $rdv->update([
-            'analyse_id' => $analyseId,
+            'analyse_id' => $selectedAnalyseId ?: $analysesSub->first()->id,
             'statut' => 'valide',
         ]);
 

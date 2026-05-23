@@ -31,6 +31,7 @@ Route::post('/rendezvous/store',     [RendezVousController::class, 'store']);
 
 
  Route::get('/analyses',      [AnalyseController::class, 'index']);
+ Route::get('/type-analyses', [AnalyseController::class, 'types']);
 
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/patient/auth', [ExamenController::class, 'patientLogin']);

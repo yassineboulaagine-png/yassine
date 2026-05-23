@@ -298,7 +298,7 @@ const StaffManagement = () => {
           left: 0, 
           width: '100vw', 
           height: '100vh', 
-          backgroundColor: 'rgba(0,0,0,0.4)', 
+          backgroundColor: 'rgba(0, 0, 0, 0.4)', 
           backdropFilter: 'blur(4px)',
           display: 'flex', 
           justifyContent: 'center', 
@@ -310,7 +310,8 @@ const StaffManagement = () => {
             padding: '24px', 
             borderRadius: '12px', 
             width: '90%', 
-            maxWidth: '420px',
+            maxWidth: '600px',
+            minHeight: '300px',
             boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)'
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
