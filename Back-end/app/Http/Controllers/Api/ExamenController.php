@@ -187,6 +187,9 @@ $examens = Examen::with(['patient', 'type_analyse'])->whereDate('created_at', no
         return ExamenResource::collection($examens);
     }
 
+    ///EX-2026-0105-CSJT
+    //0978785634
+
     /**
      * Créer un nouvel examen — FIX: reference gérée par boot(), utilisateur_id sécurisé
      * DEBUG: Comprehensive logging pour debuguer type_analyse_id NULL
