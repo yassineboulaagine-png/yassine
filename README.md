@@ -112,14 +112,13 @@ npm install
 npm run dev
 ```
 
-## 🔌 API Endpoints
-
 
 ## 🔌 API Endpoints
 
 Helix Lab provides a RESTful API built with Laravel to manage laboratory operations.
 
 ### Authentication
+
 | Method | Endpoint | Description |
 |---|---|---|
 | POST | `/api/login` | Authenticate users |
@@ -127,6 +126,7 @@ Helix Lab provides a RESTful API built with Laravel to manage laboratory operati
 | GET | `/api/me` | Retrieve authenticated user |
 
 ### Patients
+
 | Method | Endpoint | Description |
 |---|---|---|
 | GET | `/api/patients` | Retrieve all patients |
@@ -134,39 +134,54 @@ Helix Lab provides a RESTful API built with Laravel to manage laboratory operati
 | GET | `/api/patients/{patient}` | Retrieve patient details |
 | PUT/PATCH | `/api/patients/{patient}` | Update patient information |
 | DELETE | `/api/patients/{patient}` | Delete a patient |
+| GET | `/api/patients/count/{id}` | Retrieve patient count |
+| GET | `/api/patients/export-xml/{id}` | Export patients as XML |
 
 ### Medical Analyses
+
 | Method | Endpoint | Description |
 |---|---|---|
 | GET | `/api/analyses` | Retrieve analyses |
-| POST | `/api/analyses` | Create a new analysis |
+| POST | `/api/analyses` | Create an analysis |
+| GET | `/api/analyses/{id}` | Retrieve an analysis |
+| PUT | `/api/analyses/{id}` | Update an analysis |
+| DELETE | `/api/analyses/{id}` | Delete an analysis |
 | GET | `/api/type-analyses` | Retrieve analysis types |
 
 ### Examinations & Results
+
 | Method | Endpoint | Description |
 |---|---|---|
 | GET | `/api/examens` | Retrieve examinations |
 | POST | `/api/examens` | Create an examination |
-| GET | `/api/examens-validation` | Retrieve examinations pending validation |
+| PUT | `/api/examens/{id}` | Update an examination |
+| DELETE | `/api/examens/{id}` | Delete an examination |
+| PATCH | `/api/examens/{id}/annuler` | Cancel an examination |
 | PATCH | `/api/examens/{id}/valider` | Validate an examination |
+| PATCH | `/api/examens/{id}/approve` | Approve an examination |
+| PUT | `/api/examens/{id}/reject` | Reject an examination |
 | GET | `/api/examens/{id}/pdf` | Generate examination PDF |
 | GET | `/api/examens/my-results` | Retrieve patient results |
+| GET | `/api/examens/results/{id}` | Retrieve examination results |
+| POST | `/api/examens/{id}/resultats` | Store examination results |
 
 ### Appointments
+
 | Method | Endpoint | Description |
 |---|---|---|
 | GET | `/api/rendezvous` | Retrieve appointments |
 | POST | `/api/rendezvous/store` | Create an appointment |
+| POST | `/api/rendezvous/send-code` | Send appointment verification code |
 | PUT | `/api/rendezvous/{id}/statut` | Update appointment status |
-| POST | `/api/rendez-vous/{id}/passer-au-labo` | Mark appointment as transferred to laboratory |
+| POST | `/api/rendez-vous/{id}/passer-au-labo` | Transfer appointment to laboratory |
 
 ### Dashboard & Statistics
+
 | Method | Endpoint | Description |
 |---|---|---|
 | GET | `/api/admin/stats` | Retrieve administrator statistics |
 | GET | `/api/biologiste/stats` | Retrieve biologist statistics |
 | GET | `/api/stats/monthly-analyses` | Retrieve monthly analysis statistics |
-
 
 
 
