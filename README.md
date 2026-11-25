@@ -119,23 +119,24 @@ npm run dev
 | GET | `/api/patients` | Retrieve patients |
 | POST | `/api/patients` | Create a patient |
 
+
 ## 📸 Screenshots
 
-### Application Dashboard
+### Login Page
+![Login Page](.presentation_assets/screenshots/login.png)
 
-<!-- Add your dashboard screenshot here -->
+### Admin Dashboard
+![Admin Dashboard](.presentation_assets/screenshots/admin_dashboard.png)
 
-### Patient Management
+### Biologist Dashboard
+![Biologist Dashboard](.presentation_assets/screenshots/biologiste_dashboard.png)
 
-<!-- Add your patient management screenshot here -->
+### Appointment Management
+![Appointment Management](.presentation_assets/screenshots/appointment.png)
 
-### Examination Management
+### Sample Collector Dashboard
+![Sample Collector Dashboard](.presentation_assets/screenshots/preleveur_dashboard.png)
 
-<!-- Add your examination screenshot here -->
-
-### Results Management
-
-<!-- Add your results screenshot here -->
 
 ## 🔐 Security
 
