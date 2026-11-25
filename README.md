@@ -114,10 +114,60 @@ npm run dev
 
 ## 🔌 API Endpoints
 
+
+## 🔌 API Endpoints
+
+Helix Lab provides a RESTful API built with Laravel to manage laboratory operations.
+
+### Authentication
 | Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/patients` | Retrieve patients |
-| POST | `/api/patients` | Create a patient |
+|---|---|---|
+| POST | `/api/login` | Authenticate users |
+| POST | `/api/logout` | Log out the authenticated user |
+| GET | `/api/me` | Retrieve authenticated user |
+
+### Patients
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/patients` | Retrieve all patients |
+| POST | `/api/patients` | Register a new patient |
+| GET | `/api/patients/{patient}` | Retrieve patient details |
+| PUT/PATCH | `/api/patients/{patient}` | Update patient information |
+| DELETE | `/api/patients/{patient}` | Delete a patient |
+
+### Medical Analyses
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/analyses` | Retrieve analyses |
+| POST | `/api/analyses` | Create a new analysis |
+| GET | `/api/type-analyses` | Retrieve analysis types |
+
+### Examinations & Results
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/examens` | Retrieve examinations |
+| POST | `/api/examens` | Create an examination |
+| GET | `/api/examens-validation` | Retrieve examinations pending validation |
+| PATCH | `/api/examens/{id}/valider` | Validate an examination |
+| GET | `/api/examens/{id}/pdf` | Generate examination PDF |
+| GET | `/api/examens/my-results` | Retrieve patient results |
+
+### Appointments
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/rendezvous` | Retrieve appointments |
+| POST | `/api/rendezvous/store` | Create an appointment |
+| PUT | `/api/rendezvous/{id}/statut` | Update appointment status |
+| POST | `/api/rendez-vous/{id}/passer-au-labo` | Mark appointment as transferred to laboratory |
+
+### Dashboard & Statistics
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/admin/stats` | Retrieve administrator statistics |
+| GET | `/api/biologiste/stats` | Retrieve biologist statistics |
+| GET | `/api/stats/monthly-analyses` | Retrieve monthly analysis statistics |
+
+
 
 
 ## 📸 Screenshots
